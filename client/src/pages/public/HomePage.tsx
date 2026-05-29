@@ -28,7 +28,7 @@ function HeroCarousel({ items }: { items: GalleryItem[] }) {
 
   if (count === 0) {
     return (
-      <div className="relative aspect-square sm:aspect-[4/5] rounded-2xl bg-gradient-to-br from-blush/40 via-cream to-butter/50 shadow-xl border border-gold/10 flex items-center justify-center">
+      <div className="relative aspect-[4/3] sm:aspect-[4/5] rounded-2xl bg-gradient-to-br from-blush/40 via-cream to-butter/50 shadow-xl border border-gold/10 flex items-center justify-center">
         <div className="text-center px-6">
           <div className="script-accent text-4xl mb-3">Atelier</div>
           <div className="tag">Foto's verschijnen hier zodra ze geüpload zijn</div>
@@ -38,7 +38,7 @@ function HeroCarousel({ items }: { items: GalleryItem[] }) {
   }
 
   return (
-    <div className="relative aspect-square sm:aspect-[4/5] rounded-2xl overflow-hidden shadow-2xl ring-1 ring-gold/20 group">
+    <div className="relative aspect-[4/3] sm:aspect-[4/5] rounded-2xl overflow-hidden shadow-2xl ring-1 ring-gold/20 group">
       {items.map((item, i) => (
         <img
           key={item.id}
@@ -126,7 +126,7 @@ export default function HomePage() {
 
         <div className="container-tight relative py-10 sm:py-16 md:py-24">
           <div className="grid lg:grid-cols-[1.05fr_1fr] gap-8 sm:gap-12 lg:gap-20 items-center">
-            <div className="order-2 lg:order-1 relative">
+            <div className="relative text-center lg:text-left">
               <div className="tag mb-4 sm:mb-6">Patisserie · Op maat</div>
               <h1 className="text-4xl sm:text-5xl md:text-6xl leading-[1.05]">
                 <span className="block">Atelier</span>
@@ -134,12 +134,12 @@ export default function HomePage() {
                   Boterbloem
                 </span>
               </h1>
-              <div className="mt-4 mb-4 sm:mt-6 sm:mb-6"><GoldDivider className="!mx-0 !max-w-[180px]" /></div>
-              <p className="text-base sm:text-lg text-charcoal/75 max-w-xl leading-relaxed">
+              <div className="mt-4 mb-4 sm:mt-6 sm:mb-6"><GoldDivider className="!mx-auto lg:!mx-0 !max-w-[180px]" /></div>
+              <p className="text-base sm:text-lg text-charcoal/75 max-w-xl leading-relaxed mx-auto lg:mx-0">
                 {hero?.tagline ??
                   "Handgemaakte taarten voor jouw mooiste momenten — bruiloften, verjaardagen, en alles daartussen."}
               </p>
-              <div className="mt-6 sm:mt-10 flex flex-wrap gap-3 sm:gap-4">
+              <div className="mt-6 sm:mt-10 flex flex-wrap gap-3 sm:gap-4 justify-center lg:justify-start">
                 <Link href={hero?.ctaHref ?? "/contact"} className="btn-gold">
                   {hero?.ctaLabel ?? "Vraag offerte aan"}
                 </Link>
@@ -149,7 +149,7 @@ export default function HomePage() {
               </div>
             </div>
 
-            <div className="order-1 lg:order-2 relative">
+            <div className="relative max-w-md mx-auto lg:max-w-none w-full">
               <div className="absolute -inset-6 -z-10 bg-gradient-to-br from-gold/10 via-transparent to-blush/20 rounded-[2rem] blur-2xl" />
               <HeroCarousel items={carouselItems} />
             </div>
