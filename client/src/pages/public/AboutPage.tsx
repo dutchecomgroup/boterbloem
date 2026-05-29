@@ -20,19 +20,19 @@ export default function AboutPage() {
 
   return (
     <>
-      <section className="relative bg-section-warm overflow-hidden pt-20 pb-20">
+      <section className="relative bg-section-warm overflow-hidden section-y">
         <BotanicalPattern opacity={0.05} />
-        <FloralFrame className="absolute -top-12 -right-12" size={300} color="text-gold/20" />
-        <FloralFrame className="absolute -bottom-12 -left-12 rotate-180" size={260} color="text-blush" />
+        <FloralFrame className="absolute -top-8 -right-8 md:-top-12 md:-right-12 w-32 sm:w-56 md:w-72 h-32 sm:h-56 md:h-72" color="text-gold/20" />
+        <FloralFrame className="absolute -bottom-8 -left-8 md:-bottom-12 md:-left-12 rotate-180 w-24 sm:w-40 md:w-64 h-24 sm:h-40 md:h-64" color="text-blush" />
 
         <div className="container-tight relative">
-          <div className="grid lg:grid-cols-[1.1fr_1fr] gap-12 lg:gap-20 items-center">
+          <div className="grid lg:grid-cols-[1.1fr_1fr] gap-8 sm:gap-12 lg:gap-20 items-center">
             <div>
               <div className="tag mb-3">Over</div>
-              <h1 className="text-5xl md:text-6xl">{about?.heading ?? "Atelier"}</h1>
-              <div className="script-accent text-5xl md:text-6xl -mt-1">Boterbloem</div>
-              <div className="mt-6 mb-6"><GoldDivider className="!mx-0 !max-w-[180px]" /></div>
-              <div className="text-lg text-charcoal/80 leading-relaxed whitespace-pre-line">
+              <h1 className="text-4xl sm:text-5xl md:text-6xl">{about?.heading ?? "Atelier"}</h1>
+              <div className="script-accent text-4xl sm:text-5xl md:text-6xl -mt-1">Boterbloem</div>
+              <div className="mt-4 mb-4 sm:mt-6 sm:mb-6"><GoldDivider className="!mx-0 !max-w-[180px]" /></div>
+              <div className="text-base sm:text-lg text-charcoal/80 leading-relaxed whitespace-pre-line">
                 {body}
               </div>
             </div>
@@ -50,16 +50,16 @@ export default function AboutPage() {
       </section>
 
       {/* Pull quote */}
-      <section className="relative bg-section-butter py-20 overflow-hidden">
+      <section className="relative bg-section-butter section-y overflow-hidden">
         <BotanicalPattern opacity={0.05} />
-        <BotanicalCorner position="tl" size={140} color="text-gold/30" />
-        <BotanicalCorner position="br" size={140} color="text-gold/30" />
+        <BotanicalCorner position="tl" color="text-gold/30" />
+        <BotanicalCorner position="br" color="text-gold/30" />
         <div className="container-narrow relative text-center">
-          <div className="script-accent text-5xl md:text-6xl leading-none mb-6">
+          <div className="script-accent text-3xl sm:text-5xl md:text-6xl leading-tight mb-6">
             "Smaak, ambacht, en een glimlach in elke beet."
           </div>
           <div className="tag">— Atelier Boterbloem</div>
-          <div className="mt-10"><GoldDivider /></div>
+          <div className="mt-8 sm:mt-10"><GoldDivider /></div>
         </div>
       </section>
     </>

@@ -28,7 +28,7 @@ function HeroCarousel({ items }: { items: GalleryItem[] }) {
 
   if (count === 0) {
     return (
-      <div className="relative aspect-[4/5] rounded-2xl bg-gradient-to-br from-blush/40 via-cream to-butter/50 shadow-xl border border-gold/10 flex items-center justify-center">
+      <div className="relative aspect-square sm:aspect-[4/5] rounded-2xl bg-gradient-to-br from-blush/40 via-cream to-butter/50 shadow-xl border border-gold/10 flex items-center justify-center">
         <div className="text-center px-6">
           <div className="script-accent text-4xl mb-3">Atelier</div>
           <div className="tag">Foto's verschijnen hier zodra ze geüpload zijn</div>
@@ -38,7 +38,7 @@ function HeroCarousel({ items }: { items: GalleryItem[] }) {
   }
 
   return (
-    <div className="relative aspect-[4/5] rounded-2xl overflow-hidden shadow-2xl ring-1 ring-gold/20 group">
+    <div className="relative aspect-square sm:aspect-[4/5] rounded-2xl overflow-hidden shadow-2xl ring-1 ring-gold/20 group">
       {items.map((item, i) => (
         <img
           key={item.id}
@@ -121,25 +121,25 @@ export default function HomePage() {
       {/* Hero — two columns with carousel + floral frames */}
       <section className="relative overflow-hidden bg-section-warm">
         <BotanicalPattern opacity={0.05} />
-        <FloralFrame className="absolute -top-12 -right-12 lg:right-0 lg:-top-8" size={340} color="text-gold/20" />
-        <FloralFrame className="absolute -bottom-12 -left-12 rotate-180" size={260} color="text-blush" />
+        <FloralFrame className="absolute -top-8 -right-8 md:-top-12 md:-right-12 w-32 sm:w-56 md:w-80 h-32 sm:h-56 md:h-80" color="text-gold/20" />
+        <FloralFrame className="absolute -bottom-8 -left-8 md:-bottom-12 md:-left-12 rotate-180 w-24 sm:w-40 md:w-64 h-24 sm:h-40 md:h-64" color="text-blush" />
 
-        <div className="container-tight relative py-16 md:py-24">
-          <div className="grid lg:grid-cols-[1.05fr_1fr] gap-12 lg:gap-20 items-center">
+        <div className="container-tight relative py-10 sm:py-16 md:py-24">
+          <div className="grid lg:grid-cols-[1.05fr_1fr] gap-8 sm:gap-12 lg:gap-20 items-center">
             <div className="order-2 lg:order-1 relative">
-              <div className="tag mb-6">Patisserie · Op maat</div>
-              <h1 className="text-5xl md:text-6xl leading-[1.05]">
+              <div className="tag mb-4 sm:mb-6">Patisserie · Op maat</div>
+              <h1 className="text-4xl sm:text-5xl md:text-6xl leading-[1.05]">
                 <span className="block">Atelier</span>
-                <span className="script-accent text-7xl md:text-8xl block leading-none -mt-2">
+                <span className="script-accent text-5xl sm:text-7xl md:text-8xl block leading-none -mt-1 sm:-mt-2">
                   Boterbloem
                 </span>
               </h1>
-              <div className="mt-6 mb-6"><GoldDivider className="!mx-0 !max-w-[180px]" /></div>
-              <p className="text-lg text-charcoal/75 max-w-xl leading-relaxed">
+              <div className="mt-4 mb-4 sm:mt-6 sm:mb-6"><GoldDivider className="!mx-0 !max-w-[180px]" /></div>
+              <p className="text-base sm:text-lg text-charcoal/75 max-w-xl leading-relaxed">
                 {hero?.tagline ??
                   "Handgemaakte taarten voor jouw mooiste momenten — bruiloften, verjaardagen, en alles daartussen."}
               </p>
-              <div className="mt-10 flex flex-wrap gap-4">
+              <div className="mt-6 sm:mt-10 flex flex-wrap gap-3 sm:gap-4">
                 <Link href={hero?.ctaHref ?? "/contact"} className="btn-gold">
                   {hero?.ctaLabel ?? "Vraag offerte aan"}
                 </Link>
@@ -158,29 +158,29 @@ export default function HomePage() {
       </section>
 
       {/* Mission statement */}
-      <section className="relative bg-section-blush overflow-hidden py-20">
+      <section className="relative bg-section-blush overflow-hidden section-y">
         <BotanicalPattern opacity={0.06} />
-        <BotanicalCorner position="tl" size={140} color="text-gold/30" />
-        <BotanicalCorner position="br" size={140} color="text-gold/30" />
+        <BotanicalCorner position="tl" color="text-gold/30" />
+        <BotanicalCorner position="br" color="text-gold/30" />
         <div className="container-narrow relative text-center">
-          <div className="script-accent text-5xl md:text-6xl mb-6 leading-none">
+          <div className="script-accent text-4xl sm:text-5xl md:text-6xl mb-4 sm:mb-6 leading-none">
             Iedere taart vertelt een verhaal
           </div>
-          <p className="text-charcoal/70 max-w-xl mx-auto text-lg leading-relaxed">
+          <p className="text-charcoal/70 max-w-xl mx-auto text-base sm:text-lg leading-relaxed">
             Vanuit liefde voor het ambacht en oog voor detail — wij ontwerpen en bakken zoete creaties die jouw moment compleet maken.
           </p>
-          <div className="mt-10"><GoldDivider /></div>
+          <div className="mt-8 sm:mt-10"><GoldDivider /></div>
         </div>
       </section>
 
       {/* Featured gallery */}
-      <section className="relative py-24 bg-section-butter overflow-hidden">
+      <section className="relative section-y bg-section-butter overflow-hidden">
         <BotanicalPattern opacity={0.04} />
         <div className="container-tight relative">
-          <div className="flex items-end justify-between mb-12">
+          <div className="flex items-end justify-between mb-8 sm:mb-12">
             <div>
               <div className="tag mb-3">Onze creaties</div>
-              <h2 className="text-4xl md:text-5xl">Uitgelicht werk</h2>
+              <h2 className="text-3xl sm:text-4xl md:text-5xl">Uitgelicht werk</h2>
             </div>
             <Link
               href="/galerij"
@@ -215,12 +215,12 @@ export default function HomePage() {
       </section>
 
       {/* Diensten preview met images */}
-      <section className="relative py-24 bg-cream overflow-hidden">
+      <section className="relative section-y bg-cream overflow-hidden">
         <BotanicalPattern opacity={0.04} />
         <div className="container-tight relative">
-          <div className="text-center mb-16">
+          <div className="text-center mb-10 sm:mb-16">
             <div className="tag mb-3">Aanbod</div>
-            <h2 className="text-4xl md:text-5xl">Voor elke gelegenheid</h2>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl">Voor elke gelegenheid</h2>
             <div className="mt-6"><GoldDivider /></div>
           </div>
           <div className="grid md:grid-cols-3 gap-6">
@@ -261,17 +261,17 @@ export default function HomePage() {
       </section>
 
       {/* CTA strip */}
-      <section className="relative py-20 bg-charcoal text-cream overflow-hidden">
+      <section className="relative section-y bg-charcoal text-cream overflow-hidden">
         <BotanicalPattern opacity={0.06} className="text-cream" />
         <div className="container-narrow relative text-center">
           <GoldDivider className="!text-gold/60" />
-          <div className="script-accent text-4xl mt-6 mb-2">Een idee?</div>
-          <h2 className="text-cream text-4xl md:text-5xl mb-6">Laten we het bespreken</h2>
-          <p className="text-cream/70 mb-8 leading-relaxed">
+          <div className="script-accent text-3xl sm:text-4xl mt-6 mb-2">Een idee?</div>
+          <h2 className="text-cream text-3xl sm:text-4xl md:text-5xl mb-6">Laten we het bespreken</h2>
+          <p className="text-cream/70 mb-8 leading-relaxed text-sm sm:text-base">
             Of het nu een bruiloft, verjaardag of een doopfeest is — vertel ons over jouw moment en we ontwerpen iets unieks.
           </p>
           <Link href="/contact" className="btn-gold">Stuur een bericht</Link>
-          <div className="mt-10"><GoldDivider className="!text-gold/60" /></div>
+          <div className="mt-8 sm:mt-10"><GoldDivider className="!text-gold/60" /></div>
         </div>
       </section>
     </>

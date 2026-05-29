@@ -35,19 +35,19 @@ export default function GalleryPage() {
 
   return (
     <>
-      <section className="relative bg-section-blush overflow-hidden pt-16 pb-16">
+      <section className="relative bg-section-blush overflow-hidden pt-10 sm:pt-16 pb-10 sm:pb-16">
         <BotanicalPattern opacity={0.05} />
-        <BotanicalCorner position="tl" size={140} color="text-gold/30" />
-        <BotanicalCorner position="tr" size={140} color="text-gold/30" />
+        <BotanicalCorner position="tl" color="text-gold/30" />
+        <BotanicalCorner position="tr" color="text-gold/30" />
         <div className="container-tight relative">
           <div className="tag mb-3">Galerij</div>
-          <h1 className="text-5xl md:text-6xl">Onze creaties</h1>
-          <div className="mt-6 mb-6"><GoldDivider className="!mx-0 !max-w-[180px]" /></div>
-          <p className="text-charcoal/70 max-w-2xl leading-relaxed">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl">Onze creaties</h1>
+          <div className="mt-4 mb-4 sm:mt-6 sm:mb-6"><GoldDivider className="!mx-0 !max-w-[180px]" /></div>
+          <p className="text-charcoal/70 max-w-2xl leading-relaxed text-sm sm:text-base">
             Een selectie van bruidstaarten, verjaardagstaarten, mini desserts en sweet tables die we eerder hebben gemaakt.
           </p>
 
-          <div className="mt-10 flex flex-wrap gap-2">
+          <div className="mt-6 sm:mt-10 flex flex-wrap gap-2">
             <button
               onClick={() => setActiveSlug(null)}
               className={`pill ${!activeSlug ? "pill-active" : "pill-inactive"}`}
@@ -67,7 +67,7 @@ export default function GalleryPage() {
         </div>
       </section>
 
-      <section className="relative bg-cream py-20 overflow-hidden">
+      <section className="relative bg-cream section-y overflow-hidden">
         <BotanicalPattern opacity={0.04} />
         <div className="container-tight relative">
           {isLoading ? (
@@ -105,8 +105,8 @@ export default function GalleryPage() {
           className="fixed inset-0 bg-charcoal/95 z-50 flex items-center justify-center p-4 md:p-12"
           onClick={() => setLightbox(null)}
         >
-          <BotanicalCorner position="tl" size={120} color="text-gold/40" />
-          <BotanicalCorner position="br" size={120} color="text-gold/40" />
+          <BotanicalCorner position="tl" color="text-gold/40" />
+          <BotanicalCorner position="br" color="text-gold/40" />
           <button
             className="absolute top-4 right-4 text-cream/80 hover:text-cream p-2"
             aria-label="Sluiten"

@@ -51,21 +51,21 @@ export default function ContactPage() {
 
   return (
     <>
-      <section className="relative bg-section-blush overflow-hidden py-20">
+      <section className="relative bg-section-blush overflow-hidden section-y">
         <BotanicalPattern opacity={0.06} />
-        <FloralFrame className="absolute -top-12 -right-12" size={340} color="text-gold/20" />
-        <FloralFrame className="absolute -bottom-12 -left-12 rotate-180" size={260} color="text-blush" />
+        <FloralFrame className="absolute -top-8 -right-8 md:-top-12 md:-right-12 w-32 sm:w-56 md:w-80 h-32 sm:h-56 md:h-80" color="text-gold/20" />
+        <FloralFrame className="absolute -bottom-8 -left-8 md:-bottom-12 md:-left-12 rotate-180 w-24 sm:w-40 md:w-64 h-24 sm:h-40 md:h-64" color="text-blush" />
 
-        <div className="container-tight relative grid lg:grid-cols-[1fr_1.2fr] gap-12 lg:gap-16">
+        <div className="container-tight relative grid lg:grid-cols-[1fr_1.2fr] gap-8 sm:gap-12 lg:gap-16">
           <div>
             <div className="tag mb-3">Contact</div>
-            <h1 className="text-5xl md:text-6xl">Vertel ons jouw idee</h1>
-            <div className="mt-6 mb-6"><GoldDivider className="!mx-0 !max-w-[180px]" /></div>
-            <p className="text-charcoal/70 leading-relaxed mb-10">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl">Vertel ons jouw idee</h1>
+            <div className="mt-4 mb-4 sm:mt-6 sm:mb-6"><GoldDivider className="!mx-0 !max-w-[180px]" /></div>
+            <p className="text-charcoal/70 leading-relaxed mb-8 sm:mb-10 text-sm sm:text-base">
               Vul het formulier in met zoveel mogelijk details — datum, gelegenheid, aantal personen — en we komen zo snel mogelijk bij je terug met een voorstel.
             </p>
 
-            <ul className="space-y-4 text-sm mb-10">
+            <ul className="space-y-4 text-sm mb-8 sm:mb-10">
               {contact?.email && (
                 <li className="flex items-start gap-3"><Mail size={18} className="text-gold mt-0.5" /><a href={`mailto:${contact.email}`} className="hover:text-gold-dark">{contact.email}</a></li>
               )}
@@ -91,8 +91,8 @@ export default function ContactPage() {
           <div>
             {sent ? (
               <div className="card hairline-gold bg-cream relative">
-                <BotanicalCorner position="tl" size={80} color="text-gold/40" />
-                <BotanicalCorner position="br" size={80} color="text-gold/40" />
+                <BotanicalCorner position="tl" className="w-16 h-16 sm:w-20 sm:h-20" color="text-gold/40" />
+                <BotanicalCorner position="br" className="w-16 h-16 sm:w-20 sm:h-20" color="text-gold/40" />
                 <div className="text-center py-10">
                   <div className="script-accent text-5xl mb-4">Bedankt!</div>
                   <p className="text-charcoal/70 max-w-md mx-auto">
@@ -152,15 +152,15 @@ export default function ContactPage() {
       </section>
 
       {/* Steps section */}
-      <section className="relative bg-section-butter py-20 overflow-hidden">
+      <section className="relative bg-section-butter section-y overflow-hidden">
         <BotanicalPattern opacity={0.05} />
         <div className="container-tight relative">
-          <div className="text-center mb-14">
+          <div className="text-center mb-10 sm:mb-14">
             <div className="tag mb-3">Hoe het werkt</div>
-            <h2 className="text-4xl md:text-5xl">Van idee tot taart</h2>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl">Van idee tot taart</h2>
             <div className="mt-6"><GoldDivider /></div>
           </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {STEPS.map((s) => (
               <div key={s.n} className="card hairline-gold bg-cream relative">
                 <div className="script-accent text-5xl leading-none mb-3">{s.n}</div>

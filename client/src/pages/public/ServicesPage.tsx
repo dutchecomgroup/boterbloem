@@ -48,24 +48,24 @@ const SERVICES = [
 export default function ServicesPage() {
   return (
     <>
-      <section className="relative bg-section-warm overflow-hidden pt-20 pb-16">
+      <section className="relative bg-section-warm overflow-hidden pt-10 sm:pt-20 pb-10 sm:pb-16">
         <BotanicalPattern opacity={0.05} />
-        <FloralFrame className="absolute -top-12 -right-12" size={340} color="text-gold/20" />
-        <FloralFrame className="absolute -bottom-12 -left-12 rotate-180" size={260} color="text-blush" />
+        <FloralFrame className="absolute -top-8 -right-8 md:-top-12 md:-right-12 w-32 sm:w-56 md:w-80 h-32 sm:h-56 md:h-80" color="text-gold/20" />
+        <FloralFrame className="absolute -bottom-8 -left-8 md:-bottom-12 md:-left-12 rotate-180 w-24 sm:w-40 md:w-64 h-24 sm:h-40 md:h-64" color="text-blush" />
         <div className="container-tight relative">
           <div className="tag mb-3">Aanbod</div>
-          <h1 className="text-5xl md:text-6xl">Onze diensten</h1>
-          <div className="mt-6 mb-6"><GoldDivider className="!mx-0 !max-w-[180px]" /></div>
-          <p className="text-charcoal/70 max-w-2xl leading-relaxed">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl">Onze diensten</h1>
+          <div className="mt-4 mb-4 sm:mt-6 sm:mb-6"><GoldDivider className="!mx-0 !max-w-[180px]" /></div>
+          <p className="text-charcoal/70 max-w-2xl leading-relaxed text-sm sm:text-base">
             Elke creatie is op maat. Onderstaande categorieën geven een idee van wat we doen — maar het echte werk begint met jouw verhaal.
           </p>
         </div>
       </section>
 
-      <section className="relative bg-cream py-20 overflow-hidden">
+      <section className="relative bg-cream section-y overflow-hidden">
         <BotanicalPattern opacity={0.04} />
         <div className="container-tight relative">
-          <div className="grid md:grid-cols-2 gap-8">
+          <div className="grid md:grid-cols-2 gap-6 sm:gap-8">
             {SERVICES.map((s, i) => {
               const img = demoImageForSlug(s.slug);
               return (
@@ -90,8 +90,8 @@ export default function ServicesPage() {
                       </div>
                     </div>
                   )}
-                  <div className="p-6">
-                    <h2 className="text-2xl md:text-3xl mb-3 group-hover:text-gold-dark transition-colors">{s.title}</h2>
+                  <div className="p-5 sm:p-6">
+                    <h2 className="text-xl sm:text-2xl md:text-3xl mb-3 group-hover:text-gold-dark transition-colors">{s.title}</h2>
                     <p className="text-charcoal/70 leading-relaxed text-sm">{s.body}</p>
                     <span className="mt-4 inline-flex items-center gap-2 text-xs uppercase tracking-widest text-gold-dark">
                       Bekijk werk <ArrowRight size={14} />
@@ -104,17 +104,17 @@ export default function ServicesPage() {
         </div>
       </section>
 
-      <section className="relative bg-section-blush py-20 overflow-hidden">
+      <section className="relative bg-section-blush section-y overflow-hidden">
         <BotanicalPattern opacity={0.05} />
-        <BotanicalCorner position="tl" size={140} color="text-gold/30" />
-        <BotanicalCorner position="br" size={140} color="text-gold/30" />
+        <BotanicalCorner position="tl" color="text-gold/30" />
+        <BotanicalCorner position="br" color="text-gold/30" />
         <div className="container-narrow relative text-center">
-          <div className="script-accent text-5xl mb-4 leading-none">Klaar om te bestellen?</div>
-          <p className="text-charcoal/70 mb-8 leading-relaxed">
+          <div className="script-accent text-4xl sm:text-5xl mb-4 leading-none">Klaar om te bestellen?</div>
+          <p className="text-charcoal/70 mb-8 leading-relaxed text-sm sm:text-base">
             Laat ons jouw idee horen. We werken samen aan een ontwerp dat helemaal bij jouw moment past.
           </p>
           <Link href="/contact" className="btn-gold">Vraag een offerte aan</Link>
-          <div className="mt-10"><GoldDivider /></div>
+          <div className="mt-8 sm:mt-10"><GoldDivider /></div>
         </div>
       </section>
     </>

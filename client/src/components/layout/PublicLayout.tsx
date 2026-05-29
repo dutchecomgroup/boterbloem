@@ -23,10 +23,10 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen flex flex-col bg-cream">
       <header className="sticky top-0 z-40 bg-cream/90 backdrop-blur-md border-b border-charcoal/5">
-        <div className="container-tight flex items-center justify-between h-20">
-          <Link href="/" className="flex items-baseline gap-2 group">
-            <span className="font-display text-2xl tracking-tight">Atelier</span>
-            <span className="script-accent text-3xl leading-none -mt-1">Boterbloem</span>
+        <div className="container-tight flex items-center justify-between h-16 sm:h-20">
+          <Link href="/" className="flex items-baseline gap-1 sm:gap-2 group">
+            <span className="font-display text-xl sm:text-2xl tracking-tight">Atelier</span>
+            <span className="script-accent text-2xl sm:text-3xl leading-none -mt-1">Boterbloem</span>
           </Link>
           <nav className="hidden md:flex items-center gap-8">
             {NAV.map((item) => {
@@ -52,30 +52,30 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
             })}
             <Link href="/contact" className="btn-gold !py-2 !px-5 text-xs">Offerte aanvragen</Link>
           </nav>
-          <button className="md:hidden p-2" onClick={() => setOpen(true)} aria-label="Menu openen">
+          <button className="md:hidden p-2 -mr-2 min-h-[44px] min-w-[44px] flex items-center justify-center" onClick={() => setOpen(true)} aria-label="Menu openen">
             <Menu size={24} />
           </button>
         </div>
         {open && (
-          <div className="md:hidden fixed inset-0 bg-cream z-50">
-            <div className="container-tight flex items-center justify-between h-20">
-              <span className="font-display text-2xl">Atelier <span className="script-accent text-3xl">Boterbloem</span></span>
-              <button className="p-2" onClick={() => setOpen(false)} aria-label="Menu sluiten">
+          <div className="md:hidden fixed inset-0 bg-cream z-50 overflow-y-auto">
+            <div className="container-tight flex items-center justify-between h-16 sm:h-20 border-b border-charcoal/5">
+              <span className="font-display text-xl">Atelier <span className="script-accent text-2xl">Boterbloem</span></span>
+              <button className="p-2 -mr-2 min-h-[44px] min-w-[44px] flex items-center justify-center" onClick={() => setOpen(false)} aria-label="Menu sluiten">
                 <X size={24} />
               </button>
             </div>
-            <nav className="container-tight flex flex-col gap-6 mt-12">
+            <nav className="container-tight flex flex-col gap-1 mt-8">
               {NAV.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
                   onClick={() => setOpen(false)}
-                  className="text-2xl font-display tracking-tight"
+                  className="text-2xl font-display tracking-tight py-4 border-b border-charcoal/5"
                 >
                   {item.label}
                 </Link>
               ))}
-              <Link href="/contact" onClick={() => setOpen(false)} className="btn-gold mt-4 w-fit">
+              <Link href="/contact" onClick={() => setOpen(false)} className="btn-gold mt-8 w-fit">
                 Offerte aanvragen
               </Link>
             </nav>
@@ -85,9 +85,9 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
 
       <main className="flex-1">{children}</main>
 
-      <footer className="relative bg-charcoal text-cream mt-24 overflow-hidden">
+      <footer className="relative bg-charcoal text-cream mt-16 sm:mt-24 overflow-hidden">
         <BotanicalPattern opacity={0.06} className="text-cream" />
-        <div className="container-tight relative py-16 grid gap-12 md:grid-cols-3">
+        <div className="container-tight relative py-10 sm:py-16 grid gap-8 sm:gap-12 md:grid-cols-3">
           <div>
             <div className="font-display text-2xl">Atelier <span className="script-accent text-3xl">Boterbloem</span></div>
             <p className="mt-4 text-cream/70 text-sm leading-relaxed max-w-xs">
