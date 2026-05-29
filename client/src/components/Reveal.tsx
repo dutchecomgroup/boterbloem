@@ -1,33 +1,61 @@
 import { ReactNode } from "react";
-import { useReveal } from "../hooks/useReveal";
+import { motion, type Variants } from "motion/react";
 import { cn } from "../lib/utils";
 
 interface Props {
   children: ReactNode;
   className?: string;
-  /** Delay in ms before the reveal kicks in (for staggered effects). */
   delay?: number;
-  /** Override the threshold for intersection. */
-  threshold?: number;
-  /** Use a different HTML tag (default div). */
-  as?: "div" | "section" | "article";
+  /** Stagger child motion elements with this gap (s). Children must be motion.* */
+  staggerChildren?: number;
+  as?: "div" | "section" | "article" | "ul";
+  /** Lift in px. Default 12 — editorial-rustig. */
+  lift?: number;
 }
 
-/** Subtle fade + 8px lift when scrolled into view. */
-export function Reveal({ children, className, delay = 0, threshold = 0.15, as = "div" }: Props) {
-  const { ref, visible } = useReveal<HTMLDivElement>(threshold);
-  const Tag = as as "div";
+/** Editorial fade + lift on enter view (one-shot). Respects prefers-reduced-motion. */
+export function Reveal({
+  children,
+  className,
+  delay = 0,
+  staggerChildren,
+  as = "div",
+  lift = 12,
+}: Props) {
+  const variants: Variants = {
+    hidden: { opacity: 0, y: lift },
+    show: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.7,
+        ease: [0.22, 1, 0.36, 1],
+        delay: delay / 1000,
+        ...(staggerChildren ? { staggerChildren, delayChildren: delay / 1000 } : {}),
+      },
+    },
+  };
+
+  const Tag = motion[as as "div"];
+
   return (
     <Tag
-      ref={ref}
-      className={cn(
-        "transition-all duration-700 ease-out",
-        visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2",
-        className,
-      )}
-      style={{ transitionDelay: visible ? `${delay}ms` : "0ms" }}
+      className={cn(className)}
+      initial="hidden"
+      whileInView="show"
+      viewport={{ once: true, margin: "0px 0px -10% 0px" }}
+      variants={variants}
     >
       {children}
     </Tag>
   );
 }
+
+export const childReveal: Variants = {
+  hidden: { opacity: 0, y: 12 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] },
+  },
+};

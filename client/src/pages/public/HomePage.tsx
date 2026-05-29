@@ -10,7 +10,13 @@ import { BotanicalPattern } from "../../components/ornaments/BotanicalPattern";
 import { FloralFrame } from "../../components/ornaments/FloralFrame";
 import { GoldDivider } from "../../components/ornaments/GoldDivider";
 import { BotanicalCorner } from "../../components/ornaments/BotanicalCorner";
+import { SectionDivider } from "../../components/ornaments/SectionDivider";
 import { Reveal } from "../../components/Reveal";
+import { SplitText } from "../../components/SplitText";
+import { Marquee } from "../../components/Marquee";
+import { MagneticLink } from "../../components/MagneticLink";
+import { MouseSpotlight } from "../../components/MouseSpotlight";
+import { ProcessStory, type ProcessStep } from "../../components/ProcessStory";
 
 interface GalleryResponse {
   items: GalleryItem[];
@@ -94,6 +100,18 @@ function HeroCarousel({ items }: { items: GalleryItem[] }) {
   );
 }
 
+const MARQUEE_TAGS = [
+  "Bruidstaarten",
+  "Mini desserts",
+  "Verjaardagstaarten",
+  "Doopsuiker",
+  "Sweet tables",
+  "Macarons",
+  "Cupcakes",
+  "Babyshowers",
+  "Op maat",
+];
+
 const SERVICE_PREVIEWS = [
   { slug: "bruidstaarten", title: "Bruidstaarten", body: "Een centrepiece dat het verhaal van jullie dag vertelt — vanaf het ontwerp tot de laatste suikerbloem." },
   { slug: "verjaardagstaarten", title: "Verjaardagstaarten", body: "Persoonlijk, smaakvol en altijd met dat ene detail dat het bijzonder maakt." },
@@ -137,10 +155,43 @@ export default function HomePage() {
   const igItems = items.slice(0, 6);
   const spotlightItem = featured[0] ?? items[0] ?? DEMO_ITEMS[0];
 
+  // Process steps: 4 stappen, gebruik demo-images per categorie
+  const processSteps: ProcessStep[] = [
+    {
+      n: "01",
+      title: "Aanvraag",
+      body:
+        "Vertel ons over jouw moment: type evenement, datum, sfeer en aantal gasten. Wij denken meteen mee.",
+      imageSrc: demoImageForSlug("mini-desserts") ?? imageSrc(items[2] ?? DEMO_ITEMS[6]),
+    },
+    {
+      n: "02",
+      title: "Ontwerp",
+      body:
+        "Een persoonlijk gesprek, smaakopties en een handgetekende schets. Niets is gemaakt voor het ontwerp klopt.",
+      imageSrc: demoImageForSlug("cupcakes") ?? imageSrc(items[3] ?? DEMO_ITEMS[8]),
+    },
+    {
+      n: "03",
+      title: "Bakken",
+      body:
+        "Met de hand opgebouwd, vers vlak voor jouw dag. Iedere suikerbloem, iedere laag — gemaakt zoals het hoort.",
+      imageSrc: demoImageForSlug("bruidstaarten") ?? imageSrc(items[0] ?? DEMO_ITEMS[0]),
+    },
+    {
+      n: "04",
+      title: "Levering",
+      body:
+        "Wij brengen of bouwen op. Jij geniet van het moment terwijl iedere gast zegt: wow, kijk dat.",
+      imageSrc: demoImageForSlug("party-setups") ?? imageSrc(items[4] ?? DEMO_ITEMS[10]),
+    },
+  ];
+
   return (
     <>
-      {/* Hero */}
+      {/* ========== HERO ========== */}
       <section className="relative overflow-hidden bg-section-warm">
+        <MouseSpotlight />
         <BotanicalPattern opacity={0.05} />
         <FloralFrame className="absolute -top-8 -right-8 md:-top-12 md:-right-12 w-32 sm:w-56 md:w-80 h-32 sm:h-56 md:h-80" color="text-gold/20" />
         <FloralFrame className="absolute -bottom-8 -left-8 md:-bottom-12 md:-left-12 rotate-180 w-24 sm:w-40 md:w-64 h-24 sm:h-40 md:h-64" color="text-blush" />
@@ -150,35 +201,53 @@ export default function HomePage() {
             <div className="relative text-center lg:text-left">
               <div className="tag mb-4 sm:mb-6">Patisserie · Op maat</div>
               <h1 className="text-4xl sm:text-5xl md:text-6xl leading-[1.05]">
-                <span className="block">Atelier</span>
-                <span className="script-accent text-5xl sm:text-7xl md:text-8xl block leading-none -mt-1 sm:-mt-2">
-                  Boterbloem
-                </span>
+                <SplitText
+                  text="Atelier"
+                  as="span"
+                  by="char"
+                  stagger={40}
+                  className="block"
+                />
+                <SplitText
+                  text="Boterbloem"
+                  as="span"
+                  by="char"
+                  stagger={40}
+                  delay={400}
+                  className="script-accent text-5xl sm:text-7xl md:text-8xl block leading-none -mt-1 sm:-mt-2"
+                />
               </h1>
-              <div className="mt-4 mb-4 sm:mt-6 sm:mb-6"><GoldDivider className="!mx-auto lg:!mx-0 !max-w-[180px]" /></div>
-              <p className="text-base sm:text-lg text-charcoal/75 max-w-xl leading-relaxed mx-auto lg:mx-0">
-                {hero?.tagline ??
-                  "Handgemaakte taarten voor jouw mooiste momenten — bruiloften, verjaardagen, en alles daartussen."}
-              </p>
-              <div className="mt-6 sm:mt-10 flex flex-wrap gap-3 sm:gap-4 justify-center lg:justify-start">
-                <Link href={hero?.ctaHref ?? "/contact"} className="btn-gold">
+              <Reveal delay={1200} className="mt-4 mb-4 sm:mt-6 sm:mb-6">
+                <GoldDivider className="!mx-auto lg:!mx-0 !max-w-[180px]" />
+              </Reveal>
+              <Reveal delay={1300}>
+                <p className="text-base sm:text-lg text-charcoal/75 max-w-xl leading-relaxed mx-auto lg:mx-0">
+                  {hero?.tagline ??
+                    "Handgemaakte taarten voor jouw mooiste momenten — bruiloften, verjaardagen, en alles daartussen."}
+                </p>
+              </Reveal>
+              <Reveal delay={1450} className="mt-6 sm:mt-10 flex flex-wrap gap-3 sm:gap-4 justify-center lg:justify-start">
+                <MagneticLink href={hero?.ctaHref ?? "/contact"} className="btn-gold">
                   {hero?.ctaLabel ?? "Vraag offerte aan"}
-                </Link>
+                </MagneticLink>
                 <Link href="/galerij" className="btn-outline">
                   Bekijk de galerij
                 </Link>
-              </div>
+              </Reveal>
             </div>
 
-            <div className="relative max-w-md mx-auto lg:max-w-none w-full">
+            <Reveal delay={500} className="relative max-w-md mx-auto lg:max-w-none w-full">
               <div className="absolute -inset-6 -z-10 bg-gradient-to-br from-gold/10 via-transparent to-blush/20 rounded-[2rem] blur-2xl" />
               <HeroCarousel items={carouselItems} />
-            </div>
+            </Reveal>
           </div>
         </div>
       </section>
 
-      {/* Mission */}
+      {/* ========== MARQUEE ========== */}
+      <Marquee items={MARQUEE_TAGS} duration={50} />
+
+      {/* ========== MISSION ========== */}
       <Reveal as="section" className="relative bg-section-blush overflow-hidden section-y">
         <BotanicalPattern opacity={0.06} />
         <BotanicalCorner position="tl" color="text-gold/30" />
@@ -194,49 +263,15 @@ export default function HomePage() {
         </div>
       </Reveal>
 
-      {/* Featured grid */}
-      <Reveal as="section" className="relative section-y bg-section-butter overflow-hidden">
-        <BotanicalPattern opacity={0.04} />
-        <div className="container-tight relative">
-          <div className="flex items-end justify-between mb-8 sm:mb-12">
-            <div>
-              <div className="tag mb-3">Onze creaties</div>
-              <h2 className="text-3xl sm:text-4xl md:text-5xl">Uitgelicht werk</h2>
-            </div>
-            <Link
-              href="/galerij"
-              className="hidden md:inline-flex items-center gap-2 text-sm uppercase tracking-widest text-charcoal/60 hover:text-gold-dark"
-            >
-              Alle creaties <ArrowRight size={16} />
-            </Link>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
-            {gridFeatured.map((item) => (
-              <Link
-                key={item.id}
-                href="/galerij"
-                className="group relative aspect-square overflow-hidden rounded-lg bg-white shadow-sm ring-1 ring-gold/10"
-              >
-                <img
-                  src={imageSrc(item)}
-                  alt={item.altText ?? ""}
-                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                  loading="lazy"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-charcoal/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                {item.caption && (
-                  <div className="absolute bottom-3 left-3 right-3 text-cream text-xs opacity-0 group-hover:opacity-100 transition-opacity drop-shadow">
-                    {item.caption}
-                  </div>
-                )}
-              </Link>
-            ))}
-          </div>
-        </div>
-      </Reveal>
+      <SectionDivider color="fill-blush" variant="wave" />
 
-      {/* Editorial spotlight */}
-      <Reveal as="section" className="relative section-y bg-cream overflow-hidden">
+      {/* ========== PROCESS STORY (sticky scroll) ========== */}
+      <ProcessStory steps={processSteps} />
+
+      <SectionDivider color="fill-cream" variant="asymmetric" flip />
+
+      {/* ========== EDITORIAL SPOTLIGHT ========== */}
+      <Reveal as="section" className="relative section-y bg-section-butter overflow-hidden">
         <BotanicalPattern opacity={0.04} />
         <FloralFrame className="absolute top-0 right-0 w-32 sm:w-48 md:w-64 h-32 sm:h-48 md:h-64 opacity-50" color="text-gold/20" />
         <div className="container-tight relative">
@@ -277,7 +312,50 @@ export default function HomePage() {
         </div>
       </Reveal>
 
-      {/* Diensten preview */}
+      {/* ========== FEATURED GRID ========== */}
+      <Reveal as="section" className="relative section-y bg-cream overflow-hidden">
+        <BotanicalPattern opacity={0.04} />
+        <div className="container-tight relative">
+          <div className="flex items-end justify-between mb-8 sm:mb-12">
+            <div>
+              <div className="tag mb-3">Onze creaties</div>
+              <h2 className="text-3xl sm:text-4xl md:text-5xl">Uitgelicht werk</h2>
+            </div>
+            <Link
+              href="/galerij"
+              className="hidden md:inline-flex items-center gap-2 text-sm uppercase tracking-widest text-charcoal/60 hover:text-gold-dark"
+            >
+              Alle creaties <ArrowRight size={16} />
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+            {gridFeatured.map((item) => (
+              <Link
+                key={item.id}
+                href="/galerij"
+                className="group relative aspect-square overflow-hidden rounded-lg bg-white shadow-sm ring-1 ring-gold/10"
+              >
+                <img
+                  src={imageSrc(item)}
+                  alt={item.altText ?? ""}
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  loading="lazy"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-charcoal/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                {item.caption && (
+                  <div className="absolute bottom-3 left-3 right-3 text-cream text-xs opacity-0 group-hover:opacity-100 transition-opacity drop-shadow">
+                    {item.caption}
+                  </div>
+                )}
+              </Link>
+            ))}
+          </div>
+        </div>
+      </Reveal>
+
+      <SectionDivider color="fill-cream" variant="scallop" />
+
+      {/* ========== DIENSTEN PREVIEW ========== */}
       <Reveal as="section" className="relative section-y bg-section-warm overflow-hidden">
         <BotanicalPattern opacity={0.04} />
         <div className="container-tight relative">
@@ -323,8 +401,10 @@ export default function HomePage() {
         </div>
       </Reveal>
 
-      {/* Testimonials */}
-      <Reveal as="section" className="relative section-y bg-section-blush overflow-hidden">
+      <SectionDivider color="fill-blush" variant="wave" flip />
+
+      {/* ========== TESTIMONIALS ========== */}
+      <Reveal as="section" className="relative section-y bg-section-blush overflow-hidden" staggerChildren={0.12}>
         <BotanicalPattern opacity={0.05} />
         <BotanicalCorner position="tl" color="text-gold/30" />
         <BotanicalCorner position="br" color="text-gold/30" />
@@ -355,7 +435,9 @@ export default function HomePage() {
         </div>
       </Reveal>
 
-      {/* Instagram-style grid */}
+      <SectionDivider color="fill-blush" variant="asymmetric" />
+
+      {/* ========== INSTAGRAM GRID ========== */}
       <Reveal as="section" className="relative section-y bg-cream overflow-hidden">
         <BotanicalPattern opacity={0.04} />
         <div className="container-tight relative">
@@ -397,7 +479,7 @@ export default function HomePage() {
         </div>
       </Reveal>
 
-      {/* CTA strip */}
+      {/* ========== CTA STRIP ========== */}
       <Reveal as="section" className="relative section-y bg-charcoal text-cream overflow-hidden">
         <BotanicalPattern opacity={0.06} className="text-cream" />
         <div className="container-narrow relative text-center">
@@ -407,7 +489,7 @@ export default function HomePage() {
           <p className="text-cream/70 mb-8 leading-relaxed text-sm sm:text-base">
             Of het nu een bruiloft, verjaardag of een doopfeest is — vertel ons over jouw moment en we ontwerpen iets unieks.
           </p>
-          <Link href="/contact" className="btn-gold">Stuur een bericht</Link>
+          <MagneticLink href="/contact" className="btn-gold">Stuur een bericht</MagneticLink>
           <div className="mt-8 sm:mt-10"><GoldDivider className="!text-gold/60" /></div>
         </div>
       </Reveal>

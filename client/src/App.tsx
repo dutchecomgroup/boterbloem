@@ -15,6 +15,8 @@ import GalleryAdminPage from "./pages/admin/GalleryAdminPage";
 import ContactRequestsPage from "./pages/admin/ContactRequestsPage";
 import SettingsPage from "./pages/admin/SettingsPage";
 import { useAuth } from "./hooks/useAuth";
+import { useLenis } from "./hooks/useLenis";
+import { PageTransition } from "./components/PageTransition";
 
 function ProtectedAdmin({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -30,6 +32,7 @@ function ProtectedAdmin({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
+  useLenis();
   return (
     <Switch>
       <Route path="/admin/login" component={LoginPage} />
@@ -57,20 +60,22 @@ export default function App() {
 
       <Route>
         <PublicLayout>
-          <Switch>
-            <Route path="/" component={HomePage} />
-            <Route path="/galerij" component={GalleryPage} />
-            <Route path="/galerij/:slug" component={GalleryPage} />
-            <Route path="/diensten" component={ServicesPage} />
-            <Route path="/over" component={AboutPage} />
-            <Route path="/contact" component={ContactPage} />
-            <Route>
-              <div className="container-tight py-32 text-center">
-                <h1 className="text-4xl mb-4">Pagina niet gevonden</h1>
-                <a href="/" className="text-gold underline">Terug naar home</a>
-              </div>
-            </Route>
-          </Switch>
+          <PageTransition>
+            <Switch>
+              <Route path="/" component={HomePage} />
+              <Route path="/galerij" component={GalleryPage} />
+              <Route path="/galerij/:slug" component={GalleryPage} />
+              <Route path="/diensten" component={ServicesPage} />
+              <Route path="/over" component={AboutPage} />
+              <Route path="/contact" component={ContactPage} />
+              <Route>
+                <div className="container-tight py-32 text-center">
+                  <h1 className="text-4xl mb-4">Pagina niet gevonden</h1>
+                  <a href="/" className="text-gold underline">Terug naar home</a>
+                </div>
+              </Route>
+            </Switch>
+          </PageTransition>
         </PublicLayout>
       </Route>
     </Switch>
