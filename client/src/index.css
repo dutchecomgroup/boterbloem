@@ -49,4 +49,35 @@
   .script-accent {
     @apply font-script text-gold;
   }
+  /* Section labels — gold uppercase tag */
+  .tag {
+    @apply text-xs uppercase tracking-[0.3em] text-gold-dark font-medium;
+  }
+  /* Soft section gradients */
+  .bg-section-cream {
+    background: radial-gradient(ellipse at top, #FFF9EF 0%, #FBF6EE 60%);
+  }
+  .bg-section-blush {
+    background: linear-gradient(180deg, #FBF6EE 0%, #F4D9D0 60%, #FBF6EE 100%);
+  }
+  .bg-section-butter {
+    background: linear-gradient(180deg, #FBF6EE 0%, #FDF1C7 50%, #FBF6EE 100%);
+  }
+  .bg-section-warm {
+    background: linear-gradient(135deg, #FBF6EE 0%, #F4D9D0 50%, #FDF1C7 100%);
+  }
+  /* Filter pills */
+  .pill {
+    @apply px-4 py-2 rounded-full text-xs uppercase tracking-widest transition border;
+  }
+  .pill-active {
+    @apply bg-gold text-cream border-gold shadow-sm;
+  }
+  .pill-inactive {
+    @apply bg-white text-charcoal/60 border-gold/30 hover:text-charcoal hover:border-gold;
+  }
+  /* Hairline gold border */
+  .hairline-gold {
+    @apply border border-gold/30;
+  }
 }

@@ -3,6 +3,8 @@ import { useState } from "react";
 import { Menu, X, Instagram } from "lucide-react";
 import { usePublicSettings } from "../../hooks/usePublicSettings";
 import { cn } from "../../lib/utils";
+import { BotanicalPattern } from "../ornaments/BotanicalPattern";
+import { GoldDivider } from "../ornaments/GoldDivider";
 
 const NAV = [
   { href: "/", label: "Home" },
@@ -34,11 +36,17 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    "text-sm uppercase tracking-widest transition-colors",
+                    "relative text-sm uppercase tracking-widest transition-colors group/nav",
                     active ? "text-gold-dark" : "text-charcoal/70 hover:text-charcoal",
                   )}
                 >
                   {item.label}
+                  <span
+                    className={cn(
+                      "absolute -bottom-2 left-1/2 -translate-x-1/2 h-px bg-gold transition-all duration-300",
+                      active ? "w-8 opacity-100" : "w-0 opacity-0 group-hover/nav:w-6 group-hover/nav:opacity-70",
+                    )}
+                  />
                 </Link>
               );
             })}
@@ -77,8 +85,9 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
 
       <main className="flex-1">{children}</main>
 
-      <footer className="bg-charcoal text-cream mt-24">
-        <div className="container-tight py-16 grid gap-12 md:grid-cols-3">
+      <footer className="relative bg-charcoal text-cream mt-24 overflow-hidden">
+        <BotanicalPattern opacity={0.06} className="text-cream" />
+        <div className="container-tight relative py-16 grid gap-12 md:grid-cols-3">
           <div>
             <div className="font-display text-2xl">Atelier <span className="script-accent text-3xl">Boterbloem</span></div>
             <p className="mt-4 text-cream/70 text-sm leading-relaxed max-w-xs">
@@ -105,8 +114,13 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
             </a>
           </div>
         </div>
-        <div className="border-t border-cream/10 py-6 text-center text-xs text-cream/40">
-          © {new Date().getFullYear()} Atelier Boterbloem. Alle rechten voorbehouden.
+        <div className="relative">
+          <div className="container-tight">
+            <GoldDivider className="!text-gold/40 py-4" />
+          </div>
+          <div className="py-6 text-center text-xs text-cream/40 relative">
+            © {new Date().getFullYear()} Atelier Boterbloem. Alle rechten voorbehouden.
+          </div>
         </div>
       </footer>
     </div>
