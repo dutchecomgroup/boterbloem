@@ -2,8 +2,9 @@ module.exports = {
   apps: [
     {
       name: "atelierboterbloem",
-      script: "./dist/server/index.js",
       cwd: __dirname,
+      script: "node_modules/tsx/dist/cli.mjs",
+      args: "server/index.ts",
       instances: 1,
       exec_mode: "fork",
       env: {
