@@ -54,7 +54,7 @@ Admin (sessie vereist):
 ## Deploy (VPS)
 
 Zie `docs/deployment.md`. Korte versie:
-1. `git pull` op `/var/www/vhosts/atelierboterbloem/httpdocs/`
+1. `git pull` op `/projects/atelierboterbloem/`
 2. `npm ci && npm run build`
 3. `npm run db:push` (als schema veranderd)
 4. `pm2 reload atelierboterbloem`

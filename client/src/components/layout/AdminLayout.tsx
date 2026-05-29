@@ -47,7 +47,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
         </nav>
         <div className="p-4 border-t border-charcoal/10">
           <div className="text-xs text-charcoal/50 mb-2">Ingelogd als</div>
-          <div className="text-sm font-medium truncate">{user?.name || user?.email}</div>
+          <div className="text-sm font-medium truncate">{user?.name || user?.username}</div>
           <button
             onClick={() => logout.mutate(undefined, { onSuccess: () => setLocation("/admin/login") })}
             className="mt-3 inline-flex items-center gap-2 text-xs text-charcoal/60 hover:text-charcoal"

@@ -15,12 +15,12 @@ export async function verifyPassword(plain: string, hash: string): Promise<boole
 declare module "express-session" {
   interface SessionData {
     userId?: number;
-    userEmail?: string;
+    username?: string;
   }
 }
 
 export interface AuthedRequest extends Request {
-  user?: Pick<User, "id" | "email" | "name" | "role">;
+  user?: Pick<User, "id" | "username" | "name" | "role">;
 }
 
 export function requireAuth(req: AuthedRequest, res: Response, next: NextFunction) {

@@ -73,27 +73,43 @@ async function ensureSiteSettings() {
 }
 
 async function main() {
-  const rl = readline.createInterface({ input, output });
-  console.log("\n=== Atelier Boterbloem — admin seeding ===\n");
-  const email = (await rl.question("Admin email: ")).trim().toLowerCase();
-  const name = (await rl.question("Naam (optioneel): ")).trim();
-  const password = await rl.question("Wachtwoord (min 10 tekens): ");
-  rl.close();
+  // Allow non-interactive run via env vars (CI / scripted).
+  const envUsername = process.env.ADMIN_USERNAME;
+  const envName = process.env.ADMIN_NAME;
+  const envPassword = process.env.ADMIN_PASSWORD;
 
-  if (!email || !password || password.length < 10) {
-    console.error("Email en wachtwoord (>=10 tekens) zijn verplicht.");
+  let username: string;
+  let name: string;
+  let password: string;
+
+  if (envUsername && envPassword) {
+    username = envUsername.trim().toLowerCase();
+    name = (envName ?? "").trim();
+    password = envPassword;
+    console.log(`\n=== Atelier Boterbloem — admin seeding (non-interactive) ===\nGebruikersnaam: ${username}\n`);
+  } else {
+    const rl = readline.createInterface({ input, output });
+    console.log("\n=== Atelier Boterbloem — admin seeding ===\n");
+    username = (await rl.question("Gebruikersnaam: ")).trim().toLowerCase();
+    name = (await rl.question("Naam (optioneel): ")).trim();
+    password = await rl.question("Wachtwoord (min 10 tekens): ");
+    rl.close();
+  }
+
+  if (!username || !password || password.length < 10) {
+    console.error("Gebruikersnaam en wachtwoord (>=10 tekens) zijn verplicht.");
     process.exit(1);
   }
 
-  const existing = await db.select().from(users).where(eq(users.email, email)).limit(1);
+  const existing = await db.select().from(users).where(eq(users.username, username)).limit(1);
   const passwordHash = await hashPassword(password);
 
   if (existing.length) {
     await db.update(users).set({ passwordHash, name: name || existing[0].name }).where(eq(users.id, existing[0].id));
-    console.log(`✓ Bestaande gebruiker '${email}' bijgewerkt (nieuw wachtwoord).`);
+    console.log(`✓ Bestaande gebruiker '${username}' bijgewerkt (nieuw wachtwoord).`);
   } else {
-    await db.insert(users).values({ email, passwordHash, name: name || null, role: "admin" });
-    console.log(`✓ Nieuwe admin '${email}' aangemaakt.`);
+    await db.insert(users).values({ username, passwordHash, name: name || null, role: "admin" });
+    console.log(`✓ Nieuwe admin '${username}' aangemaakt.`);
   }
 
   console.log("Galerij-categorieën seeden...");

@@ -64,13 +64,13 @@ export const sessions = pgTable("sessions", {
 
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
-  email: varchar("email", { length: 255 }).notNull(),
+  username: varchar("username", { length: 120 }).notNull(),
   passwordHash: varchar("password_hash", { length: 255 }).notNull(),
   name: varchar("name", { length: 120 }),
   role: varchar("role", { length: 32 }).notNull().default("admin"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 }, (table) => ({
-  emailIdx: uniqueIndex("users_email_unique").on(table.email),
+  usernameIdx: uniqueIndex("users_username_unique").on(table.username),
 }));
 
 // ---------- Customers ----------

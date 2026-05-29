@@ -3,7 +3,7 @@ import { api } from "../lib/api";
 
 export interface AdminUser {
   id: number;
-  email: string;
+  username: string;
   name: string | null;
   role: string;
 }
@@ -24,7 +24,7 @@ export function useAuth() {
   });
 
   const login = useMutation({
-    mutationFn: (creds: { email: string; password: string }) =>
+    mutationFn: (creds: { username: string; password: string }) =>
       api.post<AdminUser>("/api/admin/auth/login", creds),
     onSuccess: (user) => qc.setQueryData(["auth", "me"], user),
   });

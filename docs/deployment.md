@@ -49,10 +49,10 @@ EOF
 ### 4. App folder
 
 ```bash
-mkdir -p /var/www/vhosts/atelierboterbloem
-cd /var/www/vhosts/atelierboterbloem
-git clone github-abb:dutchecomgroup/boterbloem.git httpdocs
-cd httpdocs
+mkdir -p /projects
+cd /projects
+git clone github-abb:dutchecomgroup/boterbloem.git atelierboterbloem
+cd atelierboterbloem
 mkdir -p uploads/gallery logs
 
 cp .env.example .env
@@ -74,7 +74,7 @@ pm2 startup    # volg de output
 ## Updates uitrollen
 
 ```bash
-cd /var/www/vhosts/atelierboterbloem/httpdocs
+cd /projects/atelierboterbloem
 git pull
 npm ci
 npm run db:push      # alleen als schema veranderd
@@ -97,5 +97,6 @@ pm2 monit
 pg_dump -U abb_app atelierboterbloem | gzip > ~/backups/abb-$(date +%F).sql.gz
 
 # Uploads:
-tar czf ~/backups/abb-uploads-$(date +%F).tar.gz /var/www/vhosts/atelierboterbloem/httpdocs/uploads
+tar czf ~/backups/abb-uploads-$(date +%F).tar.gz /projects/atelierboterbloem/uploads
+```
 ```

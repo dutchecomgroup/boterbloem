@@ -6,7 +6,7 @@ import { ApiError } from "../../lib/api";
 export default function LoginPage() {
   const [, setLocation] = useLocation();
   const { login } = useAuth();
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
 
@@ -14,7 +14,7 @@ export default function LoginPage() {
     e.preventDefault();
     setError(null);
     try {
-      await login.mutateAsync({ email, password });
+      await login.mutateAsync({ username: username.trim().toLowerCase(), password });
       setLocation("/admin");
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Inloggen mislukt");
@@ -31,14 +31,14 @@ export default function LoginPage() {
         </div>
         <form onSubmit={onSubmit} className="space-y-4">
           <div>
-            <label className="label">E-mail</label>
+            <label className="label">Gebruikersnaam</label>
             <input
               className="input"
-              type="email"
+              type="text"
               autoFocus
               autoComplete="username"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               required
             />
           </div>
