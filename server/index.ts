@@ -55,7 +55,7 @@ app.use("/api/admin", adminRouter);
 
 // --- Static client (production build) ---
 if (isProd) {
-  const clientDist = path.resolve(__dirname, "../client");
+  const clientDist = path.resolve(__dirname, "..", "dist", "client");
   app.use(express.static(clientDist));
   app.get("*", (req, res, next) => {
     if (req.path.startsWith("/api") || req.path.startsWith("/uploads")) return next();
