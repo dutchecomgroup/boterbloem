@@ -1,5 +1,5 @@
-import { useRef } from "react";
-import { motion, useScroll, useTransform } from "motion/react";
+import { useRef, useState, useEffect } from "react";
+import { motion, useScroll, useTransform, useMotionValueEvent, type MotionValue } from "motion/react";
 import { Reveal } from "./Reveal";
 import { GoldDivider } from "./ornaments/GoldDivider";
 import { cn } from "../lib/utils";
@@ -24,14 +24,15 @@ export function ProcessStory({ steps }: Props) {
   });
 
   const n = steps.length;
-  // Map scroll progress to an active step index (0..n-1)
-  const activeIdx = useTransform(scrollYProgress, (p) => {
-    const idx = Math.min(n - 1, Math.max(0, Math.floor(p * n)));
-    return idx;
+  const [activeIdx, setActiveIdx] = useState(0);
+
+  useMotionValueEvent(scrollYProgress, "change", (p) => {
+    const idx = Math.min(n - 1, Math.max(0, Math.floor(p * n + 0.0001)));
+    setActiveIdx(idx);
   });
 
   return (
-    <section className="relative bg-cream overflow-hidden">
+    <section className="relative bg-cream">
       {/* Section header */}
       <div className="container-tight pt-16 sm:pt-24 pb-8 sm:pb-12 text-center relative">
         <div className="tag mb-3">Het proces</div>
@@ -57,22 +58,31 @@ export function ProcessStory({ steps }: Props) {
       <div
         ref={sectionRef}
         className="hidden lg:block container-tight pb-20"
-        style={{ height: `${n * 80}vh` }}
+        style={{ height: `${n * 90}vh` }}
       >
-        <div className="grid grid-cols-2 gap-12 h-full">
+        <div className="grid grid-cols-2 gap-12 relative">
           {/* Sticky image column */}
-          <div className="sticky top-24 h-[calc(100vh-8rem)] flex items-center">
+          <div className="sticky top-24 h-[calc(100vh-8rem)] flex items-center self-start">
             <div className="relative aspect-[4/5] w-full max-w-md mx-auto rounded-2xl overflow-hidden shadow-2xl ring-1 ring-gold/20">
               {steps.map((s, i) => (
-                <ProcessImage key={i} idx={i} activeIdx={activeIdx} src={s.imageSrc} alt={s.title} />
+                <ProcessImage
+                  key={i}
+                  idx={i}
+                  total={n}
+                  scrollYProgress={scrollYProgress}
+                  src={s.imageSrc}
+                  alt={s.title}
+                />
               ))}
               <div className="pointer-events-none absolute inset-3 border border-cream/30 rounded-xl" />
-              <ProcessStepLabel activeIdx={activeIdx} steps={steps} />
+              <div className="absolute top-4 left-4 bg-cream/90 backdrop-blur px-3 py-1 rounded-full">
+                <span className="tag !text-[10px]">{steps[activeIdx]?.n} · {steps[activeIdx]?.title}</span>
+              </div>
             </div>
           </div>
 
           {/* Scrolling steps column */}
-          <div className="flex flex-col gap-[60vh] py-[20vh]">
+          <div className="flex flex-col gap-[55vh] py-[20vh]">
             {steps.map((s, i) => (
               <ProcessStepBlock key={i} step={s} idx={i} activeIdx={activeIdx} />
             ))}
@@ -85,59 +95,36 @@ export function ProcessStory({ steps }: Props) {
 
 function ProcessImage({
   idx,
-  activeIdx,
+  total,
+  scrollYProgress,
   src,
   alt,
 }: {
   idx: number;
-  activeIdx: ReturnType<typeof useTransform<number, number>>;
+  total: number;
+  scrollYProgress: MotionValue<number>;
   src: string;
   alt: string;
 }) {
-  const opacity = useTransform(activeIdx, (i) => (Math.round(i) === idx ? 1 : 0));
+  // First image visible at start; last image stays visible at end.
+  // Each image crossfades through its slot.
+  const slot = 1 / total;
+  const start = idx === 0 ? -1 : idx * slot - slot * 0.3;
+  const inLeft = idx === 0 ? -1 : idx * slot + slot * 0.1;
+  const inRight = idx === total - 1 ? 2 : (idx + 1) * slot - slot * 0.3;
+  const end = idx === total - 1 ? 2 : (idx + 1) * slot + slot * 0.1;
+
+  const opacity = useTransform(scrollYProgress, [start, inLeft, inRight, end], [0, 1, 1, 0]);
+
   return (
     <motion.img
       src={src}
       alt={alt}
       className="absolute inset-0 w-full h-full object-cover"
       style={{ opacity }}
-      loading="lazy"
+      loading={idx === 0 ? "eager" : "lazy"}
     />
   );
-}
-
-function ProcessStepLabel({
-  activeIdx,
-  steps,
-}: {
-  activeIdx: ReturnType<typeof useTransform<number, number>>;
-  steps: ProcessStep[];
-}) {
-  return (
-    <div className="absolute top-4 left-4 bg-cream/90 backdrop-blur px-3 py-1 rounded-full">
-      <motion.span
-        className="tag !text-[10px]"
-        style={{
-          // Re-render label only — use index to pick step
-        }}
-      >
-        <ProcessLabelText activeIdx={activeIdx} steps={steps} />
-      </motion.span>
-    </div>
-  );
-}
-
-function ProcessLabelText({
-  activeIdx,
-  steps,
-}: {
-  activeIdx: ReturnType<typeof useTransform<number, number>>;
-  steps: ProcessStep[];
-}) {
-  // Pull current step text via subscribing
-  // We just render based on rounded index — Motion will update via re-render when activeIdx changes.
-  const idx = Math.round(activeIdx.get());
-  return <span>{steps[idx]?.n} · {steps[idx]?.title}</span>;
 }
 
 function ProcessStepBlock({
@@ -147,18 +134,18 @@ function ProcessStepBlock({
 }: {
   step: ProcessStep;
   idx: number;
-  activeIdx: ReturnType<typeof useTransform<number, number>>;
+  activeIdx: number;
 }) {
-  const opacity = useTransform(activeIdx, (i) => {
-    const dist = Math.abs(i - idx);
-    return Math.max(0.25, 1 - dist * 0.55);
-  });
-  const scale = useTransform(activeIdx, (i) => (Math.round(i) === idx ? 1 : 0.97));
-
+  const isActive = idx === activeIdx;
+  const dist = Math.abs(idx - activeIdx);
   return (
     <motion.div
-      style={{ opacity, scale }}
-      className={cn("relative pl-8 border-l-2 border-gold/30")}
+      animate={{
+        opacity: Math.max(0.25, 1 - dist * 0.4),
+        scale: isActive ? 1 : 0.97,
+      }}
+      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+      className={cn("relative pl-8 border-l-2", isActive ? "border-gold" : "border-gold/30")}
     >
       <div className="script-accent text-5xl leading-none mb-3">{step.n}</div>
       <h3 className="text-3xl mb-3">{step.title}</h3>
