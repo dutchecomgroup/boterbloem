@@ -106,15 +106,31 @@ function ProcessImage({
   src: string;
   alt: string;
 }) {
-  // First image visible at start; last image stays visible at end.
-  // Each image crossfades through its slot.
+  // Build keyframe ranges in [0,1] that are strictly increasing.
   const slot = 1 / total;
-  const start = idx === 0 ? -1 : idx * slot - slot * 0.3;
-  const inLeft = idx === 0 ? -1 : idx * slot + slot * 0.1;
-  const inRight = idx === total - 1 ? 2 : (idx + 1) * slot - slot * 0.3;
-  const end = idx === total - 1 ? 2 : (idx + 1) * slot + slot * 0.1;
+  const fadeHalf = Math.min(0.05, slot * 0.4);
 
-  const opacity = useTransform(scrollYProgress, [start, inLeft, inRight, end], [0, 1, 1, 0]);
+  let inputs: number[];
+  let outputs: number[];
+  if (idx === 0) {
+    // visible from start, fade out at end of own slot
+    inputs = [0, (idx + 1) * slot - fadeHalf, (idx + 1) * slot + fadeHalf];
+    outputs = [1, 1, 0];
+  } else if (idx === total - 1) {
+    // fade in at start of own slot, visible to end
+    inputs = [idx * slot - fadeHalf, idx * slot + fadeHalf, 1];
+    outputs = [0, 1, 1];
+  } else {
+    inputs = [
+      idx * slot - fadeHalf,
+      idx * slot + fadeHalf,
+      (idx + 1) * slot - fadeHalf,
+      (idx + 1) * slot + fadeHalf,
+    ];
+    outputs = [0, 1, 1, 0];
+  }
+
+  const opacity = useTransform(scrollYProgress, inputs, outputs);
 
   return (
     <motion.img
