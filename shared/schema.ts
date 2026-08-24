@@ -4,6 +4,7 @@ import {
   text,
   varchar,
   timestamp,
+  time,
   integer,
   boolean,
   pgEnum,
@@ -97,10 +98,38 @@ export const products = pgTable("products", {
   basePrice: numeric("base_price", { precision: 10, scale: 2 }).notNull().default("0"),
   unit: varchar("unit", { length: 32 }).notNull().default("stuk"),
   active: boolean("active").notNull().default(true),
+  /** Zichtbaar op de publieke taart-prijslijst. Default false: bewust aanzetten. */
+  publicVisible: boolean("public_visible").notNull().default(false),
   sortOrder: integer("sort_order").notNull().default(0),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 }, (table) => ({
   slugIdx: uniqueIndex("products_slug_unique").on(table.slug),
+}));
+
+// ---------- Packages (sweet & grazing tables) ----------
+
+export const packages = pgTable("packages", {
+  id: serial("id").primaryKey(),
+  slug: varchar("slug", { length: 120 }).notNull(),
+  name: varchar("name", { length: 200 }).notNull(),
+  tagline: varchar("tagline", { length: 255 }),
+  description: text("description"),
+  /** Vanaf-prijs — een richtlijn, het pakket kan aangevuld worden. */
+  priceFrom: numeric("price_from", { precision: 10, scale: 2 }).notNull().default("0"),
+  /** "totaal" of "per_persoon" */
+  priceUnit: varchar("price_unit", { length: 32 }).notNull().default("totaal"),
+  personsMin: integer("persons_min"),
+  personsMax: integer("persons_max"),
+  /** Array van strings: wat zit er in het pakket. */
+  includes: jsonb("includes").$type<string[]>().notNull().default([]),
+  coverItemId: integer("cover_item_id"),
+  featured: boolean("featured").notNull().default(false),
+  /** Default false: pas zichtbaar als de prijzen bekend zijn. */
+  active: boolean("active").notNull().default(false),
+  sortOrder: integer("sort_order").notNull().default(0),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => ({
+  slugIdx: uniqueIndex("packages_slug_unique").on(table.slug),
 }));
 
 // ---------- Orders / Bookings ----------
@@ -115,12 +144,54 @@ export const orders = pgTable("orders", {
   depositAmount: numeric("deposit_amount", { precision: 10, scale: 2 }).notNull().default("0"),
   depositPaid: boolean("deposit_paid").notNull().default(false),
   paidAt: timestamp("paid_at"),
+  /** Tijd los van de datum, zodat "datum bekend, tijd nog niet" geldig blijft. */
+  eventTime: time("event_time"),
+  /** Hoe laat zij er moet zijn om op te bouwen — los van `eventTime`. */
+  setupTime: time("setup_time"),
+  location: text("location"),
+  /** `ABB-2026-001` — voor de offerte en om naar te verwijzen aan de telefoon. */
+  reference: varchar("reference", { length: 32 }),
+  packageId: integer("package_id").references(() => packages.id, { onDelete: "set null" }),
+  persons: integer("persons"),
+  /**
+   * Bewust een eigen veld en niet in `notes`: bij eten mag een allergie niet ondersneeuwen
+   * tussen "belt vrijdag over de kleuren".
+   */
+  allergies: text("allergies"),
+  theme: text("theme"),
+  /**
+   * `geen` | `laag` | `hoog` — zie `BTW_TARIEVEN`. Leeg betekent: volg de standaard uit
+   * `site_settings.btw`. Bewust geen kopie van het percentage: verandert het tarief ooit, dan
+   * hoeft een oude boeking niet mee te veranderen, maar een lopende wel.
+   */
+  vatRate: varchar("vat_rate", { length: 8 }),
   notes: text("notes"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 }, (table) => ({
   statusIdx: index("orders_status_idx").on(table.status),
   eventDateIdx: index("orders_event_date_idx").on(table.eventDate),
+  referenceIdx: uniqueIndex("orders_reference_unique").on(table.reference),
+}));
+
+/**
+ * Logboek van één boeking. Beantwoordt vragen die anders alleen in iemands hoofd zitten:
+ * "wanneer is dit bevestigd?", "is de aanbetaling al binnen?", "wanneer kwam die regel erbij?".
+ *
+ * Alleen wat ná de invoering gelogd is verschijnt hier. Bestaande boekingen kregen bij de
+ * migratie één `aangemaakt`-regel; de lege staat in het scherm zegt dat erbij, zodat niemand
+ * denkt dat er iets mist.
+ */
+export const orderEvents = pgTable("order_events", {
+  id: serial("id").primaryKey(),
+  orderId: integer("order_id").notNull().references(() => orders.id, { onDelete: "cascade" }),
+  at: timestamp("at").notNull().defaultNow(),
+  kind: varchar("kind", { length: 32 }).notNull(),
+  summary: text("summary").notNull(),
+  details: jsonb("details"),
+  actor: varchar("actor", { length: 120 }),
+}, (table) => ({
+  orderIdx: index("order_events_order_idx").on(table.orderId, table.at),
 }));
 
 export const orderItems = pgTable("order_items", {
@@ -131,6 +202,17 @@ export const orderItems = pgTable("order_items", {
   quantity: numeric("quantity", { precision: 10, scale: 2 }).notNull().default("1"),
   unitPrice: numeric("unit_price", { precision: 10, scale: 2 }).notNull().default("0"),
   lineTotal: numeric("line_total", { precision: 10, scale: 2 }).notNull().default("0"),
+  /**
+   * Wat er in deze regel zit, als subregels eronder — bijvoorbeeld waar een pakket uit
+   * bestaat. Bewust hier opgeslagen en niet opgezocht bij het pakket: dat pakket kan later
+   * veranderen of verdwijnen, maar wat er met déze klant is afgesproken hoort te blijven staan.
+   *
+   * `packageId` zegt uit welk pakket de regel voortkwam. Daarmee wordt hetzelfde pakket nog
+   * eens toevoegen een hoger aantal in plaats van een tweede identieke regel. Het is
+   * uitdrukkelijk een herkomst-notitie en geen verwijzing: het pakket mag verdwijnen zonder
+   * dat deze regel iets verliest.
+   */
+  details: jsonb("details").$type<{ inbegrepen?: string[]; packageId?: number }>(),
   sortOrder: integer("sort_order").notNull().default(0),
 });
 
@@ -146,6 +228,10 @@ export const contactRequests = pgTable("contact_requests", {
   persons: integer("persons"),
   message: text("message").notNull(),
   status: contactStatusEnum("status").notNull().default("nieuw"),
+  /** Gewenst pakket uit het formulier — mag leeg zijn ("weet ik nog niet"). */
+  packageId: integer("package_id").references(() => packages.id, { onDelete: "set null" }),
+  /** De gelegenheid, als keuze uit gallery_categories. `eventType` blijft als vrij veld. */
+  categoryId: integer("category_id"),
   convertedOrderId: integer("converted_order_id").references(() => orders.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 }, (table) => ({
@@ -155,18 +241,61 @@ export const contactRequests = pgTable("contact_requests", {
 
 // ---------- Gallery ----------
 
+/** Een categorie is een **gelegenheid** (babyshower, bruiloft), niet een taart-type. */
 export const galleryCategories = pgTable("gallery_categories", {
   id: serial("id").primaryKey(),
   slug: varchar("slug", { length: 120 }).notNull(),
   name: varchar("name", { length: 200 }).notNull(),
+  description: text("description"),
+  published: boolean("published").notNull().default(true),
   sortOrder: integer("sort_order").notNull().default(0),
 }, (table) => ({
   slugIdx: uniqueIndex("gallery_cat_slug_unique").on(table.slug),
 }));
 
+/**
+ * Eén blok in het verhaal van een event: een tussenkop, een stuk tekst, of een groep foto's.
+ * De volgorde in de lijst is de volgorde op de pagina.
+ */
+export type AlbumBlok =
+  | { soort: "kop"; inhoud: string }
+  | { soort: "tekst"; inhoud: string }
+  | { soort: "fotos"; itemIds: number[] };
+
+export const albumBlokSchema = z.discriminatedUnion("soort", [
+  z.object({ soort: z.literal("kop"), inhoud: z.string().min(1) }),
+  z.object({ soort: z.literal("tekst"), inhoud: z.string().min(1) }),
+  z.object({ soort: z.literal("fotos"), itemIds: z.array(z.number().int().positive()) }),
+]);
+
+/** Eén uitgevoerd event binnen een gelegenheid. Meerdere albums per categorie. */
+export const galleryAlbums = pgTable("gallery_albums", {
+  id: serial("id").primaryKey(),
+  categoryId: integer("category_id").references(() => galleryCategories.id, { onDelete: "cascade" }),
+  slug: varchar("slug", { length: 120 }).notNull(),
+  title: varchar("title", { length: 200 }).notNull(),
+  eventDate: date("event_date"),
+  description: text("description"),
+  /**
+   * Het verhaal bij dit event: tekst en foto's door elkaar. `null` betekent "nog niet
+   * ingedeeld" en dan wordt het album getoond zoals voorheen — omschrijving, dan alle foto's.
+   * Zo blijven bestaande albums werken zonder dat er iets aan hoeft te veranderen.
+   */
+  blocks: jsonb("blocks").$type<AlbumBlok[]>(),
+  coverItemId: integer("cover_item_id"),
+  sortOrder: integer("sort_order").notNull().default(0),
+  published: boolean("published").notNull().default(true),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => ({
+  catSlugIdx: uniqueIndex("gallery_albums_cat_slug_unique").on(table.categoryId, table.slug),
+  categoryIdx: index("gallery_albums_category_idx").on(table.categoryId),
+}));
+
 export const galleryItems = pgTable("gallery_items", {
   id: serial("id").primaryKey(),
   categoryId: integer("category_id").references(() => galleryCategories.id, { onDelete: "set null" }),
+  /** Mag leeg zijn: een losse foto kan direct onder een gelegenheid blijven staan. */
+  albumId: integer("album_id").references(() => galleryAlbums.id, { onDelete: "set null" }),
   filename: varchar("filename", { length: 255 }).notNull(),
   altText: varchar("alt_text", { length: 255 }),
   caption: text("caption"),
@@ -179,6 +308,26 @@ export const galleryItems = pgTable("gallery_items", {
 }, (table) => ({
   featuredIdx: index("gallery_featured_idx").on(table.featured),
   categoryIdx: index("gallery_category_idx").on(table.categoryId),
+  albumIdx: index("gallery_album_idx").on(table.albumId),
+}));
+
+// ---------- Reviews ----------
+
+export const reviews = pgTable("reviews", {
+  id: serial("id").primaryKey(),
+  authorName: varchar("author_name", { length: 120 }).notNull(),
+  eventType: varchar("event_type", { length: 120 }),
+  rating: integer("rating"),
+  body: text("body").notNull(),
+  occurredOn: date("occurred_on"),
+  /** Default false: publiceren is een bewuste handeling, ook vanwege toestemming. */
+  published: boolean("published").notNull().default(false),
+  featured: boolean("featured").notNull().default(false),
+  sortOrder: integer("sort_order").notNull().default(0),
+  source: varchar("source", { length: 32 }).notNull().default("handmatig"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => ({
+  publishedIdx: index("reviews_published_idx").on(table.published),
 }));
 
 // ---------- Site settings ----------
@@ -193,6 +342,13 @@ export const siteSettings = pgTable("site_settings", {
 
 export const customersRelations = relations(customers, ({ many }) => ({
   orders: many(orders),
+}));
+
+export const orderEventsRelations = relations(orderEvents, ({ one }) => ({
+  order: one(orders, {
+    fields: [orderEvents.orderId],
+    references: [orders.id],
+  }),
 }));
 
 export const ordersRelations = relations(orders, ({ one, many }) => ({
@@ -214,10 +370,27 @@ export const orderItemsRelations = relations(orderItems, ({ one }) => ({
   }),
 }));
 
+export const galleryCategoriesRelations = relations(galleryCategories, ({ many }) => ({
+  albums: many(galleryAlbums),
+  items: many(galleryItems),
+}));
+
+export const galleryAlbumsRelations = relations(galleryAlbums, ({ one, many }) => ({
+  category: one(galleryCategories, {
+    fields: [galleryAlbums.categoryId],
+    references: [galleryCategories.id],
+  }),
+  items: many(galleryItems),
+}));
+
 export const galleryItemsRelations = relations(galleryItems, ({ one }) => ({
   category: one(galleryCategories, {
     fields: [galleryItems.categoryId],
     references: [galleryCategories.id],
+  }),
+  album: one(galleryAlbums, {
+    fields: [galleryItems.albumId],
+    references: [galleryAlbums.id],
   }),
 }));
 
@@ -227,13 +400,43 @@ export const insertCustomerSchema = createInsertSchema(customers, {
   email: z.string().email().optional().or(z.literal("")),
 }).omit({ id: true, createdAt: true, updatedAt: true });
 
+/**
+ * `reference` en `totalPrice` staan er bewust niet in.
+ *
+ * Het boekingsnummer wordt server-side gezet bij het aanmaken en hoort daarna vast te staan —
+ * er wordt naar verwezen op offertes en aan de telefoon. Het totaal is **afgeleid**: de server
+ * herberekent het bij elke regelwijziging uit de som van `order_items`. Wie het van buitenaf
+ * mag zetten, kan het uit de pas laten lopen met wat eronder staat.
+ */
 export const insertOrderSchema = createInsertSchema(orders).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
+  reference: true,
+  totalPrice: true,
 });
 
-export const insertOrderItemSchema = createInsertSchema(orderItems).omit({ id: true });
+/**
+ * `lineTotal` volgt uit aantal × stuksprijs en wordt server-side berekend, zodat een regel
+ * nooit een bedrag kan tonen dat niet bij zijn eigen getallen hoort.
+ */
+export const insertOrderItemSchema = createInsertSchema(orderItems, {
+  description: z.string().min(1, "Omschrijving is verplicht"),
+  // drizzle-zod maakt van een jsonb-kolom een losse `Json`, waar dus ook een string of getal
+  // in past. Hier de echte vorm opschrijven, anders is de kolom in de praktijk ongetypeerd.
+  details: z
+    .object({
+      inbegrepen: z.array(z.string()).optional(),
+      packageId: z.number().int().positive().optional(),
+    })
+    .nullable()
+    .optional(),
+}).omit({ id: true, lineTotal: true });
+
+export const insertOrderEventSchema = createInsertSchema(orderEvents).omit({
+  id: true,
+  at: true,
+});
 
 export const insertProductSchema = createInsertSchema(products).omit({
   id: true,
@@ -259,6 +462,28 @@ export const insertGalleryItemSchema = createInsertSchema(galleryItems).omit({
 export const insertGalleryCategorySchema = createInsertSchema(galleryCategories).omit({
   id: true,
 });
+
+export const insertGalleryAlbumSchema = createInsertSchema(galleryAlbums, {
+  title: z.string().min(1, "Titel is verplicht"),
+  slug: z.string().min(1, "Slug is verplicht"),
+  // drizzle-zod maakt van een jsonb-kolom een losse `Json` waar ook een string in past. De
+  // echte vorm hier vastleggen, anders is de kolom in de praktijk ongetypeerd — en dit is
+  // inhoud die op een publieke pagina gerenderd wordt.
+  blocks: z.array(albumBlokSchema).nullable().optional(),
+}).omit({ id: true, createdAt: true });
+
+export const insertPackageSchema = createInsertSchema(packages, {
+  name: z.string().min(1, "Naam is verplicht"),
+  slug: z.string().min(1, "Slug is verplicht"),
+  priceUnit: z.enum(["totaal", "per_persoon"]),
+  includes: z.array(z.string()),
+}).omit({ id: true, createdAt: true });
+
+export const insertReviewSchema = createInsertSchema(reviews, {
+  authorName: z.string().min(1, "Naam is verplicht"),
+  body: z.string().min(10, "Review is te kort"),
+  rating: z.number().int().min(1).max(5).nullish(),
+}).omit({ id: true, createdAt: true });
 
 // ---------- Site settings shape (JSONB validation) ----------
 
@@ -291,6 +516,87 @@ export const aboutSettingsSchema = z.object({
   imageFilename: z.string().optional(),
 });
 
+/**
+ * Levertijden — uit de meeting: 10 dagen vooraf, taarten flexibeler.
+ *
+ * `agendaFeedToken` hoort hier omdat het naast de levertijden de enige instelling is die
+ * niet in een eigen tabel thuishoort. Wie het token heeft, ziet alle boekingen met
+ * klantnaam; het is los te vervangen zonder wachtwoordwijziging.
+ */
+export const levertijdenSettingsSchema = z.object({
+  standaardDagen: z.number().int().min(0).max(365).default(10),
+  taartenDagen: z.number().int().min(0).max(365).default(5),
+  tekst: z.string().default(
+    "Vraag je aan minimaal 10 dagen van tevoren aan. Voor taarten kunnen we vaak flexibeler zijn — vraag gerust.",
+  ),
+  agendaFeedToken: z.string().default(""),
+});
+
+export type LevertijdenSettings = z.infer<typeof levertijdenSettingsSchema>;
+
+/**
+ * Btw-tarieven. Drie mogelijkheden, want de derde is een echte:
+ *
+ * - **geen** — kleineondernemersregeling. Er komt dan géén btw-regel op de offerte; een regel
+ *   met `€ 0,00 btw` zou suggereren dat er btw berekend is en die nul is.
+ * - **laag** — 9%, het tarief voor eten en drinken.
+ * - **hoog** — 21%.
+ *
+ * **Bedragen zijn inclusief btw.** Dat is de enige juiste keuze voor een particuliere klant:
+ * wat op de offerte staat is wat ze betaalt. De btw wordt er op de offerte uit *gehaald*
+ * ("waarvan € 30,60 btw"), niet bij opgeteld.
+ */
+export const BTW_TARIEVEN = {
+  geen: 0,
+  laag: 9,
+  hoog: 21,
+} as const;
+
+export type BtwTarief = keyof typeof BTW_TARIEVEN;
+
+export const BTW_LABEL: Record<BtwTarief, string> = {
+  geen: "Geen btw (kleineondernemersregeling)",
+  laag: "9% — laag tarief",
+  hoog: "21% — algemeen tarief",
+};
+
+export function isBtwTarief(v: unknown): v is BtwTarief {
+  return typeof v === "string" && v in BTW_TARIEVEN;
+}
+
+/**
+ * Het tarief is een eigenschap van het bedrijf, niet van één boeking — daarom staat de
+ * standaard in de instellingen. Per boeking kan hij afwijken, voor het geval dat ooit nodig is.
+ */
+export const btwSettingsSchema = z.object({
+  standaardTarief: z.enum(["geen", "laag", "hoog"]).default("geen"),
+  /** Onder de bedragen op de offerte. Leeg = de standaardzin bij het gekozen tarief. */
+  toelichting: z.string().default(""),
+});
+
+export type BtwSettings = z.infer<typeof btwSettingsSchema>;
+
+/**
+ * Sleutel → schema. `site_settings` is jsonb, dus de database bewaakt de vorm niet; dit is
+ * de enige plek waar dat gebeurt. Een sleutel die hier niet in staat wordt geweigerd — zo
+ * maakt een typefout in een sleutelnaam geen stille extra rij aan.
+ *
+ * Nieuwe instelling? Schema hierboven toevoegen en hier registreren.
+ */
+export const siteSettingSchemas = {
+  contact: contactSettingsSchema,
+  hero: heroSettingsSchema,
+  about: aboutSettingsSchema,
+  levertijden: levertijdenSettingsSchema,
+  btw: btwSettingsSchema,
+} as const;
+
+export type SiteSettingKey = keyof typeof siteSettingSchemas;
+
+export function isSiteSettingKey(key: string): key is SiteSettingKey {
+  return Object.prototype.hasOwnProperty.call(siteSettingSchemas, key);
+}
+
 export type ContactSettings = z.infer<typeof contactSettingsSchema>;
 export type HeroSettings = z.infer<typeof heroSettingsSchema>;
 export type AboutSettings = z.infer<typeof aboutSettingsSchema>;
@@ -306,10 +612,21 @@ export type Order = typeof orders.$inferSelect;
 export type InsertOrder = z.infer<typeof insertOrderSchema>;
 export type OrderItem = typeof orderItems.$inferSelect;
 export type InsertOrderItem = z.infer<typeof insertOrderItemSchema>;
+export type OrderEvent = typeof orderEvents.$inferSelect;
+export type InsertOrderEvent = z.infer<typeof insertOrderEventSchema>;
+/** De soorten gebeurtenissen op de tijdlijn. */
+export type OrderEventKind =
+  | "aangemaakt" | "status" | "regel" | "betaling" | "offerte" | "wijziging";
 export type ContactRequest = typeof contactRequests.$inferSelect;
 export type InsertContactRequest = z.infer<typeof insertContactRequestSchema>;
 export type GalleryItem = typeof galleryItems.$inferSelect;
 export type InsertGalleryItem = z.infer<typeof insertGalleryItemSchema>;
 export type GalleryCategory = typeof galleryCategories.$inferSelect;
 export type InsertGalleryCategory = z.infer<typeof insertGalleryCategorySchema>;
+export type GalleryAlbum = typeof galleryAlbums.$inferSelect;
+export type InsertGalleryAlbum = z.infer<typeof insertGalleryAlbumSchema>;
+export type Package = typeof packages.$inferSelect;
+export type InsertPackage = z.infer<typeof insertPackageSchema>;
+export type Review = typeof reviews.$inferSelect;
+export type InsertReview = z.infer<typeof insertReviewSchema>;
 export type SiteSetting = typeof siteSettings.$inferSelect;
