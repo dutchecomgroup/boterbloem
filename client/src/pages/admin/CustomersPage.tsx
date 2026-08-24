@@ -1,8 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { api } from "../../lib/api";
 import type { Customer } from "@shared/schema";
-import { Trash2, Plus } from "lucide-react";
+import { Trash2, Plus, Search } from "lucide-react";
+import { Link } from "wouter";
 
 export default function CustomersPage() {
   const qc = useQueryClient();
@@ -11,6 +12,7 @@ export default function CustomersPage() {
     queryFn: () => api.get<Customer[]>("/api/admin/customers"),
   });
 
+  const [zoek, setZoek] = useState("");
   const [showNew, setShowNew] = useState(false);
   const [form, setForm] = useState({ name: "", email: "", phone: "", address: "", notes: "" });
 
@@ -22,6 +24,15 @@ export default function CustomersPage() {
       setForm({ name: "", email: "", phone: "", address: "", notes: "" });
     },
   });
+
+  // Client-side filteren: bij deze aantallen ruim voldoende, en het scheelt een serverronde.
+  const gefilterd = useMemo(() => {
+    const q = zoek.trim().toLowerCase();
+    if (!q) return customers ?? [];
+    return (customers ?? []).filter((c) =>
+      [c.name, c.email, c.phone].filter(Boolean).some((v) => v!.toLowerCase().includes(q)),
+    );
+  }, [customers, zoek]);
 
   const del = useMutation({
     mutationFn: (id: number) => api.delete(`/api/admin/customers/${id}`),
@@ -36,7 +47,13 @@ export default function CustomersPage() {
           <Plus size={14} /> Nieuwe klant
         </button>
       </div>
-      <p className="text-charcoal/60 text-sm mb-8">Klantgegevens en historie.</p>
+      <p className="text-charcoal/60 text-sm mb-6">Klantgegevens en historie. Klik een klant aan voor de boekingen.</p>
+
+      <div className="relative mb-6 max-w-sm">
+        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-charcoal/30" />
+        <input className="input !pl-9" placeholder="Zoek op naam, e-mail of telefoon"
+          value={zoek} onChange={(e) => setZoek(e.target.value)} />
+      </div>
 
       {showNew && (
         <form
@@ -61,9 +78,11 @@ export default function CustomersPage() {
             <tr><th className="text-left px-4 py-3">Naam</th><th className="text-left px-4 py-3">E-mail</th><th className="text-left px-4 py-3">Telefoon</th><th></th></tr>
           </thead>
           <tbody>
-            {customers?.length ? customers.map((c) => (
+            {gefilterd.length ? gefilterd.map((c) => (
               <tr key={c.id} className="border-t border-charcoal/5 hover:bg-cream/40">
-                <td className="px-4 py-3 font-medium">{c.name}</td>
+                <td className="px-4 py-3 font-medium">
+                  <Link href={`/admin/klanten/${c.id}`} className="hover:text-gold-dark">{c.name}</Link>
+                </td>
                 <td className="px-4 py-3">{c.email ?? "—"}</td>
                 <td className="px-4 py-3">{c.phone ?? "—"}</td>
                 <td className="px-4 py-3 text-right">
@@ -73,7 +92,7 @@ export default function CustomersPage() {
                 </td>
               </tr>
             )) : (
-              <tr><td colSpan={4} className="px-4 py-12 text-center text-charcoal/40">Nog geen klanten</td></tr>
+              <tr><td colSpan={4} className="px-4 py-12 text-center text-charcoal/40">{zoek ? "Geen klant gevonden" : "Nog geen klanten"}</td></tr>
             )}
           </tbody>
         </table>

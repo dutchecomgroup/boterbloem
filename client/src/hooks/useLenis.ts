@@ -2,10 +2,20 @@ import { useEffect } from "react";
 import Lenis from "lenis";
 import { prefersReducedMotion } from "../lib/prefersReducedMotion";
 
-/** Site-wide smooth scroll via Lenis. Disabled when prefers-reduced-motion is set. */
-export function useLenis() {
+/**
+ * Soepel scrollen via Lenis. Uit bij prefers-reduced-motion.
+ *
+ * `enabled` bestaat omdat Lenis het scrollwiel document-breed afvangt en omzet in
+ * paginascroll. Een genest scrollgebied (een lijst met `overflow-y-auto`) krijgt het event
+ * daardoor nooit en scrollt niet meer. Op het beheerpaneel — waar zulke lijsten zitten en
+ * waar soepel scrollen niets toevoegt — zetten we hem daarom uit.
+ *
+ * Heb je op de publieke site tóch een genest scrollgebied nodig, zet dan
+ * `data-lenis-prevent` op dat element.
+ */
+export function useLenis(enabled = true) {
   useEffect(() => {
-    if (prefersReducedMotion()) return;
+    if (!enabled || prefersReducedMotion()) return;
 
     const lenis = new Lenis({
       duration: 1.1,
@@ -25,5 +35,5 @@ export function useLenis() {
       cancelAnimationFrame(raf);
       lenis.destroy();
     };
-  }, []);
+  }, [enabled]);
 }

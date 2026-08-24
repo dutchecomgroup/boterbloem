@@ -1,15 +1,18 @@
 import { Link, useLocation } from "wouter";
-import { LayoutDashboard, CalendarCheck, Users, Package, Image as ImageIcon, Inbox, Settings, LogOut } from "lucide-react";
+import { LayoutDashboard, CalendarDays, CalendarCheck, Users, Package, Layers, Star, Image as ImageIcon, Inbox, Settings, LogOut } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { cn } from "../../lib/utils";
 
 const NAV = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
+  { href: "/admin/agenda", label: "Agenda", icon: CalendarDays },
   { href: "/admin/boekingen", label: "Boekingen", icon: CalendarCheck },
   { href: "/admin/aanvragen", label: "Aanvragen", icon: Inbox },
   { href: "/admin/klanten", label: "Klanten", icon: Users },
-  { href: "/admin/producten", label: "Producten", icon: Package },
+  { href: "/admin/pakketten", label: "Pakketten", icon: Layers },
+  { href: "/admin/producten", label: "Taart-prijslijst", icon: Package },
   { href: "/admin/galerij", label: "Galerij", icon: ImageIcon },
+  { href: "/admin/reviews", label: "Reviews", icon: Star },
   { href: "/admin/instellingen", label: "Instellingen", icon: Settings },
 ];
 

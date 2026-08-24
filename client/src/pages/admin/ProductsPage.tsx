@@ -24,6 +24,15 @@ export default function ProductsPage() {
     mutationFn: (data: typeof form) => api.post("/api/admin/products", data),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin", "products"] }); setShowNew(false); setForm(empty); },
   });
+  const zichtbaar = useMutation({
+    mutationFn: ({ id, ...rest }: { id: number } & Record<string, unknown>) =>
+      api.patch(`/api/admin/products/${id}`, rest),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin", "products"] });
+      qc.invalidateQueries({ queryKey: ["public", "products"] });
+    },
+  });
+
   const del = useMutation({
     mutationFn: (id: number) => api.delete(`/api/admin/products/${id}`),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", "products"] }),
@@ -32,12 +41,15 @@ export default function ProductsPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-2">
-        <h1 className="text-3xl">Producten & diensten</h1>
+        <h1 className="text-3xl">Producten &amp; prijslijst</h1>
         <button onClick={() => setShowNew((s) => !s)} className="btn-gold !py-2 !px-4 text-xs">
           <Plus size={14} /> Nieuw product
         </button>
       </div>
-      <p className="text-charcoal/60 text-sm mb-8">Prijslijst voor je boekingen.</p>
+      <p className="text-charcoal/60 text-sm mb-8 max-w-2xl">
+        Prijslijst voor je boekingen. Zet <strong>op de site</strong> aan om een regel te tonen
+        in het taartenblok op de aanbod-pagina — de rest blijft intern.
+      </p>
 
       {showNew && (
         <form className="card mb-6 grid sm:grid-cols-2 gap-4" onSubmit={(e) => { e.preventDefault(); create.mutate(form); }}>
@@ -61,7 +73,7 @@ export default function ProductsPage() {
       <div className="card p-0 overflow-hidden">
         <table className="w-full text-sm">
           <thead className="bg-charcoal/5 text-charcoal/60 text-xs uppercase tracking-widest">
-            <tr><th className="text-left px-4 py-3">Naam</th><th className="text-left px-4 py-3">Categorie</th><th className="text-right px-4 py-3">Prijs</th><th></th></tr>
+            <tr><th className="text-left px-4 py-3">Naam</th><th className="text-left px-4 py-3">Categorie</th><th className="text-right px-4 py-3">Prijs</th><th className="text-center px-4 py-3">Op de site</th><th></th></tr>
           </thead>
           <tbody>
             {products?.length ? products.map((p) => (
@@ -69,6 +81,10 @@ export default function ProductsPage() {
                 <td className="px-4 py-3 font-medium">{p.name}</td>
                 <td className="px-4 py-3 text-charcoal/60">{p.category}</td>
                 <td className="px-4 py-3 text-right">{formatCurrency(p.basePrice)} / {p.unit}</td>
+                <td className="px-4 py-3 text-center">
+                  <input type="checkbox" checked={p.publicVisible}
+                    onChange={(e) => zichtbaar.mutate({ id: p.id, publicVisible: e.target.checked })} />
+                </td>
                 <td className="px-4 py-3 text-right">
                   <button onClick={() => confirm(`'${p.name}' verwijderen?`) && del.mutate(p.id)} className="text-charcoal/40 hover:text-burgundy">
                     <Trash2 size={16} />
@@ -76,7 +92,7 @@ export default function ProductsPage() {
                 </td>
               </tr>
             )) : (
-              <tr><td colSpan={4} className="px-4 py-12 text-center text-charcoal/40">Nog geen producten</td></tr>
+              <tr><td colSpan={5} className="px-4 py-12 text-center text-charcoal/40">Nog geen producten</td></tr>
             )}
           </tbody>
         </table>
