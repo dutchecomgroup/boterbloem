@@ -3,20 +3,24 @@ import { BotanicalPattern } from "../../components/ornaments/BotanicalPattern";
 import { BotanicalCorner } from "../../components/ornaments/BotanicalCorner";
 import { GoldDivider } from "../../components/ornaments/GoldDivider";
 import { FloralFrame } from "../../components/ornaments/FloralFrame";
-import { imageSrc, demoImageForSlug } from "../../lib/demoGallery";
+import { demoImageForSlug } from "../../lib/demoGallery";
+import { imageSrc } from "../../lib/images";
 
-const DEFAULT_ABOUT_BODY = `Vanuit liefde voor het ambacht maken wij elke taart met de hand. Ieder ontwerp wordt persoonlijk afgestemd op jouw verhaal — van de eerste schets tot het laatste suikerbloemetje.
+/** Zichtbaar tot de klant haar eigen tekst invult via het instellingen-scherm. */
+const DEFAULT_ABOUT_BODY = `Vanuit liefde voor het ambacht bouwen wij elke tafel met de hand op. Sweet tables, grazing tables en taarten — ieder ontwerp wordt persoonlijk afgestemd op jouw verhaal, van de eerste schets tot het laatste suikerbloemetje.
 
-We werken met seizoensgebonden ingrediënten en geven de voorkeur aan natuurlijke smaken. Geen twee taarten zijn hetzelfde, omdat geen twee verhalen hetzelfde zijn.`;
+We werken met seizoensgebonden ingrediënten en geven de voorkeur aan natuurlijke smaken. Geen twee tafels zijn hetzelfde, omdat geen twee verhalen hetzelfde zijn.`;
 
 export default function AboutPage() {
   const { data } = usePublicSettings();
   const about = data?.about;
   const portraitSrc = about?.imageFilename
     ? imageSrc({ filename: about.imageFilename })
-    : demoImageForSlug("bruidstaarten");
+    : demoImageForSlug("bruiloft");
 
   const body = about?.body || DEFAULT_ABOUT_BODY;
+  const kop = about?.heading || "Atelier";
+  const koptNoemtBoterbloem = /boterbloem/i.test(kop);
 
   return (
     <>
@@ -29,8 +33,13 @@ export default function AboutPage() {
           <div className="grid lg:grid-cols-[1.1fr_1fr] gap-8 sm:gap-12 lg:gap-20 items-center">
             <div>
               <div className="tag mb-3">Over</div>
-              <h1 className="text-4xl sm:text-5xl md:text-6xl">{about?.heading ?? "Atelier"}</h1>
-              <div className="script-accent text-4xl sm:text-5xl md:text-6xl -mt-1">Boterbloem</div>
+              <h1 className="text-4xl sm:text-5xl md:text-6xl">{kop}</h1>
+              {/* Het sierlijke "Boterbloem" is een ontwerp-accent dat de kop afmaakt. Staat
+                  het woord al in de kop uit de instellingen — zoals bij de standaardwaarde
+                  "Over Atelier Boterbloem" — dan zou het er twee keer staan. */}
+              {!koptNoemtBoterbloem && (
+                <div className="script-accent text-4xl sm:text-5xl md:text-6xl -mt-1">Boterbloem</div>
+              )}
               <div className="mt-4 mb-4 sm:mt-6 sm:mb-6"><GoldDivider className="!mx-0 !max-w-[180px]" /></div>
               <div className="text-base sm:text-lg text-charcoal/80 leading-relaxed whitespace-pre-line">
                 {body}

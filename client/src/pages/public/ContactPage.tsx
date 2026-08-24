@@ -1,27 +1,38 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useQuery } from "@tanstack/react-query";
+import { useSearch } from "wouter";
 import { api, ApiError } from "../../lib/api";
 import { usePublicSettings } from "../../hooks/usePublicSettings";
-import { Instagram, Mail, Phone, MapPin } from "lucide-react";
+import { Instagram, Mail, Phone, MapPin, Info } from "lucide-react";
+import type { Package } from "@shared/schema";
 import { BotanicalPattern } from "../../components/ornaments/BotanicalPattern";
 import { BotanicalCorner } from "../../components/ornaments/BotanicalCorner";
 import { GoldDivider } from "../../components/ornaments/GoldDivider";
 import { FloralFrame } from "../../components/ornaments/FloralFrame";
-import { demoImageForSlug } from "../../lib/demoGallery";
+import { demoImageForSlug, DEMO_NESTED, heeftEchteContent } from "../../lib/demoGallery";
 
 const schema = z.object({
   name: z.string().min(2, "Vul je naam in"),
   email: z.string().email("Geldig e-mailadres vereist"),
   phone: z.string().optional(),
   eventDate: z.string().optional(),
+  // De gelegenheid als keuze uit de echte categorieën. `eventType` blijft bestaan als vrij
+  // veld voor "anders, namelijk" en voor aanvragen van vóór deze wijziging.
+  categoryId: z.coerce.number().int().positive().optional().or(z.literal("")).transform((v) => (v === "" ? undefined : v)),
   eventType: z.string().optional(),
+  packageId: z.coerce.number().int().positive().optional().or(z.literal("")).transform((v) => (v === "" ? undefined : v)),
   persons: z.coerce.number().int().positive().optional().or(z.literal("")).transform((v) => (v === "" ? undefined : v)),
   message: z.string().min(5, "Schrijf een kort bericht"),
+  // Honeypot — hoort altijd leeg te zijn. Zie het verborgen veld in het formulier.
+  website: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof schema>;
+
+interface GalleryResponse { categories: typeof DEMO_NESTED; items: unknown[] }
 
 const STEPS = [
   { n: "01", title: "Aanvraag", body: "Vertel ons over jouw moment en idee via het formulier." },
@@ -33,10 +44,41 @@ const STEPS = [
 export default function ContactPage() {
   const { data: settings } = usePublicSettings();
   const contact = settings?.contact;
+  const levertijden = (settings as { levertijden?: { standaardDagen?: number; tekst?: string } } | undefined)?.levertijden;
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const form = useForm<FormValues>({ resolver: zodResolver(schema) });
-  const heroImg = demoImageForSlug("party-setups");
+  const heroImg = demoImageForSlug("bedrijfsevent");
+
+  const { data: pakketten } = useQuery({
+    queryKey: ["public", "packages"],
+    queryFn: () => api.get<Package[]>("/api/public/packages"),
+  });
+  const { data: gallery } = useQuery({
+    queryKey: ["public", "gallery"],
+    queryFn: () => api.get<GalleryResponse>("/api/public/gallery"),
+  });
+  const gelegenheden = heeftEchteContent(gallery?.items) ? (gallery?.categories ?? []) : DEMO_NESTED;
+
+  // ?pakket=<slug> vanaf een pakketkaart op /aanbod. Zo komt de aanvraag binnen met de
+  // context waar de bezoeker net naar keek. Onbekende slug = gewoon niets voorselecteren.
+  const zoek = useSearch();
+  const voorgeselecteerd = useMemo(() => {
+    const slug = new URLSearchParams(zoek).get("pakket");
+    return slug ? pakketten?.find((p) => p.slug === slug)?.id : undefined;
+  }, [zoek, pakketten]);
+
+  const form = useForm<FormValues>({
+    resolver: zodResolver(schema),
+    values: voorgeselecteerd ? ({ packageId: voorgeselecteerd } as Partial<FormValues> as FormValues) : undefined,
+  });
+
+  const gekozenDatum = form.watch("eventDate");
+  const drempel = levertijden?.standaardDagen ?? 10;
+  const teKrap = useMemo(() => {
+    if (!gekozenDatum) return false;
+    const dagen = (new Date(gekozenDatum + "T12:00:00").getTime() - Date.now()) / 86_400_000;
+    return dagen >= 0 && dagen < drempel;
+  }, [gekozenDatum, drempel]);
 
   async function onSubmit(values: FormValues) {
     setError(null);
@@ -105,6 +147,22 @@ export default function ContactPage() {
               </div>
             ) : (
               <form onSubmit={form.handleSubmit(onSubmit)} className="card hairline-gold space-y-5">
+                {/*
+                  Honeypot: onzichtbaar voor bezoekers, wél in de HTML. Bots vullen elk veld
+                  in dat ze vinden; is dit ingevuld, dan negeert de server de aanvraag.
+                  `aria-hidden` + tabIndex houden het buiten schermlezers en tab-volgorde,
+                  zodat het voor iemand met een schermlezer niet bestaat.
+                */}
+                <div className="absolute left-[-9999px] top-auto h-px w-px overflow-hidden" aria-hidden="true">
+                  <label htmlFor="website">Vul dit veld niet in</label>
+                  <input
+                    id="website"
+                    type="text"
+                    tabIndex={-1}
+                    autoComplete="off"
+                    {...form.register("website")}
+                  />
+                </div>
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>
                     <label className="label">Naam *</label>
@@ -119,23 +177,45 @@ export default function ContactPage() {
                 </div>
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div><label className="label">Telefoon</label><input className="input" {...form.register("phone")} /></div>
-                  <div><label className="label">Datum gelegenheid</label><input className="input" type="date" {...form.register("eventDate")} /></div>
+                  <div>
+                    <label className="label">Datum gelegenheid</label>
+                    <input className="input" type="date" {...form.register("eventDate")} />
+                    {teKrap && (
+                      <p className="mt-1.5 flex items-start gap-1.5 text-xs text-charcoal/70 bg-butter/50 rounded px-2 py-1.5">
+                        <Info size={14} className="text-gold-dark shrink-0 mt-px" />
+                        <span>
+                          Dat is korter dan {drempel} dagen vooraf. Stuur je aanvraag gerust —
+                          we laten weten of het lukt.
+                        </span>
+                      </p>
+                    )}
+                  </div>
                 </div>
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="label">Type gelegenheid</label>
-                    <select className="input" {...form.register("eventType")}>
+                    <label className="label">Wat voor gelegenheid?</label>
+                    <select className="input" {...form.register("categoryId")}>
                       <option value="">— Kies —</option>
-                      <option>Bruiloft</option>
-                      <option>Verjaardag</option>
-                      <option>Babyshower</option>
-                      <option>Doop</option>
-                      <option>Bedrijfsevent</option>
-                      <option>Anders</option>
+                      {gelegenheden.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
                     </select>
                   </div>
                   <div><label className="label">Aantal personen</label><input className="input" type="number" min="1" {...form.register("persons")} /></div>
                 </div>
+                {pakketten && pakketten.length > 0 && (
+                  <div>
+                    <label className="label">Welk pakket heb je ongeveer voor ogen?</label>
+                    <select className="input" {...form.register("packageId")}>
+                      {/* Deze optie moet er staan: wie het nog niet weet, mag niet het gevoel
+                          krijgen dat ze eerst iets moet uitzoeken. */}
+                      <option value="">Weet ik nog niet</option>
+                      {pakketten.map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.name}{Number(p.priceFrom) > 0 ? ` — vanaf € ${Number(p.priceFrom).toFixed(0)}` : ""}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
                 <div>
                   <label className="label">Bericht *</label>
                   <textarea className="input min-h-[140px]" {...form.register("message")} />
@@ -157,7 +237,7 @@ export default function ContactPage() {
         <div className="container-tight relative">
           <div className="text-center mb-10 sm:mb-14">
             <div className="tag mb-3">Hoe het werkt</div>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl">Van idee tot taart</h2>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl">Van idee tot tafel</h2>
             <div className="mt-6"><GoldDivider /></div>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">

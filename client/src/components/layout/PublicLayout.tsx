@@ -9,7 +9,7 @@ import { GoldDivider } from "../ornaments/GoldDivider";
 const NAV = [
   { href: "/", label: "Home" },
   { href: "/galerij", label: "Galerij" },
-  { href: "/diensten", label: "Aanbod" },
+  { href: "/aanbod", label: "Aanbod" },
   { href: "/over", label: "Over" },
   { href: "/contact", label: "Contact" },
 ];
@@ -91,7 +91,7 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
           <div>
             <div className="font-display text-2xl">Atelier <span className="script-accent text-3xl">Boterbloem</span></div>
             <p className="mt-4 text-cream/70 text-sm leading-relaxed max-w-xs">
-              Handgemaakte taarten, mini desserts en zoete creaties voor jouw mooiste momenten.
+              Handgemaakte sweet tables, grazing tables en taarten voor jouw mooiste momenten.
             </p>
           </div>
           <div>

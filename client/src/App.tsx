@@ -1,19 +1,31 @@
-import { Route, Switch, Redirect } from "wouter";
+import { Route, Switch, Redirect, useLocation } from "wouter";
+import { lazy, Suspense } from "react";
 import { PublicLayout } from "./components/layout/PublicLayout";
 import { AdminLayout } from "./components/layout/AdminLayout";
 import HomePage from "./pages/public/HomePage";
 import GalleryPage from "./pages/public/GalleryPage";
-import ServicesPage from "./pages/public/ServicesPage";
+import AanbodPage from "./pages/public/AanbodPage";
 import AboutPage from "./pages/public/AboutPage";
 import ContactPage from "./pages/public/ContactPage";
 import LoginPage from "./pages/admin/LoginPage";
-import DashboardPage from "./pages/admin/DashboardPage";
-import OrdersPage from "./pages/admin/OrdersPage";
-import CustomersPage from "./pages/admin/CustomersPage";
-import ProductsPage from "./pages/admin/ProductsPage";
-import GalleryAdminPage from "./pages/admin/GalleryAdminPage";
-import ContactRequestsPage from "./pages/admin/ContactRequestsPage";
-import SettingsPage from "./pages/admin/SettingsPage";
+/**
+ * Beheerpagina's lui laden. Ze zijn samen goed voor het grootste deel van de bundel
+ * (Recharts, date-fns, de formulierschermen) en een bezoeker van de publieke site heeft er
+ * niets aan. De inlogpagina blijft direct geladen: die is klein en is het startpunt.
+ */
+const DashboardPage = lazy(() => import("./pages/admin/DashboardPage"));
+const AgendaPage = lazy(() => import("./pages/admin/AgendaPage"));
+const PackagesPage = lazy(() => import("./pages/admin/PackagesPage"));
+const ReviewsPage = lazy(() => import("./pages/admin/ReviewsPage"));
+const CustomerDetailPage = lazy(() => import("./pages/admin/CustomerDetailPage"));
+const OrdersPage = lazy(() => import("./pages/admin/OrdersPage"));
+const CustomersPage = lazy(() => import("./pages/admin/CustomersPage"));
+const ProductsPage = lazy(() => import("./pages/admin/ProductsPage"));
+const GalleryAdminPage = lazy(() => import("./pages/admin/GalleryAdminPage"));
+const GalleryEventPage = lazy(() => import("./pages/admin/GalleryEventPage"));
+const ContactRequestsPage = lazy(() => import("./pages/admin/ContactRequestsPage"));
+const SettingsPage = lazy(() => import("./pages/admin/SettingsPage"));
+
 import { useAuth } from "./hooks/useAuth";
 import { useLenis } from "./hooks/useLenis";
 import { PageTransition } from "./components/PageTransition";
@@ -28,25 +40,51 @@ function ProtectedAdmin({ children }: { children: React.ReactNode }) {
     );
   }
   if (!user) return <Redirect to="/admin/login" />;
-  return <AdminLayout>{children}</AdminLayout>;
+  return (
+    <AdminLayout>
+      {/* Terugval terwijl de lui geladen beheerpagina binnenkomt. */}
+      <Suspense fallback={<div className="text-charcoal/40 py-20 text-center">Laden…</div>}>
+        {children}
+      </Suspense>
+    </AdminLayout>
+  );
 }
 
 export default function App() {
-  useLenis();
+  const [location] = useLocation();
+  // Lenis alleen op de publieke site: op de admin kaapt hij het scrollwiel, waardoor
+  // geneste lijsten (zoals de aanvragenlijst) niet meer scrollen.
+  useLenis(!location.startsWith("/admin"));
+
   return (
     <Switch>
       <Route path="/admin/login" component={LoginPage} />
       <Route path="/admin">
         <ProtectedAdmin><DashboardPage /></ProtectedAdmin>
       </Route>
+      <Route path="/admin/agenda">
+        <ProtectedAdmin><AgendaPage /></ProtectedAdmin>
+      </Route>
+      <Route path="/admin/pakketten">
+        <ProtectedAdmin><PackagesPage /></ProtectedAdmin>
+      </Route>
+      <Route path="/admin/reviews">
+        <ProtectedAdmin><ReviewsPage /></ProtectedAdmin>
+      </Route>
       <Route path="/admin/boekingen">
         <ProtectedAdmin><OrdersPage /></ProtectedAdmin>
+      </Route>
+      <Route path="/admin/klanten/:id">
+        <ProtectedAdmin><CustomerDetailPage /></ProtectedAdmin>
       </Route>
       <Route path="/admin/klanten">
         <ProtectedAdmin><CustomersPage /></ProtectedAdmin>
       </Route>
       <Route path="/admin/producten">
         <ProtectedAdmin><ProductsPage /></ProtectedAdmin>
+      </Route>
+      <Route path="/admin/galerij/:id">
+        <ProtectedAdmin><GalleryEventPage /></ProtectedAdmin>
       </Route>
       <Route path="/admin/galerij">
         <ProtectedAdmin><GalleryAdminPage /></ProtectedAdmin>
@@ -64,8 +102,9 @@ export default function App() {
             <Switch>
               <Route path="/" component={HomePage} />
               <Route path="/galerij" component={GalleryPage} />
+              <Route path="/galerij/:slug/:albumSlug" component={GalleryPage} />
               <Route path="/galerij/:slug" component={GalleryPage} />
-              <Route path="/diensten" component={ServicesPage} />
+              <Route path="/aanbod" component={AanbodPage} />
               <Route path="/over" component={AboutPage} />
               <Route path="/contact" component={ContactPage} />
               <Route>
