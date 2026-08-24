@@ -62,6 +62,7 @@ nano .env
 # Zet NODE_ENV=production
 
 npm ci
+# Eerste keer: schema opzetten. Daarna gaan wijzigingen via sql-pending/ — zie db-migraties.md
 npm run db:push
 npm run seed:admin
 
@@ -77,7 +78,8 @@ pm2 startup    # volg de output
 cd /projects/atelierboterbloem
 git pull
 npm ci
-npm run db:push      # alleen als schema veranderd
+# Schema veranderd? .sql uit docs/deployment/sql-pending/ draaien — NIET db:push.
+# Zie db-migraties.md; migratie altijd vóór de code.
 npm run build
 pm2 reload atelierboterbloem
 ```
@@ -99,4 +101,10 @@ pg_dump -U abb_app atelierboterbloem | gzip > ~/backups/abb-$(date +%F).sql.gz
 # Uploads:
 tar czf ~/backups/abb-uploads-$(date +%F).tar.gz /projects/atelierboterbloem/uploads
 ```
-```
+
+> ⚠️ Neem **altijd** een `pg_dump` vóór een migratie — er is één database en die is live.
+> Procedure: [db-migraties.md](db-migraties.md).
+
+---
+
+Verwante documentatie: [README.md](README.md) · [pending.md](pending.md) · [rollback.md](rollback.md) · [infra/domein.md](infra/domein.md)
