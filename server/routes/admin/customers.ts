@@ -2,6 +2,7 @@ import { Router } from "express";
 import { db } from "../../db.js";
 import { customers, orders, insertCustomerSchema } from "@shared/schema";
 import { desc, eq } from "drizzle-orm";
+import { requireFields } from "../../lib/patch.js";
 
 export const customersRouter = Router();
 
@@ -43,7 +44,7 @@ customersRouter.post("/", async (req, res, next) => {
 customersRouter.patch("/:id", async (req, res, next) => {
   try {
     const id = Number(req.params.id);
-    const data = insertCustomerSchema.partial().parse(req.body);
+    const data = requireFields(insertCustomerSchema.partial().parse(req.body));
     const [row] = await db
       .update(customers)
       .set({ ...data, updatedAt: new Date() })

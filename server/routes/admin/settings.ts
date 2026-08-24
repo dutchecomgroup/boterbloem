@@ -1,8 +1,7 @@
 import { Router } from "express";
 import { db } from "../../db.js";
-import { siteSettings } from "@shared/schema";
+import { siteSettings, siteSettingSchemas, isSiteSettingKey } from "@shared/schema";
 import { eq } from "drizzle-orm";
-import { z } from "zod";
 
 export const settingsRouter = Router();
 
@@ -17,22 +16,31 @@ settingsRouter.get("/", async (_req, res, next) => {
   }
 });
 
-const upsertSchema = z.object({
-  key: z.string().min(1).max(80),
-  value: z.unknown(),
-});
-
 settingsRouter.put("/:key", async (req, res, next) => {
   try {
     const key = req.params.key;
-    const { value } = upsertSchema.parse({ key, value: req.body });
+
+    // Onbekende sleutel weigeren: anders maakt een typefout stilzwijgend een nieuwe rij aan
+    // die nooit meer gelezen wordt.
+    if (!isSiteSettingKey(key)) {
+      return res.status(400).json({
+        error: `Onbekende instelling '${key}'`,
+        details: { key: [`Toegestaan: ${Object.keys(siteSettingSchemas).join(", ")}`] },
+      });
+    }
+
+    // Valideren tegen het schema van déze sleutel. Gooit een ZodError bij een verkeerde
+    // vorm, die de errorHandler naar een 400 met veldfouten vertaalt.
+    const value = siteSettingSchemas[key].parse(req.body);
+
     await db
       .insert(siteSettings)
-      .values({ key, value: value as never })
+      .values({ key, value })
       .onConflictDoUpdate({
         target: siteSettings.key,
-        set: { value: value as never, updatedAt: new Date() },
+        set: { value, updatedAt: new Date() },
       });
+
     res.json({ ok: true });
   } catch (err) {
     next(err);

@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { db } from "../../db.js";
 import { orders, contactRequests } from "@shared/schema";
-import { sql, and, eq, gte, isNotNull } from "drizzle-orm";
+import { sql, and, eq, gte, lte, isNotNull } from "drizzle-orm";
 
 export const statsRouter = Router();
 
@@ -26,7 +26,7 @@ statsRouter.get("/dashboard", async (_req, res, next) => {
         and(
           eq(orders.status, "bevestigd"),
           gte(orders.eventDate, today.toISOString().slice(0, 10)),
-          sql`${orders.eventDate} <= ${next30.toISOString().slice(0, 10)}`,
+          lte(orders.eventDate, next30.toISOString().slice(0, 10)),
         ),
       );
 
@@ -42,7 +42,7 @@ statsRouter.get("/dashboard", async (_req, res, next) => {
         and(
           eq(orders.status, "afgeleverd"),
           gte(orders.paidAt, startOfLastMonth),
-          sql`${orders.paidAt} <= ${endOfLastMonth}`,
+          lte(orders.paidAt, endOfLastMonth),
           isNotNull(orders.paidAt),
         ),
       );

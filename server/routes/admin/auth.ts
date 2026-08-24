@@ -1,4 +1,5 @@
 import { Router } from "express";
+import rateLimit from "express-rate-limit";
 import { z } from "zod";
 import { db } from "../../db.js";
 import { users } from "@shared/schema";
@@ -12,7 +13,24 @@ const loginSchema = z.object({
   password: z.string().min(1, "Vul je wachtwoord in"),
 });
 
-authRouter.post("/login", async (req, res, next) => {
+/**
+ * Er is één beheerdersaccount, dus dat is één wachtwoord om te raden. Zonder rem kan dat
+ * onbeperkt en zonder spoor. Tien pogingen per kwartier per IP is ruim voor een mens die
+ * zich vergist en te weinig voor iemand die een lijst afwerkt.
+ *
+ * `skipSuccessfulRequests` zorgt dat normaal inloggen nooit tegen de limiet aanloopt —
+ * alleen mislukte pogingen tellen mee.
+ */
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 10,
+  skipSuccessfulRequests: true,
+  standardHeaders: "draft-7",
+  legacyHeaders: false,
+  message: { error: "Te veel inlogpogingen. Probeer het over een kwartier opnieuw." },
+});
+
+authRouter.post("/login", loginLimiter, async (req, res, next) => {
   try {
     const { username, password } = loginSchema.parse(req.body);
     const rows = await db
@@ -22,6 +40,10 @@ authRouter.post("/login", async (req, res, next) => {
       .limit(1);
     const user = rows[0];
     if (!user || !(await verifyPassword(password, user.passwordHash))) {
+      // Loggen zodat een reeks pogingen terug te vinden is. Nooit het wachtwoord loggen.
+      console.warn(
+        `[auth] mislukte inlogpoging voor '${username.toLowerCase()}' vanaf ${req.ip}`,
+      );
       return res.status(401).json({ error: "Onjuiste inloggegevens" });
     }
     req.session.userId = user.id;
