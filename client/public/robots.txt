@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# Het beheerpaneel hoort niet in zoekresultaten. Dit is geen beveiliging — dat doet
+# requireAuth — maar het houdt de inlogpagina uit Google.
+Disallow: /admin
+
+Sitemap: https://atelierboterbloem.nl/sitemap.xml

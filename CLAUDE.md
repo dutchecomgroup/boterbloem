@@ -2,6 +2,18 @@
 
 Mini-bedrijfssysteem voor je schoonzus: publieke showcase + admin (boekingen, klanten, omzet, galerij). Draait op poort **6778** op de Strato VPS (`85.215.182.227`), zelfde server als `tcgdeckmaster` en `beautystudiodynamic`.
 
+## 📍 Lees dit eerst
+
+| Wat | Waar |
+|---|---|
+| **Waar staan we / wat gaan we bouwen** | [`docs/komende-plannen/werkblok-huidig.md`](docs/komende-plannen/werkblok-huidig.md) |
+| **Wat wilde de klant** | [`docs/klant/2026-08-24-meeting-wensen.md`](docs/klant/2026-08-24-meeting-wensen.md) |
+| **Documentatie-index** | [`docs/README.md`](docs/README.md) |
+
+**Sinds de meeting van 24-08:** Sweet Tables & Grazing Tables zijn de hoofdfocus, taarten zijn een klein neven-aanbod. Portfolio gaat per **gelegenheid** (met een album-laag per event), er komen **pakketten met vanaf-prijzen**, een **agenda met ICS-feed**, en **reviews**. Werk je aan een van die onderdelen: lees eerst het bijbehorende plan-document in [`docs/komende-plannen/3-onaangeraakt/`](docs/komende-plannen/3-onaangeraakt/).
+
+**Documentatie bijwerken hoort bij het werk.** Feature af → entry in `docs/deployment/pending.md`, plan naar `docs/archive/planning/`. Schema gewijzigd → `docs/deployment/db-migraties.md`. Zie [`docs/workflow/werkwijze.md`](docs/workflow/werkwijze.md).
+
 ## Stack
 
 - React 18 + Vite + TypeScript + Tailwind + Wouter + TanStack Query + React Hook Form + Zod
@@ -14,7 +26,21 @@ Mini-bedrijfssysteem voor je schoonzus: publieke showcase + admin (boekingen, kl
 **Eén live PostgreSQL database** op de VPS (`localhost:5432` op de server, `85.215.182.227:5432` vanaf je laptop).
 Geen lokale dev-DB, geen demo-mode. Schema is single source of truth in `shared/schema.ts`.
 
-`npm run db:push` raakt direct de live DB — bij grotere schema-wijzigingen eerst `pg_dump` nemen op de VPS.
+### 🔴 Schema wijzigen — NOOIT `db:push` op live
+
+Elke schemawijziging gaat via een handgeschreven `.sql` in `docs/deployment/sql-pending/`:
+
+1. `shared/schema.ts` aanpassen
+2. `.sql`-bestand schrijven (additief + idempotent, met uitleg waaróm in de kop)
+3. Regel toevoegen in `docs/deployment/db-migraties.md` met `DEV ⏳ / LIVE ⏳`
+4. `npx tsx scripts/run-sql-migration.ts <bestand> --dry-run` — draait alles en rolt terug
+5. `pg_dump` op de VPS
+6. Echt draaien, log bijwerken naar ✅
+7. **Pas dán** de code deployen die de nieuwe kolommen gebruikt
+
+`db:push` diffed en voert zelf DDL uit: geen versiegeschiedenis, geen weg terug, en bij een
+hernoeming gooit het je data weg. Er is één database en die is live. Volledige uitleg:
+[`docs/deployment/db-migraties.md`](docs/deployment/db-migraties.md).
 
 ## Layout
 
@@ -26,7 +52,7 @@ Geen lokale dev-DB, geen demo-mode. Schema is single source of truth in `shared/
 
 ## Belangrijke regels
 
-- **Schema-first**: nieuwe velden? Eerst `shared/schema.ts`, dan `db:push`, dan routes + frontend.
+- **Schema-first**: nieuwe velden? Eerst `shared/schema.ts`, dan een `.sql` in `docs/deployment/sql-pending/`, dan routes + frontend. Zie de DB-sectie hierboven.
 - **Geen lokale Postgres**: `.env` connect altijd direct naar de VPS.
 - **Galerij-bestandsnamen** zijn UUID-gebaseerd; nooit user-input gebruiken in filenames.
 - **Multer in-memory only** — Sharp streamt naar disk, dus geen tijdelijke uploads op disk.
@@ -53,10 +79,10 @@ Admin (sessie vereist):
 
 ## Deploy (VPS)
 
-Zie `docs/deployment.md`. Korte versie:
+Zie [`docs/deployment/`](docs/deployment/) — procedure, pending, rollback, migratie-log. Korte versie:
 1. `git pull` op `/projects/atelierboterbloem/`
 2. `npm ci && npm run build`
-3. `npm run db:push` (als schema veranderd)
+3. Schema veranderd? `.sql` uit `docs/deployment/sql-pending/` draaien (**niet** `db:push`)
 4. `pm2 reload atelierboterbloem`
 
 ## Stijl

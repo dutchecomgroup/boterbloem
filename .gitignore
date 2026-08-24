@@ -22,4 +22,12 @@ pnpm-debug.log*
 .idea/
 *.swp
 
+# Playwright MCP (screenshots + browserprofiel)
+.playwright-mcp/
+.playwright-profile/
+screenshots/
+
 drizzle/meta/_journal.json.bak
+
+# Losse screenshots uit een klikronde belanden in de projectroot
+/*.png
