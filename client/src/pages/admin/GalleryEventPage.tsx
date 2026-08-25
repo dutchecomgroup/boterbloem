@@ -1,7 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "wouter";
-import { ArrowLeft, Trash2, ExternalLink, Loader2 } from "lucide-react";
+import { ArrowLeft, Trash2, ExternalLink, Loader2, Images } from "lucide-react";
+import { PageKop } from "../../components/admin/ui/PageKop";
 import { api } from "../../lib/api";
 import { AlbumBlokken } from "../../components/admin/AlbumBlokken";
 import { FotoRaster } from "../../components/admin/galerij/FotoRaster";
@@ -129,17 +130,19 @@ export default function GalleryEventPage() {
       </Link>
 
       <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-3xl">{album.title}</h1>
-          <p className="mt-1 text-sm text-charcoal/70">
-            {categorie && (
+        <PageKop
+          titel={album.title}
+          bovenschrift={categorie?.name ?? "Event"}
+          icoon={Images}
+          onderschrift={
+            categorie && (
               <>
                 /galerij/{categorie.slug}/{album.slug} · {fotos.length}{" "}
                 {fotos.length === 1 ? "foto" : "foto's"}
               </>
-            )}
-          </p>
-        </div>
+            )
+          }
+        />
         <div className="flex items-center gap-2">
           {categorie && (
             <a

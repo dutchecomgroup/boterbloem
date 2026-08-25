@@ -12,10 +12,10 @@
 | | |
 |---|---|
 | `npm run typecheck` | ✅ |
-| `npm test` | ✅ 78 tests |
+| `npm test` | ✅ 96 tests |
 | `npm run build` | ✅ |
 | Endpoint-verificatie tegen dev | ✅ |
-| Migraties op dev | ✅ alle zes, idempotent |
+| Migraties op dev | ✅ alle zeven, idempotent |
 | Migraties op live | ⏳ **nog niet** |
 | Democontent op dev | ✅ 36 foto's, 9 events, 4 pakketten, 5 reviews |
 
@@ -38,13 +38,15 @@
 | — | [Instellingen bruikbaar maken](#instellingen) | ✅ |
 | — | [Btw per regel, pakket en product](#btw) | ✅ **DEV ✅ / LIVE ⏳** |
 | — | [`/aanbod` opnieuw ingedeeld](2-in-uitvoering/pakketten-aanbodpagina-indeling.md) | ✅ |
+| — | [Betalingen + omzetpagina](#omzet) | ✅ **DEV ✅ / LIVE ⏳** |
+| — | [Kleur door het beheerpaneel](#kleur) | ✅ |
 | **7** | Livegang: demo eruit, SEO, testronde | ⏳ wacht op materiaal |
 
 ---
 
 ## Wat er nu moet gebeuren
 
-**1. De zes migraties op live**, in de vaste volgorde uit [../deployment/pending.md](../deployment/pending.md).
+**1. De zeven migraties op live**, in de vaste volgorde uit [../deployment/pending.md](../deployment/pending.md).
 `pg_dump` eerst, dan de migraties, dan pas de code. Nooit andersom: Drizzle neemt elk schemaveld
 op in de SELECT, dus code op een oud schema breekt élke query op die tabel.
 
@@ -154,6 +156,104 @@ klant gekoppeld" en daar bleef het bij.
 
 ---
 
+### <a id="omzet"></a>💶 Betalingen en een omzetpagina
+
+Gevonden bij het doorklikken: boeking ABB-2026-014 stond op `afgeleverd` met € 295,00 en er
+verscheen nergens omzet. *"Boeking is afgeleverd, maar ik zie geen omzet bij de klant en in de
+hub?"*
+
+**Twee fouten, allebei in het model.** `orders.paid_at` werd door de hele codebase alleen
+**gelezen** — vier keer in `stats.ts` — en door niets ooit geschreven. De omzettegels en de
+12-maandsgrafiek filterden op `paid_at IS NOT NULL` en stonden daarmee structureel op € 0,00, voor
+elke boeking. En "de rest is ook betaald" was nergens vast te leggen: het model kende alleen
+`deposit_amount` (afgesproken) en `deposit_paid` (binnen), dus ontvangen kon nooit meer worden dan
+de aanbetaling.
+
+Daar bovenop stonden er **twee definities van omzet** naast elkaar: de hub eiste `afgeleverd` +
+`paid_at`, de klantdetailpagina keek alleen naar `afgeleverd`. Twee schermen, twee antwoorden op
+dezelfde vraag.
+
+- **`order_payments`** — betalingen als losse regels met bedrag, datum, wijze en notitie. In twee
+  keer betalen past erin, en je ziet wánneer. `depositAmount` behoudt zijn betekenis: het
+  **afgesproken** bedrag dat op de offerte staat als "nu te voldoen"
+- **`/admin/omzet`** — periodekiezer (week · maand · kwartaal · jaar · vrij), kerncijfers met een
+  vergelijking tegen de even lange vorige periode, staafgrafiek, **btw per tarief**, omzet per
+  pakket, openstaande posten over álle perioden, en een CSV-export voor de boekhouder
+- **De hub gebruikt nu dezelfde regel** als de omzetpagina
+- **Betaalblok in de boekingsheet** in plaats van het selectievakje *Ontvangen: binnen*
+
+Het btw-blok was bijna gratis: `btwPerTarief()` bestond al voor de offerte, en de tarieven zitten
+sinds 25-08 per regel in `order_items`. Per kwartaal uitgesplitst is precies wat de boekhouder wil
+zien.
+
+> ⚠️ Btw verschijnt pas zodra pakketten en producten een tarief hebben. Zonder tarief telt een
+> regel wel mee in de omzet maar levert hij geen btw-regel op — dat is de veilige kant.
+
+### ✏️ Invulbare velden zagen eruit als tekst
+
+*"nu lijkt het net alles overal tekst waar je niks mee kan doen."* `VeldInline` was gebouwd op
+"ziet eruit als tekst tot je erop klikt", maar op een scherm dat vrijwel volledig uit die velden
+bestaat sloeg dat door: de boekingsheet las als een afdruk. In rust nu een lichte pil met een
+hairline en een zacht potloodje dat bij hover oplicht. Geldt in één klap voor elk veld in de
+sheet, inclusief het allergieblok.
+
+---
+
+## Wat er op 26-08 bij is gekomen
+
+### <a id="kleur"></a>🎨 Kleur door het hele beheerpaneel
+
+*"Ik wil meer kleurelementen in de schermen... het is niet duidelijk alles."* En daarna: *"Dit
+mag door de hele hub heen."*
+
+Gemeten voordat er iets veranderde: over alle veertien adminpagina's won `charcoal/xx` met een
+factor 2 tot 4 van elke kleur — op élke pagina. `butter`, de `bg-section-*` verlopen, `pill` en
+`hairline-gold` kwamen in **nul** adminbestanden voor. Het palet bestond; de hub gebruikte het
+niet.
+
+**Uitgangspunt: kleur krijgt betekenis, geen versiering.** Zeven rollen, vastgelegd in
+[../architecture/design-system.md](../architecture/design-system.md). Past een accent in geen
+enkele rol, dan blijft het charcoal. Dat is de rem die voorkomt dat het bont wordt.
+
+- **Vier gedeelde onderdelen** in `components/admin/ui/`: `PageKop` (vervangt veertien losse
+  `<h1>`), `Badge`, `Bedrag`, `LegeStaat`. Plus `.card-accent`, `.tabel-admin`, `.rij-hover` en
+  `.veld-pil` in `index.css`
+- **`lib/aanvraag.ts`** — statuslabels en -kleuren van een aanvraag stonden in **twee** kopieën,
+  met de kleuren los daarvan in een ternaire keten midden in een tabel. `CustomerDetailPage`
+  dupliceerde daarnaast de boeking-labels uit `lib/boeking.ts`. Alle drie weg
+- **Zijbalk in drie groepen** — *Werk · Geld · Inhoud*. Elf gelijkwaardige items werden drie
+  korte lijstjes
+- **`SheetSectie`** krijgt een goudstreepje en een haarlijn: een sheet met zeven secties las als
+  één doorlopende lap
+
+### 🐛 Drie klassen die stil niets deden
+
+Tailwind accepteert opacity alleen in stappen van vijf; `/8` en `/12` worden zonder foutmelding
+genegeerd. Gevonden bij het nalopen:
+
+- **`bg-charcoal/12` in `Tijdlijn`** — de verbindingslijn tussen de stippen is er dus nooit
+  geweest. Nu `bg-gold/30`, en hij is er
+- `bg-charcoal/8` in `AanvraagSheet` en in de nieuwe `Badge`
+- `bg-burgundy/8` in `ContextMenu`
+
+Een grep over de hele client vindt ze nu niet meer:
+`grep -rhoE "(bg|text|border)-[a-z]+/[0-9]+" client/src | awk -F/ '{ if ($NF % 5 != 0) print }'`
+
+### 🔴 Contrast, en een nieuw token
+
+`gold` haalt op wit 2,3:1 en `gold-dark` 3,7:1 — allebei onder de AA-eis van 4,5:1 voor gewone
+tekst. Dat is geen smaakkwestie, dus staat het nu als regel in het design-systeem: `gold-dark`
+mag op koppen, randen en iconen; lopende tekst blijft charcoal.
+
+Eén plek had daar last van: `Bedrag` zette openstaande bedragen in `gold-dark` op ~14 px, en dat
+zijn getallen waar iemand op afgaat. Daarvoor is **`gold-deep` (`#8A6E36`, 4,9:1)** toegevoegd —
+goud dat je mág lezen.
+
+> ⚠️ Eén bewuste afwijking van het plan: **allergieën blijven burgundy** in plaats van butter.
+> Het is een veiligheidssignaal, en butter zou dat verzwakken.
+
+---
+
 ## Beslissingen die de scope bepaalden
 
 **📭 Mail valt volledig buiten scope (25-08).** Geen mailmodule, geen notificatie bij een nieuwe
@@ -165,8 +265,17 @@ Blokkerende stap in [../deployment/testscript-master.md](../deployment/testscrip
 **🌐 De preview komt op de VPS (25-08).** Vraagt een `DEMO_PREVIEW`-slot met `noindex` en een
 zichtbare demo-balk — voorwaarde, geen afwerking, vanwege de stockfoto's en de verzonnen reviews.
 
+**🎨 Kleur heeft betekenis (26-08).** Niet per module een eigen tint en geen warme herstyling
+van de hub, maar zeven semantische rollen. Je leest een scherm sneller omdat de kleur je iets
+vertelt, en niet omdat het vrolijker is.
+
 **🧾 Btw hoort bij de regel (25-08).** Niet bij de boeking, en niet bedrijfsbreed in de
 instellingen.
+
+**💶 Omzet telt op de datum van het feest (25-08).** Status `afgeleverd` + `event_date`, niet de
+betaaldatum. Het werk is dan geleverd, dus de omzet is verdiend, ook als de klant later betaalt.
+Wat er binnenkwam staat er los naast als kaspositie -- twee vragen, twee antwoorden. En er gaat
+niets automatisch: een betaling bestaat pas als hij is vastgelegd.
 
 ---
 
@@ -189,9 +298,11 @@ Niet om te bouwen — wel om **live** te gaan. Status per item:
 
 ## Volgende sessie
 
-1. **De zes migraties naar live**, dan deployen, dan de oude taart-categorieën opruimen
+1. **De zeven migraties naar live**, dan deployen, dan de oude taart-categorieën opruimen
 2. **`DEMO_PREVIEW`-slot** — voorwaarde voordat de preview op de server mag
 3. **`check:demo` uitbreiden** met een databasecontrole; hij scant nu alleen de gebouwde bundel
 4. **`demoImageForSlug()` lekt** op `/over`, `/contact` en de processtappen van de homepage: die
    roepen 'm onvoorwaardelijk aan, dus daar staan stock-taarten tussen het nieuwe werk
 5. **De klikronde**: stap 13 plus de breedtes van de nieuwe schermen
+6. **De kleurronde nakijken** op 375 / 768 / 1440 px — de wassingen zijn niet in een browser
+   gezien, alleen op typecheck, tests en build

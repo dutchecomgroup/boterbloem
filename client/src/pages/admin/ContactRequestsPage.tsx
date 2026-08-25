@@ -1,18 +1,15 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, Inbox } from "lucide-react";
 import { api } from "../../lib/api";
 import { formatDateShort } from "../../lib/utils";
 import { AanvraagSheet } from "../../components/admin/AanvraagSheet";
 import { BoekingSheet } from "../../components/admin/BoekingSheet";
 import { useSheetParam } from "../../hooks/useSheetParam";
 import type { ContactRequest, GalleryCategory } from "@shared/schema";
-
-const STATUS_LABEL: Record<string, string> = {
-  nieuw: "Nieuw",
-  gelezen: "Gelezen",
-  opgevolgd: "Opgevolgd",
-  omgezet_naar_order: "→ Boeking",
-};
+import { AANVRAAG_LABEL, AANVRAAG_KLEUR } from "../../lib/aanvraag";
+import { PageKop } from "../../components/admin/ui/PageKop";
+import { LegeStaat } from "../../components/admin/ui/LegeStaat";
+import { Badge } from "../../components/admin/ui/Badge";
 
 export default function ContactRequestsPage() {
   const qc = useQueryClient();
@@ -46,16 +43,23 @@ export default function ContactRequestsPage() {
 
   return (
     <div>
-      <h1 className="mb-2 text-3xl">Aanvragen</h1>
-      <p className="mb-8 text-sm text-charcoal/60">
-        Inkomende contactformulier-aanvragen. Klik er een aan om te zien wat er gevraagd wordt
-        en er een boeking van te maken.
-        {nieuw > 0 && <> Er {nieuw === 1 ? "is" : "zijn"} <strong>{nieuw}</strong> nieuw.</>}
-      </p>
+      <PageKop
+        titel="Aanvragen"
+        icoon={Inbox}
+        onderschrift="Inkomende contactformulier-aanvragen. Klik er een aan om te zien wat er gevraagd wordt en er een boeking van te maken."
+        actie={
+          // Alleen tonen als er iets ligt: een teller op nul is geen informatie.
+          nieuw > 0 ? (
+            <Badge toon="butter">
+              {nieuw} nieuw{nieuw === 1 ? "" : "e"}
+            </Badge>
+          ) : undefined
+        }
+      />
 
       <div className="card overflow-hidden p-0">
-        <table className="w-full text-sm">
-          <thead className="bg-charcoal/5 text-xs uppercase tracking-widest text-charcoal/60">
+        <table className="tabel-admin w-full text-sm">
+          <thead>
             <tr>
               <th className="px-4 py-3 text-left">Binnengekomen</th>
               <th className="px-4 py-3 text-left">Naam</th>
@@ -77,7 +81,7 @@ export default function ContactRequestsPage() {
                   <tr
                     key={r.id}
                     onClick={() => openen(r)}
-                    className="cursor-pointer border-t border-charcoal/5 hover:bg-cream/40"
+                    className="rij-hover cursor-pointer"
                   >
                     <td className="px-4 py-3 text-charcoal/60">{formatDateShort(r.createdAt)}</td>
                     <td className="px-4 py-3">
@@ -102,29 +106,23 @@ export default function ContactRequestsPage() {
                           )}
                         </span>
                       ) : (
-                        <span className="text-charcoal/40">—</span>
+                        <span className="text-charcoal/30">—</span>
                       )}
                     </td>
                     <td className="px-4 py-3">
-                      <span
-                        className={`rounded px-2 py-0.5 text-[10px] uppercase tracking-widest ${
-                          r.status === "nieuw"
-                            ? "bg-gold text-cream"
-                            : r.status === "omgezet_naar_order"
-                              ? "bg-emerald-100 text-emerald-800"
-                              : "bg-charcoal/10 text-charcoal/60"
-                        }`}
-                      >
-                        {STATUS_LABEL[r.status]}
-                      </span>
+                      <Badge klassen={AANVRAAG_KLEUR[r.status]}>{AANVRAAG_LABEL[r.status]}</Badge>
                     </td>
                   </tr>
                 );
               })
             ) : (
               <tr>
-                <td colSpan={5} className="px-4 py-12 text-center text-charcoal/40">
-                  Geen aanvragen
+                <td colSpan={5} className="p-4">
+                  <LegeStaat
+                    icoon={Inbox}
+                    titel="Geen aanvragen"
+                    hint="Zodra iemand het contactformulier op de site invult, komt de aanvraag hier binnen."
+                  />
                 </td>
               </tr>
             )}

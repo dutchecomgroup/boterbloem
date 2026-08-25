@@ -1,12 +1,15 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { AlertTriangle, Plus } from "lucide-react";
+import { AlertTriangle, Plus, CalendarCheck, CalendarX } from "lucide-react";
 import { api } from "../../lib/api";
-import { formatCurrency, formatDateShort } from "../../lib/utils";
+import { formatDateShort } from "../../lib/utils";
 import { STATUSSEN, STATUS_LABEL, STATUS_KLEUR, bedragen } from "../../lib/boeking";
 import { BoekingSheet } from "../../components/admin/BoekingSheet";
 import { NieuweBoekingDialoog } from "../../components/admin/NieuweBoekingDialoog";
 import { useSheetParam } from "../../hooks/useSheetParam";
+import { PageKop } from "../../components/admin/ui/PageKop";
+import { LegeStaat } from "../../components/admin/ui/LegeStaat";
+import { Bedrag, rolVanOpenstaand } from "../../components/admin/ui/Bedrag";
 import type { Customer } from "@shared/schema";
 
 interface OrderRow {
@@ -18,6 +21,8 @@ interface OrderRow {
   totalPrice: string;
   depositAmount: string;
   depositPaid: boolean;
+  /** Som van de betaalregels, als tekst uit de subquery in de lijstroute. */
+  ontvangen: string;
   deliveryType: string;
   persons: number | null;
   location: string | null;
@@ -46,28 +51,23 @@ export default function OrdersPage() {
 
   return (
     <div>
-      <div className="mb-8 flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="mb-2 text-3xl">Boekingen</h1>
-          <p className="text-sm text-charcoal/60">
-            Klik op een rij om het feest te openen.
-          </p>
-        </div>
-        <button type="button" onClick={() => setNieuwOpen(true)} className="btn-gold">
-          <Plus className="h-4 w-4" /> Nieuwe boeking
-        </button>
-      </div>
+      <PageKop
+        titel="Boekingen"
+        icoon={CalendarCheck}
+        onderschrift="Klik op een rij om het feest te openen."
+        actie={
+          <button type="button" onClick={() => setNieuwOpen(true)} className="btn-gold">
+            <Plus className="h-4 w-4" /> Nieuwe boeking
+          </button>
+        }
+      />
 
       <div className="mb-6 flex flex-wrap gap-2">
         {["alles", ...STATUSSEN].map((s) => (
           <button
             key={s}
             onClick={() => setFilter(s)}
-            className={`rounded-full px-3 py-1.5 text-xs uppercase tracking-widest transition ${
-              filter === s
-                ? "bg-gold text-cream"
-                : "border border-charcoal/10 bg-white text-charcoal/60 hover:text-charcoal"
-            }`}
+            className={`pill ${filter === s ? "pill-active" : "pill-inactive"}`}
           >
             {s === "alles" ? "alles" : STATUS_LABEL[s]}
           </button>
@@ -75,8 +75,8 @@ export default function OrdersPage() {
       </div>
 
       <div className="card overflow-hidden p-0">
-        <table className="w-full text-sm">
-          <thead className="bg-charcoal/5 text-xs uppercase tracking-widest text-charcoal/60">
+        <table className="tabel-admin w-full text-sm">
+          <thead>
             <tr>
               <th className="px-4 py-3 text-left">Nummer</th>
               <th className="px-4 py-3 text-left">Datum</th>
@@ -89,12 +89,12 @@ export default function OrdersPage() {
           <tbody>
             {orders?.length ? (
               orders.map((o) => {
-                const b = bedragen(o.totalPrice, o.depositAmount, o.depositPaid);
+                const b = bedragen(o.totalPrice, o.ontvangen, o.depositAmount);
                 return (
                   <tr
                     key={o.id}
                     onClick={() => sheet.openen(o.id)}
-                    className="cursor-pointer border-t border-charcoal/5 hover:bg-cream/40"
+                    className="rij-hover cursor-pointer"
                   >
                     <td className="px-4 py-3 font-medium tabular-nums text-charcoal/70">
                       <span className="inline-flex items-center gap-1.5">
@@ -132,27 +132,31 @@ export default function OrdersPage() {
                         ))}
                       </select>
                     </td>
-                    <td className="px-4 py-3 text-right font-medium tabular-nums">
-                      {formatCurrency(o.totalPrice)}
+                    <td className="px-4 py-3 text-right">
+                      <Bedrag waarde={o.totalPrice} vet />
                     </td>
-                    <td
-                      className={`px-4 py-3 text-right tabular-nums ${
-                        b.teVeelBetaald
-                          ? "text-burgundy"
-                          : b.voldaan
-                            ? "text-emerald-700"
-                            : "text-gold-dark"
-                      }`}
-                    >
-                      {b.voldaan ? "voldaan" : b.openstaand}
+                    <td className="px-4 py-3 text-right">
+                      {b.voldaan ? (
+                        <span className="text-xs font-medium uppercase tracking-widest text-emerald-700">
+                          voldaan
+                        </span>
+                      ) : (
+                        <Bedrag waarde={b.openCenten / 100} rol={rolVanOpenstaand(b.openCenten / 100)} />
+                      )}
                     </td>
                   </tr>
                 );
               })
             ) : (
               <tr>
-                <td colSpan={6} className="px-4 py-12 text-center text-charcoal/40">
-                  Geen boekingen
+                <td colSpan={6} className="p-4">
+                  <LegeStaat
+                    icoon={CalendarX}
+                    titel={filter === "alles" ? "Nog geen boekingen" : "Niets met deze status"}
+                    hint={filter === "alles"
+                      ? "Zet een aanvraag om naar een boeking, of maak er hier zelf een aan."
+                      : "Kies een andere status, of 'alles' om alles te zien."}
+                  />
                 </td>
               </tr>
             )}

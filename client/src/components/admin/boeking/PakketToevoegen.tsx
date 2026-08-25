@@ -72,7 +72,7 @@ export function PakketToevoegen({
 
   if (kiesbaar.length === 0) {
     return (
-      <p className="mb-2.5 rounded-md bg-charcoal/[0.03] px-3 py-2 text-xs text-charcoal/70">
+      <p className="mb-2.5 rounded-md border-l-2 border-gold/50 bg-cream/70 px-3 py-2 text-xs text-charcoal/75">
         Er zijn nog geen actieve pakketten. Zet ze aan op{" "}
         <a href="/admin/pakketten" className="text-gold-dark underline-offset-2 hover:underline">
           Pakketten

@@ -6,6 +6,7 @@ import { api } from "../../lib/api";
 import { Sheet, SheetSectie } from "../ui/Sheet";
 import { centenNaarTekst, naarCenten } from "../../lib/boeking";
 import type { ContactRequest, Package, GalleryCategory } from "@shared/schema";
+import { AANVRAAG_STATUSSEN, AANVRAAG_LABEL } from "../../lib/aanvraag";
 
 /**
  * De aanvraagsheet — wireframe W4.
@@ -19,15 +20,6 @@ import type { ContactRequest, Package, GalleryCategory } from "@shared/schema";
  * herberekening hier: de regel voor het ontdubbelen staat daar, en die twee keer opschrijven
  * is precies hoe ze uit elkaar gaan lopen.
  */
-
-const STATUSSEN: ContactRequest["status"][] = ["nieuw", "gelezen", "opgevolgd", "omgezet_naar_order"];
-
-const STATUS_LABEL: Record<string, string> = {
-  nieuw: "Nieuw",
-  gelezen: "Gelezen",
-  opgevolgd: "Opgevolgd",
-  omgezet_naar_order: "→ Boeking",
-};
 
 type Voorbeeld = {
   alOmgezet: number | null;
@@ -119,11 +111,11 @@ export function AanvraagSheet({
             value={aanvraag.status}
             onChange={(e) => setStatus.mutate(e.target.value)}
             aria-label="Status"
-            className="shrink-0 rounded-full border-0 bg-charcoal/8 px-3 py-1 text-xs font-medium text-charcoal/70 outline-none"
+            className="shrink-0 rounded-full border-0 bg-charcoal/10 px-3 py-1 text-xs font-medium text-charcoal/70 outline-none"
           >
-            {STATUSSEN.map((s) => (
+            {AANVRAAG_STATUSSEN.map((s) => (
               <option key={s} value={s}>
-                {STATUS_LABEL[s]}
+                {AANVRAAG_LABEL[s]}
               </option>
             ))}
           </select>
@@ -144,7 +136,7 @@ export function AanvraagSheet({
               <button
                 type="button"
                 onClick={() => onBoekingGemaakt(alOmgezet)}
-                className="inline-flex items-center gap-1.5 rounded-full border border-charcoal/20 px-4 py-2 text-xs uppercase tracking-widest text-charcoal/70 transition hover:bg-charcoal/5"
+                className="inline-flex items-center gap-1.5 rounded-full border border-gold/40 px-4 py-2 text-xs uppercase tracking-widest text-charcoal/75 transition hover:border-gold hover:bg-gold/10"
               >
                 <ExternalLink className="h-3.5 w-3.5" /> Open de boeking
               </button>

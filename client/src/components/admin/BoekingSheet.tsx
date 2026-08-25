@@ -12,7 +12,8 @@ import { RegelTabel, type Regel } from "./boeking/RegelTabel";
 import { PakketToevoegen, type PakketOptie } from "./boeking/PakketToevoegen";
 import { Tijdlijn, type Gebeurtenis } from "./boeking/Tijdlijn";
 import { KlantKoppelen } from "./boeking/KlantKoppelen";
-import { STATUSSEN, STATUS_LABEL, STATUS_KLEUR, LEVERING_LABEL } from "../../lib/boeking";
+import { BetalingenBlok, type Betaling } from "./boeking/BetalingenBlok";
+import { STATUSSEN, STATUS_LABEL, STATUS_KLEUR, LEVERING_LABEL, bedragen } from "../../lib/boeking";
 
 /**
  * De detailsheet van één boeking — wireframe W2.
@@ -42,6 +43,9 @@ type Boeking = {
   totalPrice: string;
   depositAmount: string;
   depositPaid: boolean;
+  /** De som van `betalingen`, door de server berekend zodat scherm en offerte niet uiteenlopen. */
+  ontvangen: string;
+  betalingen: Betaling[];
   vatRate: string | null;
   packageId: number | null;
   customer: Klant | null;
@@ -116,6 +120,15 @@ export function BoekingSheet({
   const pakketToepassen = useMutation({
     mutationFn: ({ packageId, aantal }: { packageId: number; aantal: number }) =>
       api.post(`/api/admin/orders/${boekingId}/apply-package`, { packageId, aantal }),
+    onSuccess: verversen,
+  });
+
+  const betalingToevoegen = useMutation({
+    mutationFn: (b: object) => api.post(`/api/admin/orders/${boekingId}/betalingen`, b),
+    onSuccess: verversen,
+  });
+  const betalingVerwijderen = useMutation({
+    mutationFn: (id: number) => api.delete(`/api/admin/orders/${boekingId}/betalingen/${id}`),
     onSuccess: verversen,
   });
 
@@ -219,8 +232,8 @@ export function BoekingSheet({
         <>
           <BedragenStrip
             totalPrice={boeking.totalPrice}
+            ontvangen={boeking.ontvangen}
             depositAmount={boeking.depositAmount}
-            depositPaid={boeking.depositPaid}
           />
 
           <AllergieBlok allergies={boeking.allergies} opslaan={veld("allergies")} />
@@ -262,7 +275,7 @@ export function BoekingSheet({
               // voor zondag?" zonder naam, of de klant is verwijderd. Maar zodra de naam er wél
               // is, moet je hem kwijt kunnen; hier stond alleen een mededeling.
               <>
-                <p className="rounded-md bg-charcoal/[0.03] px-3 py-2.5 text-sm text-charcoal/65">
+                <p className="rounded-md border border-dashed border-gold/25 bg-cream/60 px-3 py-2.5 text-sm text-charcoal/70">
                   Nog geen klant gekoppeld.
                 </p>
                 <KlantKoppelen boekingId={boeking.id} />
@@ -313,15 +326,9 @@ export function BoekingSheet({
                 <span className="mb-0.5 block text-[11px] font-medium uppercase tracking-wider text-charcoal/75">
                   Ontvangen
                 </span>
-                <label className="flex cursor-pointer items-center gap-2 px-2 py-1 text-sm text-charcoal">
-                  <input
-                    type="checkbox"
-                    checked={boeking.depositPaid}
-                    onChange={(e) => void patchBoeking.mutateAsync({ depositPaid: e.target.checked })}
-                    className="h-4 w-4 rounded border-charcoal/25 text-gold focus:ring-gold/40"
-                  />
-                  {boeking.depositPaid ? "Binnen" : "Nog niet"}
-                </label>
+                <div className="px-2 py-1 text-sm tabular-nums text-charcoal">
+                  {bedragen(boeking.totalPrice, boeking.ontvangen, boeking.depositAmount).ontvangen}
+                </div>
               </div>
               {/*
                 Hier stond een btw-keuze voor de hele boeking. Die is eruit: het tarief hoort bij
@@ -329,6 +336,23 @@ export function BoekingSheet({
                 én regelniveau was niet meer af te lezen welke wint. Nu bepaalt het pakket de
                 startwaarde en heeft de regel het laatste woord.
               */}
+            </div>
+
+            {/*
+              Hier stond een selectievakje "Ontvangen: binnen" dat bij de aanbetaling hoorde.
+              Daarmee viel niet vast te leggen dat de rest ook betaald was, en een klant die in
+              twee keer betaalt paste er al helemaal niet in. Zie BetalingenBlok.
+            */}
+            <div className="mt-4">
+              <BetalingenBlok
+                betalingen={boeking.betalingen ?? []}
+                openstaandBedrag={(
+                  Math.max(0, bedragen(boeking.totalPrice, boeking.ontvangen).openCenten) / 100
+                ).toFixed(2)}
+                bezig={betalingToevoegen.isPending || betalingVerwijderen.isPending}
+                toevoegen={(b) => betalingToevoegen.mutateAsync(b)}
+                verwijderen={(id) => betalingVerwijderen.mutateAsync(id)}
+              />
             </div>
           </SheetSectie>
 

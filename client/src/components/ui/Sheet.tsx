@@ -96,9 +96,12 @@ export function Sheet({
 }
 
 /**
- * Sectiekop binnen een sheet: klein, goud, wijd gespatieerd. Rust komt van ruimte en
- * hiërarchie, niet van scheidingslijnen — die houden we voor de regeltabel en de tijdlijn,
- * waar ze betekenis dragen.
+ * Sectiekop binnen een sheet: klein, goud, wijd gespatieerd.
+ *
+ * Rust kwam van ruimte alleen, en dat bleek te weinig — een sheet met zeven secties las als één
+ * doorlopende lap tekst. Nu een goudkleurig streepje voor de kop en een haarlijn erna, zodat de
+ * secties zichtbaar uit elkaar vallen zonder dat het een formulier wordt. Zwaardere lijnen
+ * houden we voor de regeltabel en de tijdlijn, waar ze betekenis dragen.
  */
 export function SheetSectie({
   titel,
@@ -111,8 +114,11 @@ export function SheetSectie({
 }) {
   return (
     <section className="mb-7 last:mb-0">
-      <div className="mb-2.5 flex items-center justify-between gap-2">
-        <h3 className="tag">{titel}</h3>
+      <div className="mb-2.5 flex items-center justify-between gap-2 border-b border-gold/20 pb-1.5">
+        <h3 className="tag flex items-center gap-2">
+          <span aria-hidden className="inline-block h-3 w-0.5 rounded-full bg-gold" />
+          {titel}
+        </h3>
         {actie}
       </div>
       {children}

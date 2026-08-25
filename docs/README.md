@@ -1,6 +1,6 @@
 # Atelier Boterbloem — Documentatie
 
-**Laatste update:** 25 augustus 2026 (einde dag)
+**Laatste update:** 26 augustus 2026 (einde dag)
 
 > Voor AI/Claude-instructies: zie [`CLAUDE.md`](../CLAUDE.md) in de projectroot.
 > Voor de dagelijkse dev-workflow: zie [workflow/werkwijze.md](workflow/werkwijze.md).

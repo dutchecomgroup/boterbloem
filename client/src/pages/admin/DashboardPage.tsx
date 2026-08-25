@@ -1,8 +1,46 @@
+import type { ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../../lib/api";
 import { formatCurrency } from "../../lib/utils";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { Link } from "wouter";
+import { LayoutDashboard, Inbox, CalendarCheck, Euro } from "lucide-react";
+import { PageKop } from "../../components/admin/ui/PageKop";
+import { LegeStaat } from "../../components/admin/ui/LegeStaat";
+
+/**
+ * Eén tegel van het dashboard. De streep links draagt de betekenis; de rest blijft rustig,
+ * zodat het getal het luidste op de tegel blijft.
+ */
+function Tegel({
+  label, children, href, rand, accent, icoon,
+}: {
+  label: string;
+  children: ReactNode;
+  href?: string;
+  /** Tailwind-klasse voor de kleur van de streep links, uit de kleurtaal. */
+  rand: string;
+  /** Optionele wassing — alleen als de tegel écht om actie vraagt. */
+  accent?: string;
+  icoon?: ReactNode;
+}) {
+  const inhoud = (
+    <>
+      <div className="flex items-center gap-1.5 text-xs uppercase tracking-widest text-charcoal/55">
+        {icoon}
+        {label}
+      </div>
+      <div className="mt-3 font-display text-4xl leading-none">{children}</div>
+    </>
+  );
+  const klassen = `card border-l-4 ${rand} ${accent ?? ""}`;
+
+  return href ? (
+    <Link href={href} className={`${klassen} block transition hover:shadow-md`}>{inhoud}</Link>
+  ) : (
+    <div className={klassen}>{inhoud}</div>
+  );
+}
 
 interface DashboardStats {
   openRequests: number;
@@ -25,39 +63,65 @@ export default function DashboardPage() {
 
   return (
     <div>
-      <h1 className="text-3xl mb-2">Dashboard</h1>
-      <p className="text-charcoal/60 text-sm mb-8">Overzicht van Atelier Boterbloem</p>
+      <PageKop
+        titel="Dashboard"
+        icoon={LayoutDashboard}
+        onderschrift="Overzicht van Atelier Boterbloem"
+      />
 
+      {/*
+        De vier tegels hadden alle vier hetzelfde gewicht — vier witte vlakken naast elkaar. Nu
+        volgen ze de kleurtaal: aanvragen vragen aandacht (butter), komende boekingen zijn merk
+        (goud), omzet is geld dat binnen is (groen), en vorige maand is geschiedenis (rustig).
+      */}
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
-        <Link href="/admin/aanvragen" className="card hover:shadow-md transition">
-          <div className="text-xs uppercase tracking-widest text-charcoal/50">Nieuwe aanvragen</div>
-          <div className="mt-3 text-4xl font-display">{data?.openRequests ?? "—"}</div>
-        </Link>
-        <Link href="/admin/boekingen" className="card hover:shadow-md transition">
-          <div className="text-xs uppercase tracking-widest text-charcoal/50">Komende 30 dagen</div>
-          <div className="mt-3 text-4xl font-display">{data?.upcomingOrders ?? "—"}</div>
-        </Link>
-        <div className="card">
-          <div className="text-xs uppercase tracking-widest text-charcoal/50">Omzet deze maand</div>
-          <div className="mt-3 text-4xl font-display">{data ? formatCurrency(data.revenueThisMonth) : "—"}</div>
+        <Tegel
+          href="/admin/aanvragen"
+          label="Nieuwe aanvragen"
+          rand="border-l-butter"
+          // Alleen kleuren als er écht iets ligt: een nul die om aandacht vraagt is ruis.
+          accent={data?.openRequests ? "bg-butter/35" : undefined}
+          icoon={<Inbox size={15} className="text-gold-dark" />}
+        >
+          {data?.openRequests ?? "—"}
+        </Tegel>
+
+        <Tegel
+          href="/admin/boekingen"
+          label="Komende 30 dagen"
+          rand="border-l-gold"
+          icoon={<CalendarCheck size={15} className="text-gold-dark" />}
+        >
+          {data?.upcomingOrders ?? "—"}
+        </Tegel>
+
+        <Tegel label="Omzet deze maand" rand="border-l-emerald-600">
+          <span className="text-emerald-700">
+            {data ? formatCurrency(data.revenueThisMonth) : "—"}
+          </span>
           {deltaPct !== null && (
-            <div className={`text-xs mt-1 ${delta >= 0 ? "text-emerald-600" : "text-burgundy"}`}>
+            <div className={`mt-1 text-xs font-body ${delta >= 0 ? "text-emerald-700" : "text-burgundy"}`}>
               {delta >= 0 ? "+" : ""}{deltaPct}% vs vorige maand
             </div>
           )}
-        </div>
-        <div className="card">
-          <div className="text-xs uppercase tracking-widest text-charcoal/50">Omzet vorige maand</div>
-          <div className="mt-3 text-4xl font-display">{data ? formatCurrency(data.revenueLastMonth) : "—"}</div>
-        </div>
+        </Tegel>
+
+        <Tegel label="Omzet vorige maand" rand="border-l-charcoal/20">
+          <span className="text-charcoal/55">
+            {data ? formatCurrency(data.revenueLastMonth) : "—"}
+          </span>
+        </Tegel>
       </div>
 
-      <div className="card">
-        <div className="flex items-center justify-between mb-6">
+      <div className="card-accent">
+        <div className="mb-6 flex items-center justify-between border-b border-gold/20 pb-3">
           <div>
             <h2 className="text-xl">Omzet 12 maanden</h2>
-            <p className="text-xs text-charcoal/50">Op basis van afgeleverde + betaalde boekingen</p>
+            <p className="text-xs text-charcoal/50">Afgeleverde boekingen, geteld op de datum van het feest</p>
           </div>
+          <Link href="/admin/omzet" className="text-xs text-gold-dark hover:underline">
+            Alle cijfers →
+          </Link>
         </div>
         <div className="h-72">
           {data?.revenueByMonth?.length ? (
@@ -74,7 +138,11 @@ export default function DashboardPage() {
               </LineChart>
             </ResponsiveContainer>
           ) : (
-            <div className="h-full flex items-center justify-center text-charcoal/40 text-sm">Geen data</div>
+            <LegeStaat
+              icoon={Euro}
+              titel="Nog geen omzet"
+              hint="Zodra een boeking op afgeleverd staat, verschijnt hij hier in de maand van het feest."
+            />
           )}
         </div>
       </div>

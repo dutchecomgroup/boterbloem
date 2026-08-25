@@ -7,11 +7,13 @@ import {
 import { nl } from "date-fns/locale";
 import {
   ChevronLeft, ChevronRight, MapPin, Clock, Plus, ExternalLink,
-  FileText, Trash2, AlertTriangle,
+  FileText, Trash2, AlertTriangle, CalendarDays,
 } from "lucide-react";
 import { api } from "../../lib/api";
 import { formatCurrency } from "../../lib/utils";
 import { STATUSSEN, STATUS_LABEL, STATUS_KLEUR } from "../../lib/boeking";
+import { PageKop } from "../../components/admin/ui/PageKop";
+import { LegeStaat } from "../../components/admin/ui/LegeStaat";
 import { BoekingSheet } from "../../components/admin/BoekingSheet";
 import { AanvraagSheet } from "../../components/admin/AanvraagSheet";
 import { NieuweBoekingDialoog } from "../../components/admin/NieuweBoekingDialoog";
@@ -166,13 +168,11 @@ export default function AgendaPage() {
   return (
     <div>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="mb-1 text-3xl">Agenda</h1>
-          <p className="text-sm text-charcoal/60">
-            Klik op een dag om een boeking in te plannen, op een boeking om hem te openen.
-            Rechtermuisklik geeft meer. Slepen verplaatst naar een andere dag.
-          </p>
-        </div>
+        <PageKop
+          titel="Agenda"
+          icoon={CalendarDays}
+          onderschrift="Klik op een dag om een boeking in te plannen, op een boeking om hem te openen. Rechtermuisklik geeft meer. Slepen verplaatst naar een andere dag."
+        />
         <div className="flex items-center gap-2">
           <button onClick={() => setMaand(addMonths(maand, -1))}
             className="rounded-md p-2 hover:bg-charcoal/5" aria-label="Vorige maand">
@@ -194,9 +194,9 @@ export default function AgendaPage() {
 
       {/* Maandraster — vanaf md. Een raster van 35 vakjes is op een telefoon onleesbaar. */}
       <div className="card hidden overflow-hidden p-0 md:block">
-        <div className="grid grid-cols-7 border-b border-charcoal/10 bg-cream/60">
+        <div className="grid grid-cols-7 border-b border-gold/25 bg-butter/45">
           {["ma", "di", "wo", "do", "vr", "za", "zo"].map((d) => (
-            <div key={d} className="px-2 py-2 text-center text-[10px] uppercase tracking-widest text-charcoal/50">
+            <div key={d} className="px-2 py-2 text-center text-[10px] font-medium uppercase tracking-widest text-charcoal/80">
               {d}
             </div>
           ))}
@@ -206,6 +206,9 @@ export default function AgendaPage() {
             const datum = format(d, "yyyy-MM-dd");
             const items = perDag(d);
             const buitenMaand = !isSameMonth(d, maand);
+            // Zaterdag en zondag krijgen een lichte wassing: daar valt het meeste werk, en
+            // zo tel je de kolommen niet af om te zien welke dag je voor je hebt.
+            const weekend = d.getDay() === 0 || d.getDay() === 6;
             return (
               <div
                 key={datum}
@@ -222,8 +225,9 @@ export default function AgendaPage() {
                   verplaatsNaar(datum);
                 }}
                 className={`min-h-[104px] cursor-pointer border-b border-r border-charcoal/5 p-1.5 transition
-                  ${buitenMaand ? "bg-charcoal/[0.02]" : ""}
-                  ${overDag === datum ? "bg-gold/15 ring-1 ring-inset ring-gold" : "hover:bg-cream/50"}`}
+                  ${buitenMaand ? "bg-charcoal/[0.02]" : weekend ? "bg-cream/50" : ""}
+                  ${isToday(d) ? "ring-1 ring-inset ring-gold/40" : ""}
+                  ${overDag === datum ? "bg-gold/15 ring-1 ring-inset ring-gold" : "hover:bg-butter/25"}`}
               >
                 <div className={`mb-1 text-xs ${
                   isToday(d)
@@ -284,7 +288,7 @@ export default function AgendaPage() {
           </div>
         ))}
         {!isLoading && dagen.filter((d) => isSameMonth(d, maand) && perDag(d).length > 0).length === 0 && (
-          <div className="card py-10 text-center text-sm text-charcoal/40">Niets deze maand.</div>
+          <LegeStaat icoon={CalendarDays} titel="Niets deze maand" hint="Tik op de knop hierboven om een boeking in te plannen." compact />
         )}
       </div>
 

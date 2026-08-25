@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState, type ReactNode } from "react";
-import { Copy, Check, RefreshCw, ExternalLink } from "lucide-react";
+import { Copy, Check, RefreshCw, ExternalLink, Settings } from "lucide-react";
+import { PageKop } from "../../components/admin/ui/PageKop";
 import { api } from "../../lib/api";
 import { FotoKiezer } from "../../components/admin/FotoKiezer";
 import {
@@ -141,10 +142,11 @@ export default function SettingsPage() {
 
   return (
     <div>
-      <h1 className="text-3xl mb-2">Instellingen</h1>
-      <p className="text-charcoal/60 text-sm mb-8">
-        Alles wat op je site staat en niet bij een boeking, foto of pakket hoort.
-      </p>
+      <PageKop
+        titel="Instellingen"
+        icoon={Settings}
+        onderschrift="Alles wat op je site staat en niet bij een boeking, foto of pakket hoort."
+      />
 
       <div className="space-y-6">
         <Blok

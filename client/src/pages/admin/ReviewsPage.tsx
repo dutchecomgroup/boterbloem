@@ -2,7 +2,10 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { api } from "../../lib/api";
 import type { Review } from "@shared/schema";
-import { Plus, Trash2, Star, X } from "lucide-react";
+import { Plus, Trash2, Star, X, MessageSquareQuote } from "lucide-react";
+import { PageKop } from "../../components/admin/ui/PageKop";
+import { LegeStaat } from "../../components/admin/ui/LegeStaat";
+import { Badge } from "../../components/admin/ui/Badge";
 
 const LEEG: Partial<Review> = {
   authorName: "", eventType: "", body: "", rating: 5,
@@ -54,23 +57,28 @@ export default function ReviewsPage() {
 
   return (
     <div>
-      <div className="flex flex-wrap items-start justify-between gap-4 mb-2">
-        <h1 className="text-3xl">Reviews</h1>
-        <button className="btn-gold !py-2 !px-5 text-xs" onClick={() => setBewerk({ ...LEEG })}>
-          <Plus size={14} /> Review toevoegen
-        </button>
-      </div>
-      <p className="text-charcoal/60 text-sm mb-2 max-w-2xl">
-        Reacties van klanten. Een review staat na het aanmaken op <strong>niet
-        gepubliceerd</strong> — zo kun je hem eerst teruglezen.
-      </p>
-      <p className="text-charcoal/50 text-xs mb-6 max-w-2xl">
+      <PageKop
+        titel="Reviews"
+        icoon={MessageSquareQuote}
+        onderschrift={
+          <>
+            Reacties van klanten. Een review staat na het aanmaken op <strong>niet
+            gepubliceerd</strong> — zo kun je hem eerst teruglezen.
+          </>
+        }
+        actie={
+          <button className="btn-gold !py-2 !px-5 text-xs" onClick={() => setBewerk({ ...LEEG })}>
+            <Plus size={14} /> Review toevoegen
+          </button>
+        }
+      />
+      <p className="-mt-4 mb-6 max-w-2xl text-xs text-charcoal/50">
         Vraag even toestemming voordat je iemands naam op de site zet, ook bij een reactie uit
         WhatsApp of Instagram.
       </p>
 
       {gepubliceerd === 0 && (reviews?.length ?? 0) > 0 && (
-        <div className="card mb-4 text-sm text-charcoal/70">
+        <div className="card mb-4 border-l-4 border-l-butter bg-butter/20 text-sm text-charcoal/80">
           Er is nog niets gepubliceerd, dus het reviewblok staat niet op de site. Dat is
           bewust: een leeg reviewblok is slechter dan geen reviewblok.
         </div>
@@ -129,7 +137,7 @@ export default function ReviewsPage() {
 
       <div className="space-y-3">
         {reviews?.map((r) => (
-          <div key={r.id} className="card flex flex-wrap gap-4">
+          <div key={r.id} className={`card flex flex-wrap gap-4 border-l-4 ${r.published ? "border-l-gold" : "border-l-charcoal/15"}`}>
             <div className="flex-1 min-w-[240px]">
               <div className="flex items-baseline gap-2 flex-wrap">
                 <span className="font-medium">{r.authorName}</span>
@@ -139,11 +147,8 @@ export default function ReviewsPage() {
                     {Array.from({ length: r.rating }, (_, i) => <Star key={i} size={12} fill="currentColor" />)}
                   </span>
                 )}
-                {!r.published && (
-                  <span className="text-[10px] uppercase tracking-widest bg-charcoal/10 text-charcoal/60 px-2 py-0.5 rounded">
-                    concept
-                  </span>
-                )}
+                {!r.published && <Badge toon="butter">concept</Badge>}
+                {r.featured && <Badge toon="goud">homepage</Badge>}
               </div>
               <p className="text-sm text-charcoal/70 mt-2 leading-relaxed">{r.body}</p>
             </div>
@@ -160,7 +165,7 @@ export default function ReviewsPage() {
               </label>
               <div className="flex gap-2 mt-1">
                 <button className="btn-outline !py-1.5 !px-3 text-xs" onClick={() => setBewerk(r)}>Bewerken</button>
-                <button className="p-1.5 text-charcoal/40 hover:text-burgundy"
+                <button className="rounded p-1.5 text-charcoal/30 transition hover:bg-burgundy/10 hover:text-burgundy"
                   onClick={() => confirm(`Review van ${r.authorName} verwijderen?`) && verwijderen.mutate(r.id)}>
                   <Trash2 size={15} />
                 </button>
@@ -169,9 +174,11 @@ export default function ReviewsPage() {
           </div>
         ))}
         {reviews?.length === 0 && (
-          <div className="card text-center text-charcoal/40 py-16 text-sm">
-            Nog geen reviews. Tot die tijd staat er geen reviewblok op de site.
-          </div>
+          <LegeStaat
+            icoon={MessageSquareQuote}
+            titel="Nog geen reviews"
+            hint="Tot die tijd staat er geen reviewblok op de site."
+          />
         )}
       </div>
     </div>

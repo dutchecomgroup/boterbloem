@@ -126,4 +126,45 @@
   .hairline-gold {
     @apply border border-gold/30;
   }
+
+  /* ------------------------------------------------------------------------
+   * Beheerpaneel — de kleurtaal
+   *
+   * Kleur heeft hier een betekenis en is geen versiering. Zeven rollen, en alles kiest
+   * daaruit: goud = merk en navigatie · goud-rand = bewerkbaar · groen = voldaan ·
+   * goud-donker = openstaand · burgundy = fout of gevaar · butter = vraagt aandacht ·
+   * charcoal/40 = afgehandeld. Past een accent in geen enkele rol, dan blijft het charcoal.
+   *
+   * 🔴 Contrast. `gold` haalt op wit 2,3:1 en `gold-dark` 3,7:1 — allebei onder de AA-eis van
+   * 4,5:1 voor gewone tekst. `gold-dark` mag op koppen vanaf 24 px (of 19 px vet), op randen,
+   * iconen en streepjes. Lopende tekst, tabelinhoud en labels blijven charcoal. Op `butter` en
+   * `blush` staat tekst altijd in charcoal, nooit in goud.
+   * --------------------------------------------------------------------- */
+
+  /* Kaart met een goudkleurige streep links: het blok dat er op dit scherm toe doet. */
+  .card-accent {
+    @apply card border-l-4 border-l-gold;
+  }
+
+  /* Tabelkop met een butter-wassing. Verving `bg-charcoal/5 text-charcoal/60`, dat op elke
+     lijst hetzelfde grijs-op-grijs gaf. Letters in charcoal — zie de contrastregel. */
+  .tabel-admin thead {
+    @apply bg-butter/45 text-charcoal/80 text-xs uppercase tracking-widest;
+  }
+  .tabel-admin thead th {
+    @apply border-b border-gold/25 font-medium;
+  }
+
+  /* Rij-hover in cream in plaats van grijs: warm, en het onderscheidt zich van de kop. */
+  .rij-hover {
+    @apply border-t border-charcoal/5 transition-colors hover:bg-cream/70;
+  }
+
+  /* De rusttoestand van een inline bewerkbaar veld. Uit `VeldInline` gelicht zodat elk ander
+     klikbaar veld dezelfde belofte kan doen: hier kun je iets wijzigen. */
+  .veld-pil {
+    @apply rounded-md border border-charcoal/10 bg-white/55 transition
+      hover:border-gold/60 hover:bg-white focus:border-gold focus:outline-none
+      focus-visible:ring-2 focus-visible:ring-gold/30;
+  }
 }

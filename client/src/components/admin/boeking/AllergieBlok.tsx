@@ -23,14 +23,14 @@ export function AllergieBlok({
   return (
     <div
       className={`mb-7 rounded-r-md border-l-4 py-3 pl-4 pr-3 ${
-        heeft ? "border-burgundy bg-burgundy/[0.07]" : "border-charcoal/15 bg-charcoal/[0.03]"
+        heeft ? "border-burgundy bg-burgundy/[0.07]" : "border-gold/40 bg-cream/70"
       }`}
     >
       <div className="mb-1 flex items-center gap-1.5">
         {heeft ? (
           <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-burgundy" />
         ) : (
-          <Check className="h-3.5 w-3.5 shrink-0 text-charcoal/60" />
+          <Check className="h-3.5 w-3.5 shrink-0 text-gold-dark" />
         )}
         <span
           className={`text-[10px] font-medium uppercase tracking-[0.2em] ${

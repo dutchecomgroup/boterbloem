@@ -2,8 +2,10 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useMemo } from "react";
 import { api } from "../../lib/api";
 import type { Customer } from "@shared/schema";
-import { Trash2, Plus, Search } from "lucide-react";
+import { Trash2, Plus, Search, Users, UserPlus } from "lucide-react";
 import { Link } from "wouter";
+import { PageKop } from "../../components/admin/ui/PageKop";
+import { LegeStaat } from "../../components/admin/ui/LegeStaat";
 
 export default function CustomersPage() {
   const qc = useQueryClient();
@@ -41,16 +43,19 @@ export default function CustomersPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-2">
-        <h1 className="text-3xl">Klanten</h1>
-        <button onClick={() => setShowNew((s) => !s)} className="btn-gold !py-2 !px-4 text-xs">
-          <Plus size={14} /> Nieuwe klant
-        </button>
-      </div>
-      <p className="text-charcoal/60 text-sm mb-6">Klantgegevens en historie. Klik een klant aan voor de boekingen.</p>
+      <PageKop
+        titel="Klanten"
+        icoon={Users}
+        onderschrift="Klantgegevens en historie. Klik een klant aan voor de boekingen."
+        actie={
+          <button onClick={() => setShowNew((s) => !s)} className="btn-gold !py-2 !px-4 text-xs">
+            <Plus size={14} /> Nieuwe klant
+          </button>
+        }
+      />
 
       <div className="relative mb-6 max-w-sm">
-        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-charcoal/30" />
+        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gold-dark/50" />
         <input className="input !pl-9" placeholder="Zoek op naam, e-mail of telefoon"
           value={zoek} onChange={(e) => setZoek(e.target.value)} />
       </div>
@@ -72,27 +77,37 @@ export default function CustomersPage() {
         </form>
       )}
 
-      <div className="card p-0 overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-charcoal/5 text-charcoal/60 text-xs uppercase tracking-widest">
+      <div className="card overflow-hidden p-0">
+        <table className="tabel-admin w-full text-sm">
+          <thead>
             <tr><th className="text-left px-4 py-3">Naam</th><th className="text-left px-4 py-3">E-mail</th><th className="text-left px-4 py-3">Telefoon</th><th></th></tr>
           </thead>
           <tbody>
             {gefilterd.length ? gefilterd.map((c) => (
-              <tr key={c.id} className="border-t border-charcoal/5 hover:bg-cream/40">
+              <tr key={c.id} className="rij-hover">
                 <td className="px-4 py-3 font-medium">
-                  <Link href={`/admin/klanten/${c.id}`} className="hover:text-gold-dark">{c.name}</Link>
+                  <Link href={`/admin/klanten/${c.id}`} className="text-charcoal transition-colors hover:text-gold-dark">{c.name}</Link>
                 </td>
-                <td className="px-4 py-3">{c.email ?? "—"}</td>
-                <td className="px-4 py-3">{c.phone ?? "—"}</td>
+                <td className="px-4 py-3 text-charcoal/70">{c.email ?? <span className="text-charcoal/30">—</span>}</td>
+                <td className="px-4 py-3 text-charcoal/70">{c.phone ?? <span className="text-charcoal/30">—</span>}</td>
                 <td className="px-4 py-3 text-right">
-                  <button onClick={() => confirm(`'${c.name}' verwijderen?`) && del.mutate(c.id)} className="text-charcoal/40 hover:text-burgundy">
+                  <button onClick={() => confirm(`'${c.name}' verwijderen?`) && del.mutate(c.id)} className="rounded p-1 text-charcoal/30 transition hover:bg-burgundy/10 hover:text-burgundy">
                     <Trash2 size={16} />
                   </button>
                 </td>
               </tr>
             )) : (
-              <tr><td colSpan={4} className="px-4 py-12 text-center text-charcoal/40">{zoek ? "Geen klant gevonden" : "Nog geen klanten"}</td></tr>
+              <tr>
+                <td colSpan={4} className="p-4">
+                  <LegeStaat
+                    icoon={zoek ? Search : UserPlus}
+                    titel={zoek ? "Geen klant gevonden" : "Nog geen klanten"}
+                    hint={zoek
+                      ? `Niets dat past bij "${zoek}". Probeer een deel van de naam of het e-mailadres.`
+                      : "Klanten komen er vanzelf bij zodra je een aanvraag omzet naar een boeking."}
+                  />
+                </td>
+              </tr>
             )}
           </tbody>
         </table>

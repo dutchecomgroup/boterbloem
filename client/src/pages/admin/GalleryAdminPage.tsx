@@ -4,7 +4,9 @@ import { Link, useLocation, useSearch } from "wouter";
 import {
   Trash2, Plus, Pencil, Check, X, ChevronUp, ChevronDown, ChevronRight,
   Images, Search, CalendarDays,
+  Image as ImageIcon,
 } from "lucide-react";
+import { PageKop } from "../../components/admin/ui/PageKop";
 import { api } from "../../lib/api";
 import { FotoRaster } from "../../components/admin/galerij/FotoRaster";
 import { UploadKaart } from "../../components/admin/galerij/UploadKaart";
@@ -121,11 +123,16 @@ export default function GalleryAdminPage() {
 
   return (
     <div>
-      <h1 className="mb-2 text-3xl">Galerij</h1>
-      <p className="mb-6 text-sm text-charcoal/75">
-        Een <strong>gelegenheid</strong> (babyshower, bruiloft) bevat <strong>events</strong> —
-        één uitgevoerd feest. In een event zet je de tekst en de foto&apos;s.
-      </p>
+      <PageKop
+        titel="Galerij"
+        icoon={ImageIcon}
+        onderschrift={
+          <>
+            Een <strong>gelegenheid</strong> (babyshower, bruiloft) bevat <strong>events</strong> —
+            één uitgevoerd feest. In een event zet je de tekst en de foto&apos;s.
+          </>
+        }
+      />
 
       {fout && (
         <div className="card mb-4 flex items-start justify-between gap-4 border-burgundy/30 text-sm text-burgundy">

@@ -71,7 +71,7 @@ export function RegelTabel({
         )}
       </div>
 
-      <div className="overflow-hidden rounded-md border border-charcoal/10 bg-white">
+      <div className="overflow-hidden rounded-md border border-gold/25 bg-white">
         {regels.length === 0 && !nieuwOpen && (
           // Scenario 63: geen regels is een geldige toestand, geen fout.
           <p className="px-3 py-6 text-center text-sm text-charcoal/60">

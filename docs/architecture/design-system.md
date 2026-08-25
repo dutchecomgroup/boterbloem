@@ -14,7 +14,8 @@ losse utility-stapels die net iets anders zijn.
 | `cream` | `#FBF6EE` | Achtergrond van vrijwel alles |
 | `gold` | `#C8A560` | Accent, knoppen, actieve staat |
 | `gold-light` | `#D9BE85` | Zachte accenten |
-| `gold-dark` | `#A0813E` | Tekst-accent, hover |
+| `gold-dark` | `#A0813E` | Koppen, randen, iconen — **niet** voor lopende tekst (3,7:1) |
+| `gold-deep` | `#8A6E36` | Goud dat gelezen mag worden: 4,9:1, haalt AA |
 | `butter` | `#F5E6A8` | Sectie-verloop |
 | `blush` | `#F4D9D0` | Sectie-verloop |
 | `burgundy` | `#7A1F2B` | Waarschuwing, verwijderen, negatief |
@@ -133,12 +134,64 @@ geen scroll-effecten te krijgen.
 
 ## Beheerpaneel
 
-Het beheerpaneel gebruikt dezelfde tokens, maar rustiger: `bg-cream/60` als achtergrond,
-witte `.card`-blokken, de gouden accentkleur alleen voor de actieve menu-ingang en primaire
-knoppen. Geen ornamenten, geen scroll-animaties — het is een werkomgeving.
+Het beheerpaneel gebruikt dezelfde tokens: `bg-cream/60` als achtergrond, witte `.card`-blokken.
+Geen ornamenten, geen scroll-animaties — het is een werkomgeving.
 
-Zijbalk is `w-64` en verdwijnt onder `md`; op mobiel komt er een eenvoudige koptekst voor in
-de plaats. Zie [`AdminLayout.tsx`](../../client/src/components/layout/AdminLayout.tsx).
+Zijbalk is `w-64`, in drie groepen (*Werk · Geld · Inhoud*), en verdwijnt onder `md`; op mobiel
+komt er een eenvoudige koptekst voor in de plaats. Zie
+[`AdminLayout.tsx`](../../client/src/components/layout/AdminLayout.tsx).
+
+### De kleurtaal
+
+**Kleur heeft hier een betekenis en is geen versiering.** Aanleiding (26-08): gemeten over alle
+adminpagina's won `charcoal/xx` met een factor 2 tot 4 van elke kleur, terwijl `butter`, `blush`,
+`pill` en `hairline-gold` in nul adminbestanden voorkwamen. In de woorden van de gebruiker: *"het
+is niet duidelijk alles."*
+
+Zeven rollen. Alles kiest hieruit; past een accent in geen enkele rol, dan blijft het charcoal.
+
+| Rol | Token | Waar |
+|---|---|---|
+| Merk, navigatie, sectiekop | `gold` / `gold-dark` | paginakoppen, `.tag`, actief menu-item |
+| Bewerkbaar | `.veld-pil` — goudrand + potlood | `VeldInline` |
+| Geld: voldaan, ontvangen | `emerald-700` | betaald, voldaan, positieve verandering |
+| Geld: openstaand | `gold-deep` | openstaand bedrag |
+| Fout, gevaar, te veel betaald | `burgundy` | verwijderen, validatie, negatief saldo |
+| Aandacht, actie nodig | `butter` | nieuwe aanvragen, ontbrekend btw-tarief, concept |
+| Afgehandeld, rustig | `charcoal/40` | afgeleverd, gelezen, uitgeschakeld |
+
+> ⚠️ Eén uitzondering, bewust: **allergieën blijven burgundy**, ook al is "vraagt aandacht"
+> normaal butter. Het is een veiligheidssignaal en butter zou dat verzwakken.
+
+### 🔴 Contrast
+
+`gold` haalt op wit **2,3:1** en `gold-dark` **3,7:1** — allebei onder de AA-eis van 4,5:1 voor
+gewone tekst.
+
+- `gold-dark`: koppen vanaf 24 px (of 19 px vet), randen, iconen, streepjes.
+- **`gold-deep`** (4,9:1) als goud de betekenis draagt én de tekst gelezen moet worden — een
+  openstaand bedrag bijvoorbeeld.
+- Lopende tekst, tabelinhoud en labels blijven **charcoal**.
+- Op `butter` en `blush` staat tekst altijd in charcoal, nooit in goud.
+
+### Gedeelde onderdelen
+
+In [`components/admin/ui/`](../../client/src/components/admin/ui/):
+
+| Component | Waarvoor |
+|---|---|
+| `PageKop` | De kop van elk scherm: goudstreepje, `.tag`, titel, actie rechts |
+| `Badge` | Eén badge-vorm; `toon` is semantisch, of `klassen` uit een statustabel |
+| `Bedrag` | Kleurt een bedrag naar betekenis, met `tabular-nums` |
+| `LegeStaat` | Lege staat met warme ondergrond en een zin die zegt wat je nu kunt doen |
+
+En in `index.css`: `.card-accent`, `.tabel-admin`, `.rij-hover`, `.veld-pil`.
+
+**Statuskleuren staan in een tabel, niet in een component:** `STATUS_KLEUR` in
+[`lib/boeking.ts`](../../client/src/lib/boeking.ts) en `AANVRAAG_KLEUR` in
+[`lib/aanvraag.ts`](../../client/src/lib/aanvraag.ts). Die stonden eerder in meerdere kopieën met
+de kleuren los daarvan in een ternaire keten midden in een tabel — precies waar "waarom is nieuw
+hier goud en daar grijs?" vandaan komt.
 
 ---
 

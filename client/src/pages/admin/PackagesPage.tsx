@@ -2,7 +2,9 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { api } from "../../lib/api";
 import { BTW_LABEL, type BtwTarief, type Package } from "@shared/schema";
-import { Plus, Trash2, GripVertical, X, ChevronUp, ChevronDown, ExternalLink } from "lucide-react";
+import { Plus, Trash2, GripVertical, X, ChevronUp, ChevronDown, ExternalLink, Layers } from "lucide-react";
+import { PageKop } from "../../components/admin/ui/PageKop";
+import { LegeStaat } from "../../components/admin/ui/LegeStaat";
 import { personenBereik } from "../../lib/utils";
 
 const LEEG: Partial<Package> = {
@@ -59,16 +61,21 @@ export default function PackagesPage() {
 
   return (
     <div>
-      <div className="flex flex-wrap items-start justify-between gap-4 mb-2">
-        <h1 className="text-3xl">Pakketten</h1>
-        <button className="btn-gold !py-2 !px-5 text-xs" onClick={() => setBewerk({ ...LEEG })}>
-          <Plus size={14} /> Pakket toevoegen
-        </button>
-      </div>
-      <p className="text-charcoal/60 text-sm mb-6 max-w-2xl">
-        Sweet tables en grazing tables met een vanaf-prijs. Een pakket verschijnt pas op de
-        site als je hem op <strong>actief</strong> zet — zo kun je hem eerst rustig invullen.
-      </p>
+      <PageKop
+        titel="Pakketten"
+        icoon={Layers}
+        onderschrift={
+          <>
+            Sweet tables en grazing tables met een vanaf-prijs. Een pakket verschijnt pas op de
+            site als je hem op <strong>actief</strong> zet — zo kun je hem eerst rustig invullen.
+          </>
+        }
+        actie={
+          <button className="btn-gold !py-2 !px-5 text-xs" onClick={() => setBewerk({ ...LEEG })}>
+            <Plus size={14} /> Pakket toevoegen
+          </button>
+        }
+      />
 
       {fout && (
         <div className="card mb-4 border-burgundy/30 text-burgundy text-sm flex items-start justify-between gap-4">

@@ -97,7 +97,7 @@ export function ContextMenu({ menu, sluiten }: { menu: MenuPositie; sluiten: () 
             }}
             className={`flex w-full items-center gap-2.5 px-3 py-2 text-left text-sm transition ${
               item.gevaarlijk
-                ? "text-burgundy hover:bg-burgundy/8"
+                ? "text-burgundy hover:bg-burgundy/10"
                 : "text-charcoal hover:bg-cream"
             }`}
           >

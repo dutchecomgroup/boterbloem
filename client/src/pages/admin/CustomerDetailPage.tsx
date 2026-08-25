@@ -1,16 +1,16 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link, useLocation, useParams } from "wouter";
-import { ArrowLeft, Mail, Phone, MapPin } from "lucide-react";
+import { ArrowLeft, Mail, Phone, MapPin, User, CalendarX } from "lucide-react";
 import { api } from "../../lib/api";
 import type { Customer, Order } from "@shared/schema";
-import { formatCurrency, formatDateShort } from "../../lib/utils";
+import { formatDateShort } from "../../lib/utils";
+import { STATUS_LABEL, STATUS_KLEUR } from "../../lib/boeking";
+import { PageKop } from "../../components/admin/ui/PageKop";
+import { LegeStaat } from "../../components/admin/ui/LegeStaat";
+import { Badge } from "../../components/admin/ui/Badge";
+import { Bedrag } from "../../components/admin/ui/Bedrag";
 
 type KlantMetHistorie = Customer & { orders: Order[] };
-
-const STATUS_LABEL: Record<string, string> = {
-  aanvraag: "Aanvraag", bevestigd: "Bevestigd", in_productie: "In productie",
-  klaar: "Klaar", afgeleverd: "Afgeleverd", geannuleerd: "Geannuleerd",
-};
 
 /**
  * De server leverde de boekingenhistorie al mee via `GET /api/admin/customers/:id`, maar er
@@ -54,7 +54,7 @@ export default function CustomerDetailPage() {
         <ArrowLeft size={14} /> Klanten
       </Link>
 
-      <h1 className="text-3xl mb-6">{klant.name}</h1>
+      <PageKop titel={klant.name} bovenschrift="Klant" icoon={User} />
 
       <div className="grid lg:grid-cols-[320px_1fr] gap-6 items-start">
         <div className="card space-y-3 text-sm">
@@ -84,7 +84,9 @@ export default function CustomerDetailPage() {
             </div>
             <div>
               <div className="text-xs uppercase tracking-widest text-charcoal/45">Omzet</div>
-              <div className="font-display text-2xl">{formatCurrency(omzet)}</div>
+              <div className="font-display text-2xl text-emerald-700">
+                <Bedrag waarde={omzet} rol="voldaan" />
+              </div>
               <div className="text-[10px] text-charcoal/40">alleen afgeleverd</div>
             </div>
           </div>
@@ -102,12 +104,10 @@ export default function CustomerDetailPage() {
         </div>
 
         <div className="card p-0 overflow-hidden">
-          <div className="px-4 py-3 border-b border-charcoal/10 text-xs uppercase tracking-widest text-charcoal/50">
-            Boekingen
-          </div>
+          <div className="tag border-b border-gold/25 bg-cream/50 px-4 py-3">Boekingen</div>
           {klant.orders.length ? (
-            <table className="w-full text-sm">
-              <thead className="bg-charcoal/5 text-charcoal/60 text-xs uppercase tracking-widest">
+            <table className="tabel-admin w-full text-sm">
+              <thead>
                 <tr>
                   <th className="text-left px-4 py-2.5">Boeking</th>
                   <th className="text-left px-4 py-2.5">Datum</th>
@@ -127,7 +127,7 @@ export default function CustomerDetailPage() {
                   <tr
                     key={o.id}
                     onClick={() => navigeer(boekingHref(o.id))}
-                    className="cursor-pointer border-t border-charcoal/5 hover:bg-cream/40"
+                    className="rij-hover cursor-pointer"
                   >
                     <td className="px-4 py-3">
                       <Link
@@ -139,15 +139,22 @@ export default function CustomerDetailPage() {
                       </Link>
                     </td>
                     <td className="px-4 py-3">{o.eventDate ? formatDateShort(o.eventDate) : "—"}</td>
-                    <td className="px-4 py-3 text-charcoal/70">{STATUS_LABEL[o.status] ?? o.status}</td>
-                    <td className="px-4 py-3 text-right">{formatCurrency(Number(o.totalPrice))}</td>
+                    <td className="px-4 py-3">
+                      <Badge klassen={STATUS_KLEUR[o.status]}>{STATUS_LABEL[o.status] ?? o.status}</Badge>
+                    </td>
+                    <td className="px-4 py-3 text-right"><Bedrag waarde={o.totalPrice} vet /></td>
                   </tr>
                 ))}
               </tbody>
             </table>
           ) : (
-            <div className="px-4 py-14 text-center text-charcoal/40 text-sm">
-              Nog geen boekingen voor deze klant.
+            <div className="p-4">
+              <LegeStaat
+                icoon={CalendarX}
+                titel="Nog geen boekingen"
+                hint="Zodra deze klant een feest bij je boekt, staat het hier."
+                compact
+              />
             </div>
           )}
         </div>

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Check, AlertCircle, Loader2 } from "lucide-react";
+import { Check, AlertCircle, Loader2, Pencil } from "lucide-react";
 
 /**
  * Een veld dat eruitziet als tekst tot je erop klikt.
@@ -11,6 +11,12 @@ import { Check, AlertCircle, Loader2 } from "lucide-react";
  * **Het risico van opslaan bij `blur` is dat een mislukte opslag ongemerkt voorbijgaat.** Je
  * bent immers al weg. Daarom blijft het veld bij een fout in bewerkstand staan mét de getypte
  * tekst erin en een rode melding ernaast. Wat je typte raak je nooit kwijt aan een netwerkfout.
+ *
+ * **In rust ziet het er nu uit als een veld, niet als tekst.** "Eruitzien als tekst" was het
+ * uitgangspunt, maar op een scherm dat vrijwel volledig uit deze velden bestaat sloeg dat door:
+ * in de woorden van de gebruiker *"nu lijkt het net alles overal tekst waar je niks mee kan
+ * doen"*. Een lichte pil met een hairline en een potloodje dat bij hover oplicht is genoeg —
+ * zonder dat het scherm een formulier wordt.
  */
 
 type Basis = {
@@ -179,14 +185,26 @@ export function VeldInline({
         <button
           type="button"
           onClick={beginnen}
-          // `whitespace-pre-wrap`: een adres van drie regels blijft drie regels (scenario 30),
-          // en `break-words` houdt een lang e-mailadres binnen het paneel (scenario 97).
-          className="w-full rounded-sm px-2 py-1 text-left text-sm leading-relaxed text-charcoal
-            whitespace-pre-wrap break-words transition hover:bg-white/60"
+          title="Klik om te wijzigen"
+          // `.veld-pil` staat in index.css: de belofte "hier kun je iets wijzigen" hoort op
+          // één plek te staan, zodat elk klikbaar veld in de hub er hetzelfde uitziet.
+          className="veld-pil group flex w-full items-start gap-2 px-2 py-1 text-left text-sm
+            leading-relaxed text-charcoal"
         >
-          {toonWaarde(opgeslagen, type, opties) || (
-            <span className="text-charcoal/55">{leegTekst}</span>
-          )}
+          {/* `whitespace-pre-wrap`: een adres van drie regels blijft drie regels (scenario 30),
+              en `break-words` houdt een lang e-mailadres binnen het paneel (scenario 97).
+              `min-w-0` is wat dat laatste in een flexrij daadwerkelijk laat werken. */}
+          <span className="min-w-0 flex-1 whitespace-pre-wrap break-words">
+            {toonWaarde(opgeslagen, type, opties) || (
+              <span className="text-charcoal/55">{leegTekst}</span>
+            )}
+          </span>
+          {/* Altijd zichtbaar, maar zacht: het potloodje moet het veld aanwijzen, niet opeisen.
+              `aria-hidden` omdat de knoptekst en de titel het al zeggen. */}
+          <Pencil
+            aria-hidden
+            className="mt-1 h-3 w-3 shrink-0 text-charcoal/25 transition group-hover:text-gold-dark"
+          />
         </button>
       )}
     </div>
