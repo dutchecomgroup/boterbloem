@@ -23,6 +23,14 @@ async function ensureGalleryCategories() {
     { slug: "geboorte", name: "Geboorte & doopsuiker", sortOrder: 4 },
     { slug: "bedrijfsevent", name: "Bedrijfsevent", sortOrder: 5 },
     { slug: "overig", name: "Overig", sortOrder: 6 },
+    /*
+     * Niet gepubliceerd, en dat is het hele punt. Foto's die bij de site horen en niet bij een
+     * feest — haar portret op de over-pagina — moeten ergens onder staan, want de galerij
+     * weigert een upload zonder gelegenheid: een foto die nergens onder hangt is onvindbaar.
+     * Hier landen ze, en omdat `published` op false staat verschijnt deze gelegenheid niet op
+     * /galerij. De fotokiezer in de instellingen ziet hem wél.
+     */
+    { slug: "sitefotos", name: "Sitefoto's", sortOrder: 99, published: false },
   ];
   for (const cat of defaults) {
     await db.insert(galleryCategories).values(cat).onConflictDoNothing({ target: galleryCategories.slug });
