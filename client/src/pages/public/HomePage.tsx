@@ -203,7 +203,7 @@ export default function HomePage() {
       n: "03",
       title: "Maken",
       body:
-        "Alles met de hand gemaakt, vers vlak voor jouw dag. Iedere lekkernij, iedere suikerbloem — zoals het hoort.",
+        "Alles met de hand gemaakt, vers vlak voor jouw dag. Iedere lekkernij, iedere suikerbloem, zoals het hoort.",
       imageSrc: demoImageForSlug("bruiloft") ?? imageSrc(items[0] ?? DEMO_ITEMS[0]),
     },
     {
@@ -251,7 +251,7 @@ export default function HomePage() {
               <Reveal delay={1300}>
                 <p className="text-base sm:text-lg text-charcoal/75 max-w-xl leading-relaxed mx-auto lg:mx-0">
                   {hero?.tagline ??
-                    "Sweet tables en grazing tables voor jouw mooiste momenten — bruiloften, babyshowers, en alles daartussen."}
+                    "Sweet tables en grazing tables voor jouw mooiste momenten. Bruiloften, babyshowers, en alles daartussen."}
                 </p>
               </Reveal>
               <Reveal delay={1450} className="mt-6 sm:mt-10 flex flex-wrap gap-3 sm:gap-4 justify-center lg:justify-start">
@@ -419,7 +419,7 @@ export default function HomePage() {
           <div className="script-accent text-3xl sm:text-4xl mt-6 mb-2">Een idee?</div>
           <h2 className="text-cream text-3xl sm:text-4xl md:text-5xl mb-6">Laten we het bespreken</h2>
           <p className="text-cream/70 mb-8 leading-relaxed text-sm sm:text-base">
-            Of het nu een bruiloft, verjaardag of een doopfeest is — vertel ons over jouw moment en we ontwerpen iets unieks.
+            Of het nu een bruiloft, verjaardag of een doopfeest is: vertel ons over jouw moment en we ontwerpen iets unieks.
           </p>
           <MagneticLink href="/contact" className="btn-gold">Stuur een bericht</MagneticLink>
           <div className="mt-8 sm:mt-10"><GoldDivider className="!text-gold/60" /></div>

@@ -2,7 +2,7 @@ import { Link, useLocation } from "wouter";
 import { useState } from "react";
 import { Menu, X, Instagram } from "lucide-react";
 import { usePublicSettings } from "../../hooks/usePublicSettings";
-import { cn } from "../../lib/utils";
+import { cn, whatsappLink } from "../../lib/utils";
 import { BotanicalPattern } from "../ornaments/BotanicalPattern";
 import { GoldDivider } from "../ornaments/GoldDivider";
 
@@ -99,6 +99,9 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
             <ul className="space-y-2 text-sm text-cream/80">
               {contact?.email && <li><a href={`mailto:${contact.email}`} className="hover:text-gold">{contact.email}</a></li>}
               {contact?.phone && <li><a href={`tel:${contact.phone}`} className="hover:text-gold">{contact.phone}</a></li>}
+              {whatsappLink(contact?.whatsapp) && (
+                <li><a href={whatsappLink(contact?.whatsapp)!} target="_blank" rel="noreferrer" className="hover:text-gold">WhatsApp</a></li>
+              )}
               {contact?.address && <li>{contact.address}{contact.city ? `, ${contact.city}` : ""}</li>}
             </ul>
           </div>

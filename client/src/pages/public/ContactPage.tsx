@@ -6,7 +6,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useSearch } from "wouter";
 import { api, ApiError } from "../../lib/api";
 import { usePublicSettings } from "../../hooks/usePublicSettings";
-import { Instagram, Mail, Phone, MapPin, Info } from "lucide-react";
+import { Instagram, Mail, Phone, MapPin, Info, MessageCircle } from "lucide-react";
+import { whatsappLink } from "../../lib/utils";
 import type { Package } from "@shared/schema";
 import { BotanicalPattern } from "../../components/ornaments/BotanicalPattern";
 import { BotanicalCorner } from "../../components/ornaments/BotanicalCorner";
@@ -38,7 +39,7 @@ const STEPS = [
   { n: "01", title: "Aanvraag", body: "Vertel ons over jouw moment en idee via het formulier." },
   { n: "02", title: "Voorstel", body: "Binnen enkele dagen ontvang je een persoonlijk voorstel met smaakopties." },
   { n: "03", title: "Ontwerp", body: "Samen verfijnen we het ontwerp tot het volledig past." },
-  { n: "04", title: "De dag zelf", body: "Wij zorgen voor levering of opbouw — jij geniet." },
+  { n: "04", title: "De dag zelf", body: "Wij zorgen voor levering of opbouw, jij geniet." },
 ];
 
 export default function ContactPage() {
@@ -104,7 +105,7 @@ export default function ContactPage() {
             <h1 className="text-4xl sm:text-5xl md:text-6xl">Vertel ons jouw idee</h1>
             <div className="mt-4 mb-4 sm:mt-6 sm:mb-6"><GoldDivider className="!mx-0 !max-w-[180px]" /></div>
             <p className="text-charcoal/70 leading-relaxed mb-8 sm:mb-10 text-sm sm:text-base">
-              Vul het formulier in met zoveel mogelijk details — datum, gelegenheid, aantal personen — en we komen zo snel mogelijk bij je terug met een voorstel.
+              Vul het formulier in met zoveel mogelijk details: datum, gelegenheid en aantal personen. Dan komen we zo snel mogelijk bij je terug met een voorstel.
             </p>
 
             <ul className="space-y-4 text-sm mb-8 sm:mb-10">
@@ -113,6 +114,16 @@ export default function ContactPage() {
               )}
               {contact?.phone && (
                 <li className="flex items-start gap-3"><Phone size={18} className="text-gold mt-0.5" /><a href={`tel:${contact.phone}`} className="hover:text-gold-dark">{contact.phone}</a></li>
+              )}
+              {/* Het WhatsApp-nummer stond wel in de instellingen maar werd nergens getoond,
+                  terwijl dat juist het kanaal is waar dit soort aanvragen binnenkomt. */}
+              {whatsappLink(contact?.whatsapp) && (
+                <li className="flex items-start gap-3">
+                  <MessageCircle size={18} className="text-gold mt-0.5" />
+                  <a href={whatsappLink(contact?.whatsapp)!} target="_blank" rel="noreferrer" className="hover:text-gold-dark">
+                    Stuur een WhatsApp
+                  </a>
+                </li>
               )}
               {(contact?.address || contact?.city) && (
                 <li className="flex items-start gap-3"><MapPin size={18} className="text-gold mt-0.5" /><span>{[contact.address, contact.postcode, contact.city].filter(Boolean).join(", ")}</span></li>
@@ -184,7 +195,7 @@ export default function ContactPage() {
                       <p className="mt-1.5 flex items-start gap-1.5 text-xs text-charcoal/70 bg-butter/50 rounded px-2 py-1.5">
                         <Info size={14} className="text-gold-dark shrink-0 mt-px" />
                         <span>
-                          Dat is korter dan {drempel} dagen vooraf. Stuur je aanvraag gerust —
+                          Dat is korter dan {drempel} dagen vooraf. Stuur je aanvraag gerust,
                           we laten weten of het lukt.
                         </span>
                       </p>
@@ -195,7 +206,7 @@ export default function ContactPage() {
                   <div>
                     <label className="label">Wat voor gelegenheid?</label>
                     <select className="input" {...form.register("categoryId")}>
-                      <option value="">— Kies —</option>
+                      <option value="">Kies een optie</option>
                       {gelegenheden.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
                     </select>
                   </div>
@@ -210,7 +221,7 @@ export default function ContactPage() {
                       <option value="">Weet ik nog niet</option>
                       {pakketten.map((p) => (
                         <option key={p.id} value={p.id}>
-                          {p.name}{Number(p.priceFrom) > 0 ? ` — vanaf € ${Number(p.priceFrom).toFixed(0)}` : ""}
+                          {p.name}{Number(p.priceFrom) > 0 ? ` · vanaf € ${Number(p.priceFrom).toFixed(0)}` : ""}
                         </option>
                       ))}
                     </select>

@@ -4,9 +4,7 @@ import { ArrowRight, Check } from "lucide-react";
 import { api } from "../../lib/api";
 import type { Package, Product, Review, GalleryItem } from "@shared/schema";
 
-/** De publieke route levert de coverfoto mee; `null` als er geen cover gekozen is. */
-type PakketMetCover = Package & { cover: GalleryItem | null };
-import { formatCurrency } from "../../lib/utils";
+import { formatCurrency, personenBereik } from "../../lib/utils";
 import { imageSrc } from "../../lib/images";
 import { DEMO_NESTED, heeftEchteContent } from "../../lib/demoGallery";
 import { usePublicSettings } from "../../hooks/usePublicSettings";
@@ -16,8 +14,10 @@ import { GoldDivider } from "../../components/ornaments/GoldDivider";
 import { BotanicalCorner } from "../../components/ornaments/BotanicalCorner";
 import { Reveal } from "../../components/Reveal";
 import { PageHeader } from "../../components/PageHeader";
+import { PakketKaart, type PakketMetCover } from "../../components/public/PakketKaart";
+import { GelegenheidCarrousel } from "../../components/public/GelegenheidCarrousel";
 
-interface GalleryResponse { categories: typeof DEMO_NESTED; items: unknown[] }
+interface GalleryResponse { categories: typeof DEMO_NESTED; items: GalleryItem[] }
 
 export default function AanbodPage() {
   const { data: settings } = usePublicSettings();
@@ -40,7 +40,9 @@ export default function AanbodPage() {
   });
 
   const cats = heeftEchteContent(gallery?.items) ? (gallery?.categories ?? []) : DEMO_NESTED;
+  const gelegenheden = cats.filter((c) => c.itemCount > 0);
   const levertijden = (settings as { levertijden?: { tekst?: string } } | undefined)?.levertijden;
+
 
   return (
     <>
@@ -49,7 +51,31 @@ export default function AanbodPage() {
         achtergrond="bg-section-warm"
         tag="Aanbod"
         titel={<>Sweet &amp; grazing tables</>}
-        tekst="Een tafel vol zoets die het middelpunt van je feest wordt. We werken met pakketten als startpunt — een richtlijn met een vanaf-prijs, die we samen aanvullen tot het precies past bij jouw dag."
+        tekst="Een tafel vol zoets die het middelpunt van je feest wordt. We werken met pakketten als startpunt: een richtlijn met een vanaf-prijs, die we samen aanvullen tot het precies past bij jouw dag."
+        onder={
+          /*
+            De gelegenheden zitten ín de kop, niet in een eigen sectie eronder.
+            Twee redenen. Het verloop van `bg-section-warm` wordt per sectie opnieuw getekend,
+            dus twee secties met dezelfde achtergrond gaven een harde streep dwars over de
+            pagina. En een eigen sectie vraagt om een eigen kop, waardoor er twee label-plus-
+            titel-paren onder elkaar stonden voordat de bezoeker iets gezien had.
+
+            Een kop erboven is ook niet nodig: elke tegel draagt zijn eigen naam.
+          */
+          gelegenheden.length > 0 ? (
+            /* `-mx-4 sm:-mx-6` heft de padding van `container-tight` op, zodat de strook tot de
+               rand van het scherm loopt. Een rivier die op tweederde ophoudt is een rij. */
+            <div className="-mx-4 mt-8 sm:-mx-6">
+              <GelegenheidCarrousel gelegenheden={gelegenheden} />
+              <Link
+                href="/galerij"
+                className="mt-3 inline-flex items-center gap-2 text-xs uppercase tracking-widest text-gold-dark hover:underline"
+              >
+                Bekijk alle events <ArrowRight size={14} />
+              </Link>
+            </div>
+          ) : undefined
+        }
       >
         <FloralFrame className="absolute -top-8 -right-8 md:-top-12 md:-right-12 w-32 sm:w-56 md:w-80 h-32 sm:h-56 md:h-80" color="text-gold/20" />
         <FloralFrame className="absolute -bottom-8 -left-8 md:-bottom-12 md:-left-12 rotate-180 w-24 sm:w-40 md:w-64 h-24 sm:h-40 md:h-64" color="text-blush" />
@@ -61,92 +87,39 @@ export default function AanbodPage() {
         <div className="container-tight relative">
           {pakketten && pakketten.length > 0 ? (
             <>
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {/*
+                Flexbox met `justify-center` in plaats van een raster van drie. Met vier
+                pakketten belandde de vierde in een raster alleen op een nieuwe rij, links
+                uitgelijnd met een leeg vak ernaast — en dat was uitgerekend Grazing Table, de
+                helft van waar deze pagina over gaat. Zo staat een overblijver in het midden en
+                leest hij als een keuze in plaats van als een restje.
+              */}
+              <div className="flex flex-wrap justify-center gap-4 sm:gap-6">
                 {pakketten.map((p, i) => (
-                  <Reveal key={p.id} delay={i * 0.06}>
-                    <article className="flex h-full flex-col overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-gold/10 transition-shadow hover:shadow-xl">
-                      {/* Coverfoto. Zonder cover een zachte kleurvlak in plaats van een gat —
-                          de kaarten blijven dan even hoog naast elkaar. */}
-                      <div className="relative aspect-[16/10] overflow-hidden bg-blush/40">
-                        {p.cover ? (
-                          <img
-                            src={imageSrc(p.cover)}
-                            alt={p.cover.altText ?? p.name}
-                            loading="lazy"
-                            className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 hover:scale-105"
-                          />
-                        ) : (
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <span className="script-accent text-3xl opacity-50">Boterbloem</span>
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="flex flex-1 flex-col p-6 sm:p-7">
-                        <h2 className="text-2xl sm:text-3xl">{p.name}</h2>
-                        {p.tagline && <p className="mt-1 text-sm text-charcoal/70">{p.tagline}</p>}
-
-                        {/* De vanaf-prijs is waar de bezoeker op afkomt, dus het zwaarste
-                            element op de kaart. Een pakket zonder prijs mag niet als
-                            "vanaf € 0,00" op de site staan — dat leest als gratis. */}
-                        <div className="mt-4 border-y border-gold/20 py-3">
-                          {Number(p.priceFrom) > 0 ? (
-                            <div className="flex items-baseline gap-2">
-                              <span className="text-[10px] uppercase tracking-[0.2em] text-charcoal/60">vanaf</span>
-                              <span className="font-display text-4xl leading-none text-gold-dark">
-                                {formatCurrency(Number(p.priceFrom))}
-                              </span>
-                              {p.priceUnit === "per_persoon" && (
-                                <span className="text-sm text-charcoal/70">p.p.</span>
-                              )}
-                            </div>
-                          ) : (
-                            <span className="font-display text-2xl text-gold-dark">Prijs op aanvraag</span>
-                          )}
-                          {(p.personsMin || p.personsMax) && (
-                            <div className="mt-1 text-xs text-charcoal/60">
-                              {p.personsMin ?? "?"}–{p.personsMax ?? "meer"} personen
-                            </div>
-                          )}
-                        </div>
-
-                        {p.description && (
-                          <p className="mt-4 text-sm leading-relaxed text-charcoal/75">{p.description}</p>
-                        )}
-
-                        {p.includes.length > 0 && (
-                          <ul className="mt-5 space-y-2 text-sm text-charcoal/80">
-                            {p.includes.map((r, j) => (
-                              <li key={j} className="flex gap-2">
-                                <Check size={16} className="mt-0.5 shrink-0 text-gold" />
-                                <span>{r}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-
-                        {/* `mt-auto`: de knop staat onderaan de kaart, ook als de ene kaart
-                            meer regels heeft dan de andere. */}
-                        <Link href={`/contact?pakket=${p.slug}`} className="btn-gold mt-auto w-full pt-3">
-                          Vraag aan
-                        </Link>
-                      </div>
-                    </article>
+                  <Reveal
+                    key={p.id}
+                    delay={i * 0.06}
+                    /* Ook op een telefoon twee naast elkaar: één kaart over de volle breedte
+                       is zo hoog dat je per scherm nauwelijks een pakket ziet, en dan scroll je
+                       langs de prijzen in plaats van ze te vergelijken. */
+                    className="w-[calc(50%-0.5rem)] sm:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)]"
+                  >
+                    <PakketKaart pakket={p} />
                   </Reveal>
                 ))}
               </div>
 
-              {/* "Dat rekenen we er gewoon bij" las als een waarschuwing dat het duurder
-                  wordt — precies het tegenovergestelde van wat er bedoeld is. */}
-              <p className="text-center text-charcoal/70 text-sm mt-8 max-w-xl mx-auto">
+              {/* "Dat rekenen we er gewoon bij" las als een waarschuwing dat het duurder wordt,
+                  precies het tegenovergestelde van wat er bedoeld is. */}
+              <p className="mx-auto mt-8 max-w-xl text-center text-sm text-charcoal/70">
                 Elk pakket is een startpunt. Meer gasten, een extra lekkernij of een eigen
-                kleurenschema? Dat is allemaal mogelijk — we kijken samen wat bij je feest past.
+                kleurenschema? Dat is allemaal mogelijk. We kijken samen wat bij je feest past.
               </p>
             </>
           ) : (
-            <div className="card text-center py-14">
-              <div className="script-accent text-4xl mb-3">Binnenkort</div>
-              <p className="text-charcoal/70 max-w-md mx-auto text-sm">
+            <div className="card py-14 text-center">
+              <div className="script-accent mb-3 text-4xl">Binnenkort</div>
+              <p className="mx-auto max-w-md text-sm text-charcoal/70">
                 We zetten de pakketten en prijzen op dit moment op een rij. Wil je nu al weten
                 wat er mogelijk is voor jouw feest? Stuur gerust een bericht.
               </p>
@@ -156,10 +129,8 @@ export default function AanbodPage() {
         </div>
       </section>
 
-      {/* ---------- Goed om te weten ---------- */}
-      {/* Stond onderaan als zwevende tekst zonder kader. Deze vier vragen komen op bij het
-          zien van een prijs, dus staan ze er direct onder — en in een kaart, zodat het één
-          blok is in plaats van een losse mededeling. */}
+      {/* ---------- Goed om te weten ----------
+           Deze vier vragen komen op bij het zien van een prijs, dus ze staan er direct onder. */}
       <section className="relative bg-section-butter section-y-sm overflow-hidden">
         <BotanicalPattern opacity={0.05} />
         <div className="container-tight relative">
@@ -171,7 +142,7 @@ export default function AanbodPage() {
                   "Vraag je tafel het liefst een paar weken van tevoren aan; voor taarten kan het vaak sneller."}
               </WeetjeItem>
               <WeetjeItem icoon="🍰" titel="Taarten zijn flexibeler">
-                Een losse taart heeft minder voorbereiding nodig dan een hele tafel — vraag
+                Een losse taart heeft minder voorbereiding nodig dan een hele tafel, dus vraag
                 gerust wat er nog kan.
               </WeetjeItem>
               <WeetjeItem icoon="🚚" titel="Bezorgen of afhalen">
@@ -187,34 +158,6 @@ export default function AanbodPage() {
         </div>
       </section>
 
-      {/* ---------- Gelegenheden ---------- */}
-      {cats.filter((c) => c.itemCount > 0).length > 0 && (
-        <section className="relative bg-section-blush section-y overflow-hidden">
-          <BotanicalPattern opacity={0.05} />
-          <div className="container-tight relative">
-            <div className="text-center mb-10">
-              <div className="tag mb-3">Gelegenheden</div>
-              <h2 className="text-3xl sm:text-4xl">Waar we tables voor maken</h2>
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
-              {cats.filter((c) => c.itemCount > 0).slice(0, 6).map((c) => (
-                <Link key={c.id} href={`/galerij/${c.slug}`}
-                  className="group relative aspect-[3/2] overflow-hidden rounded-xl ring-1 ring-gold/10">
-                  {c.cover && (
-                    <img src={imageSrc(c.cover)} alt={c.name} loading="lazy"
-                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-                  )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-charcoal/60 to-transparent" />
-                  <div className="absolute bottom-4 left-5 font-display text-2xl text-cream drop-shadow">
-                    {c.name}
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
       {/* ---------- Taarten ---------- */}
       <section className="relative bg-cream section-y-sm overflow-hidden">
         <BotanicalPattern opacity={0.04} />
@@ -223,7 +166,7 @@ export default function AanbodPage() {
             <div className="tag mb-3">Ook mogelijk</div>
             <h2 className="text-3xl sm:text-4xl">Taarten</h2>
             <p className="mt-3 text-sm leading-relaxed text-charcoal/75 sm:text-base">
-              Een taart zonder tafel eromheen kan natuurlijk ook — voor een verjaardag, een
+              Een taart zonder tafel eromheen kan natuurlijk ook: voor een verjaardag, een
               bruiloft of gewoon omdat het kan.
             </p>
           </div>
@@ -293,7 +236,7 @@ export default function AanbodPage() {
         <div className="container-narrow relative text-center">
           <div className="script-accent text-4xl sm:text-5xl mb-4 leading-none">Klaar om te plannen?</div>
           <p className="text-charcoal/70 mb-8 leading-relaxed text-sm sm:text-base">
-            Vertel ons over je feest — de datum, het aantal gasten en wat je voor je ziet.
+            Vertel ons over je feest: de datum, het aantal gasten en wat je voor je ziet.
             We denken graag mee.
           </p>
           <Link href="/contact" className="btn-gold">

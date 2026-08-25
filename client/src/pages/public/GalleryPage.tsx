@@ -11,6 +11,8 @@ import { BotanicalCorner } from "../../components/ornaments/BotanicalCorner";
 import { GoldDivider } from "../../components/ornaments/GoldDivider";
 import { Reveal } from "../../components/Reveal";
 import { PageHeader } from "../../components/PageHeader";
+import { FotoScrim, FOTO_TEKST_SCHADUW } from "../../components/FotoScrim";
+import { FotoCyclus } from "../../components/FotoCyclus";
 
 interface GalleryResponse {
   categories: DemoCategory[];
@@ -30,6 +32,21 @@ export default function GalleryPage() {
     return <EventPagina slug={params.slug} albumSlug={params.albumSlug} />;
   }
   return params.slug ? <GelegenheidPagina slug={params.slug} /> : <OverzichtPagina />;
+}
+
+/**
+ * De foto's die een gelegenheid-tegel doorloopt: de gekozen cover eerst, daarna alles uit de
+ * events eronder. Ontdubbeld, want de cover zit meestal ook in een event, en dan zou hij twee
+ * keer voorbijkomen in dezelfde ronde.
+ *
+ * Begrensd op twaalf: elke foto in de tegel wordt ingeladen zodra hij aan de beurt is, en een
+ * gelegenheid met honderd foto's hoort geen honderd verzoeken op te leveren voor één vlak.
+ */
+function tegelFotos(c: DemoCategory): GalleryItem[] {
+  const uitEvents = c.albums.flatMap((a) => a.items);
+  const alles = c.cover ? [c.cover, ...uitEvents] : uitEvents;
+  const gezien = new Set<number>();
+  return alles.filter((f) => !gezien.has(f.id) && gezien.add(f.id)).slice(0, 12);
 }
 
 /** Eén gelegenheid met haar events en foto's — gedeeld door de twee pagina's eronder. */
@@ -94,20 +111,24 @@ function OverzichtPagina() {
                     className="group block rounded-2xl overflow-hidden bg-white shadow-sm hover:shadow-xl transition-all ring-1 ring-gold/10"
                   >
                     <div className="relative aspect-[4/3] overflow-hidden bg-blush/30">
-                      {c.cover && (
-                        <img
-                          src={imageSrc(c.cover)}
-                          alt={c.cover.altText ?? c.name}
-                          loading="lazy"
-                          className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                        />
-                      )}
-                      <div className="absolute inset-0 bg-gradient-to-t from-charcoal/55 via-transparent to-transparent" />
-                      <div className="absolute bottom-3 left-4 right-4 text-cream">
-                        <div className="font-display text-2xl drop-shadow">{c.name}</div>
-                        <div className="text-xs text-cream/80">
-                          {c.albums.length} {c.albums.length === 1 ? "feest" : "feesten"} · {c.itemCount} foto's
-                        </div>
+                      {/*
+                        Wisselt door de foto's van álle events onder deze gelegenheid. Eén
+                        vaste cover liet de bezoeker maar één feest zien, terwijl er tien
+                        onder zitten. De cover blijft vooraan staan: dat is de foto die
+                        bewust gekozen is, en die hoort als eerste in beeld te komen.
+                      */}
+                      <FotoCyclus
+                        fotos={tegelFotos(c)}
+                        alt={c.name}
+                        vertraging={i * 900}
+                        periode={5400}
+                        className="transition-transform duration-700 group-hover:scale-105"
+                      />
+                      <FotoScrim />
+                      <div
+                        className={`absolute bottom-4 left-5 right-5 z-30 font-display text-2xl leading-tight text-cream sm:text-3xl ${FOTO_TEKST_SCHADUW}`}
+                      >
+                        {c.name}
                       </div>
                     </div>
                     {c.description && (
@@ -165,21 +186,24 @@ function GelegenheidPagina({ slug }: { slug: string }) {
                     className="group block overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-gold/10 transition-all hover:shadow-xl"
                   >
                     <div className="relative aspect-[4/3] overflow-hidden bg-blush/30">
-                      {album.items[0] && (
-                        <img
-                          src={imageSrc(album.items[0])}
-                          alt={album.items[0].altText ?? album.title}
-                          loading="lazy"
-                          className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-                        />
-                      )}
-                      <div className="absolute inset-0 bg-gradient-to-t from-charcoal/55 via-transparent to-transparent" />
-                      <div className="absolute bottom-3 left-4 right-4 text-cream">
-                        <div className="font-display text-2xl drop-shadow">{album.title}</div>
-                        <div className="text-xs text-cream/85">
-                          {album.eventDate && `${maandJaar(album.eventDate)} · `}
-                          {album.items.length} foto&apos;s
+                      {/* Ook hier wisselen, nu door de foto's van dít feest. */}
+                      <FotoCyclus
+                        fotos={album.items.slice(0, 12)}
+                        alt={album.title}
+                        vertraging={i * 900}
+                        periode={5400}
+                        className="transition-transform duration-700 group-hover:scale-105"
+                      />
+                      <FotoScrim />
+                      <div className="absolute bottom-4 left-5 right-5 z-30 text-cream">
+                        <div className={`font-display text-2xl sm:text-3xl leading-tight ${FOTO_TEKST_SCHADUW}`}>
+                          {album.title}
                         </div>
+                        {album.eventDate && (
+                          <div className={`mt-1 text-xs uppercase tracking-[0.15em] text-cream/85 ${FOTO_TEKST_SCHADUW}`}>
+                            {maandJaar(album.eventDate)}
+                          </div>
+                        )}
                       </div>
                     </div>
                     {album.description && (

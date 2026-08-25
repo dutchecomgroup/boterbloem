@@ -7,7 +7,7 @@ import { demoImageForSlug } from "../../lib/demoGallery";
 import { imageSrc } from "../../lib/images";
 
 /** Zichtbaar tot de klant haar eigen tekst invult via het instellingen-scherm. */
-const DEFAULT_ABOUT_BODY = `Vanuit liefde voor het ambacht bouwen wij elke tafel met de hand op. Sweet tables, grazing tables en taarten — ieder ontwerp wordt persoonlijk afgestemd op jouw verhaal, van de eerste schets tot het laatste suikerbloemetje.
+const DEFAULT_ABOUT_BODY = `Vanuit liefde voor het ambacht bouwen wij elke tafel met de hand op. Sweet tables, grazing tables en taarten. Ieder ontwerp wordt persoonlijk afgestemd op jouw verhaal, van de eerste schets tot het laatste suikerbloemetje.
 
 We werken met seizoensgebonden ingrediënten en geven de voorkeur aan natuurlijke smaken. Geen twee tafels zijn hetzelfde, omdat geen twee verhalen hetzelfde zijn.`;
 
@@ -67,7 +67,7 @@ export default function AboutPage() {
           <div className="script-accent text-3xl sm:text-5xl md:text-6xl leading-tight mb-6">
             "Smaak, ambacht, en een glimlach in elke beet."
           </div>
-          <div className="tag">— Atelier Boterbloem</div>
+          <div className="tag">Atelier Boterbloem</div>
           <div className="mt-8 sm:mt-10"><GoldDivider /></div>
         </div>
       </section>
