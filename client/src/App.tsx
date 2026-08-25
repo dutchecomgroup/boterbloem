@@ -15,6 +15,7 @@ import LoginPage from "./pages/admin/LoginPage";
  */
 const DashboardPage = lazy(() => import("./pages/admin/DashboardPage"));
 const AgendaPage = lazy(() => import("./pages/admin/AgendaPage"));
+const OmzetPage = lazy(() => import("./pages/admin/OmzetPage"));
 const PackagesPage = lazy(() => import("./pages/admin/PackagesPage"));
 const ReviewsPage = lazy(() => import("./pages/admin/ReviewsPage"));
 const CustomerDetailPage = lazy(() => import("./pages/admin/CustomerDetailPage"));
@@ -28,6 +29,7 @@ const SettingsPage = lazy(() => import("./pages/admin/SettingsPage"));
 
 import { useAuth } from "./hooks/useAuth";
 import { useLenis } from "./hooks/useLenis";
+import { useScrollNaarBoven } from "./hooks/useScrollNaarBoven";
 import { PageTransition } from "./components/PageTransition";
 
 function ProtectedAdmin({ children }: { children: React.ReactNode }) {
@@ -55,6 +57,8 @@ export default function App() {
   // Lenis alleen op de publieke site: op de admin kaapt hij het scrollwiel, waardoor
   // geneste lijsten (zoals de aanvragenlijst) niet meer scrollen.
   useLenis(!location.startsWith("/admin"));
+  // Nieuwe pagina = bovenaan beginnen. Geldt voor de publieke site en het beheerpaneel.
+  useScrollNaarBoven();
 
   return (
     <Switch>
@@ -64,6 +68,9 @@ export default function App() {
       </Route>
       <Route path="/admin/agenda">
         <ProtectedAdmin><AgendaPage /></ProtectedAdmin>
+      </Route>
+      <Route path="/admin/omzet">
+        <ProtectedAdmin><OmzetPage /></ProtectedAdmin>
       </Route>
       <Route path="/admin/pakketten">
         <ProtectedAdmin><PackagesPage /></ProtectedAdmin>
