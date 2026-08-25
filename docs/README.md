@@ -1,6 +1,6 @@
 # Atelier Boterbloem — Documentatie
 
-**Laatste update:** 25 augustus 2026
+**Laatste update:** 25 augustus 2026 (einde dag)
 
 > Voor AI/Claude-instructies: zie [`CLAUDE.md`](../CLAUDE.md) in de projectroot.
 > Voor de dagelijkse dev-workflow: zie [workflow/werkwijze.md](workflow/werkwijze.md).
@@ -117,6 +117,8 @@ npm run typecheck    # tsc --noEmit — het enige vangnet, de server compileert 
 npm test             # Vitest
 npm run db:migrate   # .sql-migratie draaien — zie deployment/db-migraties.md
 npm run seed:admin   # eenmalig: admin-account + categorieën + standaardinstellingen
+npm run seed:demo    # democontent erin — zie deployment/pending.md. `-- --verwijder` haalt hem weg
+npm run check:demo   # zit er nog demo-content in de gebouwde bundel?
 ```
 
 ---

@@ -24,14 +24,15 @@ hebben die de code nog niet gebruikt.
 4. sql-pending/2026-08-25-btw.sql draaien
 5. sql-pending/2026-08-25-regel-details.sql draaien
 6. sql-pending/2026-08-25-album-blokken.sql draaien
-7. db-migraties.md → LIVE ✅
-8. git pull && npm ci && npm run build && pm2 reload
-9. Oude taart-categorieën opruimen in het galerijscherm
-10. testscript-master.md doorlopen
+7. sql-pending/2026-08-25-btw-per-regel.sql draaien
+8. db-migraties.md → LIVE ✅
+9. git pull && npm ci && npm run build && pm2 reload
+10. Oude taart-categorieën opruimen in het galerijscherm
+11. testscript-master.md doorlopen
 ```
 
-De vier in deze volgorde: `boekingen.sql` verwijst naar `packages`, en die tabel komt
-uit fase 1.
+De volgorde is niet vrij: `boekingen.sql` verwijst naar `packages`, en die tabel komt uit fase 1.
+`btw-per-regel.sql` raakt `order_items` en `packages`, dus die twee moeten er al staan.
 
 ---
 
@@ -44,6 +45,7 @@ uit fase 1.
 | [`2026-08-25-btw.sql`](sql-pending/2026-08-25-btw.sql) | ✅ | ⏳ | 🚨 **Vóór de code.** `orders.vat_rate` + `site_settings.btw` |
 | [`2026-08-25-regel-details.sql`](sql-pending/2026-08-25-regel-details.sql) | ✅ | ⏳ | 🚨 **Vóór de code.** `order_items.details` + oude `·`-regels opruimen |
 | [`2026-08-25-album-blokken.sql`](sql-pending/2026-08-25-album-blokken.sql) | ✅ | ⏳ | 🚨 **Vóór de code.** `gallery_albums.blocks` |
+| [`2026-08-25-btw-per-regel.sql`](sql-pending/2026-08-25-btw-per-regel.sql) | ✅ | ⏳ | 🚨 **Vóór de code.** Btw op regel, pakket en product |
 | [`2026-08-24-herstel-testdata.sql`](sql-pending/2026-08-24-herstel-testdata.sql) | n.v.t. | ✅ | Gedraaid 24-08, datacorrectie |
 
 ---
@@ -395,12 +397,118 @@ drie plekken waar foto's staan) en `components/admin/galerij/UploadKaart.tsx`.
 
 ---
 
+### 🖼️ Democontent in de database
+
+`scripts/seed-demo-content.ts` — 36 Unsplash-foto's langs dezelfde Sharp-pijplijn als een echte
+upload, negen events (vier met `blocks`), vier pakketten met cover en prijs, vijf reviews, en
+nette site-instellingen. Alles met `source: "demo"` als merkteken, en vlaggen `--verwijder`,
+`--schoon` en `--testdata-weg`.
+
+**In de database en niet in de frontend-demo-laag**, want die schakelt zichzelf uit zodra er één
+echte foto staat en laat het beheerpaneel leeg.
+
+**Grazing Table is als vierde pakket toegevoegd** — dat ontbrak, terwijl de site "Sweet & grazing
+tables" als kop voert.
+
+> 🔴 **Blokkerend vóór livegang.** Stockfoto's van anderen en verzonnen reviews. Weg met
+> `npm run seed:demo -- --verwijder`. Zie [testscript-master.md](testscript-master.md) §8.8.
+
+---
+
+### ⚙️ Instellingen bruikbaar voor een niet-technische gebruiker
+
+Het scherm was geschreven vanuit de database. Secties heten nu naar **waar het staat**, met een
+*Bekijk*-link per sectie en één regel uitleg per veld. *Tagline* → "Zin onder je naam", *CTA
+tekst* → "Tekst op de knop", *CTA link* → "Waar de knop heen gaat" als keuzelijst met
+paginanamen.
+
+**Fotokiezer** in plaats van een veld waar je `uuid.webp` in moest typen: kiezen uit de galerij of
+uploaden. Een upload landt onder de niet-gepubliceerde gelegenheid **Sitefoto's** (nieuw in
+`seed-admin.ts`), zodat een portret niet tussen de feesten opduikt.
+
+**Vijf dode velden weg**: `hero.title`, `hero.imageFilename`, `levertijden.taartenDagen`,
+`contact.openingHours` en `contact.facebook`. Geen van vijven werd ergens uitgelezen — de kop op
+de homepage staat hardgecodeerd en de hero toont de carousel. De sleutels blijven in bestaande
+jsonb-rijen staan; niets leest ze meer, en Zod stript ze bij de eerstvolgende opslag.
+
+**WhatsApp aangesloten** op de contactpagina en in de voettekst. Het veld bestond al maar werd
+nergens getoond.
+
+**Een mislukte opslag zei niets.** Vier PUT's naast elkaar via `Promise.all`; faalde er één, dan
+waren de andere drie al door en toonde het scherm niets. Nu achter elkaar, met de servermelding.
+
+---
+
+### 🧾 Btw per regel, per pakket en per product
+
+**Het model lag op de boeking en dat is te grof.** Eén offerte kan twee tarieven bevatten: een
+grazing table valt onder 9% (eten en drinken), de styling en het glaswerk ernaast onder 21%. De
+Belastingdienst staat niet toe dat het hoge deel meelift op het lage tarief; bij één prijs naar de
+klant hoort het bedrag aan de achterkant gesplitst te worden volgens de marktwaarde.
+
+- `order_items.vat_rate` — het tarief hoort bij het **bedrag**, en dat staat op de regel
+- `packages.vat_rate` voor een pakket dat één prestatie is
+- `packages.vat_split_low` / `vat_split_high` voor een pakket dat allebei bevat. **Per eenheid**,
+  net als `price_from`: € 22,00 eten en € 3,00 servies bij € 25,00 p.p. wordt voor twintig gasten
+  € 440,00 en € 60,00. Het pakketformulier telt live op en **weigert op te slaan** als de
+  verdeling niet uitkomt op de vanaf-prijs
+- `products.vat_rate` voor de taart-prijslijst. Geen verdeling: een taart is één ding
+
+**Btw is uit de instellingen én uit de boeking gehaald.** Die twee concurreerden met het pakket om
+dezelfde vraag, waardoor niet af te lezen was welk antwoord wint. Als vangnet krijgt een pakket of
+product zonder tarief een zichtbare markering in het beheerscherm.
+
+De offerte splitst per tarief uit. `apply-package` matcht nu **per deel**: zonder dat verhoogde
+een tweede toevoeging alleen de eerste regel en kwam de andere er los naast te staan.
+
+> ⚠️ Welk deel van een pakketprijs eten is, is een vraag voor de boekhouder van de klant.
+
+---
+
+### 🐛 Drie rekenfouten en twee gaten in het beheerpaneel
+
+- **De aanbetaling werd afgetrokken zonder te kijken of hij betaald was.** `depositAmount` is de
+  *afgesproken* aanbetaling, `depositPaid` zegt of hij binnen is. Een boeking van € 295 met een
+  onbetaalde aanbetaling van € 200 las als "openstaand € 95,00" — precies het getal waarop je
+  afgaat als je iemand belt over zijn rekening. Vastgelegd in een test.
+- **`?–40 personen` op de publieke site** wanneer alleen de bovengrens was ingevuld. Nu
+  `personenBereik()` in `lib/utils.ts`, gedeeld door de publieke en de beheerkant.
+- **Klant → boeking was niet klikbaar** terwijl de rij een hover-kleur had. Nu klikbaar, met het
+  boekingsnummer als linktekst.
+- **Een klant koppelen aan een bestaande boeking kon niet.** Nu zoeken-terwijl-je-typt met
+  ontdubbeling, en pas daarna de optie om een nieuwe klant aan te maken.
+- **De offerte opnieuw opgebouwd.** De puntenrij is een gelabelde lijst geworden, en de betaling
+  staat in twee stappen: *nu te voldoen* en *daarna, bij oplevering*.
+
+---
+
+### 🎨 Publieke site
+
+**`/aanbod` opnieuw ingedeeld** — zie
+[../komende-plannen/2-in-uitvoering/pakketten-aanbodpagina-indeling.md](../komende-plannen/2-in-uitvoering/pakketten-aanbodpagina-indeling.md).
+De gelegenheden staan als doorlopende strook in de kop en de pakketten als blokken eronder, twee
+kolommen ook op een telefoon. Met vier pakketten stond de vierde eerder alleen op een nieuwe rij
+met een gat ernaast; `flex-wrap justify-center` zet een overblijver in het midden.
+
+**Koppen op foto's waren onleesbaar** op een lichte foto: het verloop liep over de hele tegel en
+viel op halve hoogte al weg. `FotoScrim` lost dat op één plek op, gedeeld door drie schermen.
+
+**Tegels wisselen door de foto's van hun events** (`FotoCyclus`) in plaats van één vaste cover.
+Twee fouten daarin gerepareerd: de oude foto vervaagde tegelijk met het invaden van de nieuwe
+(waardoor de achtergrond erdoorheen schemerde), en de `transition-transform` van de hover-zoom
+schakelde de `transition-opacity` van het kruisvervagen uit — `transition-property` kan er maar
+één zijn. De twee overgangen staan nu op verschillende elementen.
+
+**Kastlijntjes (—) uit alle publieke teksten**, op verzoek. Ook uit de seed en uit de database.
+
+---
+
 ## Getest
 
 | | |
 |---|---|
 | `npm run typecheck` | ✅ |
-| `npm test` | ✅ 54 tests (was 27) |
+| `npm test` | ✅ 78 tests (was 27) |
 | `npm run build` | ✅ |
 | Endpoints tegen dev | ✅ 22/22 + de nieuwe regelroutes |
 | Migraties op dev | ✅ beide + idempotent bij tweede run |
@@ -419,7 +527,8 @@ omgekeerde volgorde · UTF-8 gaat byte-voor-byte gelijk heen en terug (allergiet
 `client/src/lib/{images,demoGallery}.ts`, `client/src/App.tsx`,
 `client/src/components/layout/AdminLayout.tsx`, `scripts/seed-admin.ts`
 
-**Migraties:** `fase-1-schema` → `boekingen` → `btw` → `regel-details` → `album-blokken` — 🚨 alle vijf vóór de code
+**Migraties:** `fase-1-schema` → `boekingen` → `btw` → `regel-details` → `album-blokken` →
+`btw-per-regel` — 🚨 alle zes vóór de code
 
 ---
 

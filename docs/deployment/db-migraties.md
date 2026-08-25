@@ -173,6 +173,36 @@ Op `atelierboterbloem_dev` uitgevoerd en gecontroleerd:
 boeking laat zijn nummer daarmee niet hergebruiken — dat nummer staat al op een offerte bij een
 klant.
 
+### 2026-08-25 — btw per regel, per pakket en per product
+
+**Status: DEV ✅ — gedraaid en geverifieerd. LIVE ⏳.**
+
+Aanleiding: het model van `2026-08-25-btw.sql` legde het tarief op de **boeking**, en dat is te
+grof. Eén offerte kan twee tarieven bevatten — een grazing table valt onder 9% (eten en drinken),
+de styling, het glaswerk en de opbouw ernaast onder 21%. De Belastingdienst staat niet toe dat
+het 21%-deel meelift op het lage tarief; bij één prijs naar de klant hoort het bedrag aan de
+achterkant gesplitst te worden volgens de marktwaarde.
+
+Wat erbij kwam:
+
+- `order_items.vat_rate` — het tarief hoort bij het **bedrag**, en het bedrag staat op de regel
+- `packages.vat_rate` — één tarief, voor een pakket dat één prestatie is
+- `packages.vat_split_low` / `vat_split_high` — de verdeling voor een pakket dat allebei bevat.
+  **Per eenheid**, net als `price_from`: bij € 25,00 p.p. is dat € 22,00 eten en € 3,00 servies,
+  en het aantal gasten op de regel doet de vermenigvuldiging
+- `products.vat_rate` — de taart-prijslijst. Geen verdeling: een taart is één ding
+
+Alle vier met een `CHECK` op de toegestane waarden, plus een controle dat een deelprijs niet
+negatief is. Zonder die controles laat `varchar` gewoon `'hoogg'` toe, en dat merk je pas als er
+een offerte uitrolt met een leeg btw-blok.
+
+Additief en idempotent: geen kolom verdwijnt, geen bedrag wordt herrekend. `line_total` en
+`total_price` blijven precies zoals ze waren — alleen de uitsplitsing op de offerte verandert.
+
+`orders.vat_rate` blijft staan maar wordt niet meer uitgelezen; de bedrijfsbrede standaard in
+`site_settings.btw` evenmin. Die twee concurreerden met het pakket om dezelfde vraag, waardoor
+niet meer af te lezen was welk antwoord wint.
+
 ### 2026-08-24 — herstel testdata
 
 Geen schemawijziging; een datacorrectie. Zie de rode waarschuwing hierboven bij *De

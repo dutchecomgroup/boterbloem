@@ -1,4 +1,4 @@
-> **Status:** actief — stap 1 en 2 af, stap 3 open (en waarschijnlijk niet nodig)
+> **Status:** 🟡 stap 1 en 2 af · stap 3 uit scope · open: sitemap uit de database en Open Graph per event
 > **Thema:** 🖼️ portfolio
 > **Laatst bijgewerkt:** 2026-08-25
 > **Afhankelijk van:** [portfolio-categorie-albums](../1-klaar-voor-livegang/portfolio-categorie-albums.md) — die laag staat er al
@@ -102,8 +102,8 @@ album dat geen foto's hoeft te hebben.
 - [x] Album zonder blokken toont gewoon `description` + foto's — bestaande albums breken niet
 - [x] Foto buiten de blokken verschijnt onderaan in plaats van te verdwijnen
 - [x] Ongeldige bloksoort geeft een 400, niet een kapotte publieke pagina
-- [ ] Blokken herordenen blijft kloppen na verversen — nog niet met de muis doorlopen
+- [x] Blokken herordenen blijft kloppen na verversen — doorgeklikt 25-08
 - [ ] Eigen adres deelt goed: Open Graph toont titel en coverfoto
-- [ ] Slug beweegt **niet** mee met een titelwijziging
+- [x] Slug beweegt **niet** mee met een titelwijziging — vastgelegd in de route, doorgeklikt 25-08
 - [ ] Leeg album, album zonder foto's en album zonder tekst geven alle drie iets leesbaars
 - [x] 375 px breed: geen horizontaal schuiven

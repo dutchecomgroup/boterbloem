@@ -75,11 +75,31 @@ moet er als eerste heen, vóór de code.
 
 ## 🚧 In uitvoering
 
-- 🖼️ [portfolio-albums-als-verhaal](2-in-uitvoering/portfolio-albums-als-verhaal.md) — tekst tussen de foto's van een event. **Besloten 25-08:** portfolio met meer tekst, geen losse blog. Stap 1 (blokken) is af en tegen dev getest. **Open:** eigen webadres per event (stap 2).
+- 🧾 [boekingen-detailsheet-en-agenda](2-in-uitvoering/boekingen-detailsheet-en-agenda.md) — de
+  boeking bruikbaar maken: regels, totalen, tijdlijn, detailsheet, agenda en offerte. Bevat de
+  **wireframes** en **100 klantsituaties** als testscript. **Stand:** stap 1 t/m 12 af en tegen
+  dev doorlopen. **Open:** stap 13, de scenario's die een muis en meerdere stappen vragen —
+  rechtermuisklik in de agenda, slepen tussen dagen, de terugknop die een sheet sluit, en de
+  drukte-gevallen uit groep H. Dit is het enige echte bouwwerk dat hier nog staat.
 
-- 🧾 [boekingen-detailsheet-en-agenda](2-in-uitvoering/boekingen-detailsheet-en-agenda.md) — de boeking zelf bruikbaar maken: regels, totalen, tijdlijn, detailsheet en een agenda waarin je kunt inplannen. Bevat de **wireframes** en **100 klantsituaties** als testscript. **Stand:** serverkant af en tegen dev doorlopen; de schermen nog niet. **Btw besloten 25-08:** drie tarieven — geen (KOR), 9% laag, 21% hoog — bedragen inclusief. De offerte is daarmee niet meer geblokkeerd.
-- 🔒 [security-hardening](2-in-uitvoering/security-hardening.md) — vier van de vijf bevindingen af. **Open:** poort 5432 dichtzetten in de firewall — vraagt SSH, geen codewerk.
-- ⭐ [content-teksten-herpositionering](2-in-uitvoering/content-teksten-herpositionering.md) — teksten van taart-eerst naar tables-eerst, plus `robots.txt`, `sitemap.xml` en Open Graph. **Open:** de klant die haar eigen woorden invult (`/diensten` → `/aanbod` is 25-08 gedaan).
+- 🍰 [pakketten-aanbodpagina-indeling](2-in-uitvoering/pakketten-aanbodpagina-indeling.md) —
+  `/aanbod` opnieuw ingedeeld: gelegenheden als doorlopende strook in de kop, pakketten als
+  blokken eronder. ✅ gebouwd 25-08. **Open:** doorklikken op 375 / 768 / 1440 px en de
+  randgevallen.
+
+- 🔒 [security-hardening](2-in-uitvoering/security-hardening.md) — vier van de vijf bevindingen
+  af. **Open:** poort 5432 dichtzetten in de firewall — vraagt SSH, geen codewerk.
+
+- ⭐ [content-teksten-herpositionering](2-in-uitvoering/content-teksten-herpositionering.md) —
+  teksten van taart-eerst naar tables-eerst, plus `robots.txt`, `sitemap.xml` en Open Graph.
+  ✅ gebouwd; de kastlijntjes zijn er 25-08 uit gehaald. **Open:** de klant die haar eigen
+  woorden invult.
+
+- 🖼️ [portfolio-albums-als-verhaal](2-in-uitvoering/portfolio-albums-als-verhaal.md) — tekst
+  tussen de foto's van een event. Stap 1 (blokken) en stap 2 (eigen webadres per event) zijn
+  allebei af. Stap 3 (artikelen zonder event) is uit scope tenzij de klant erom vraagt.
+  **Open:** `sitemap.xml` uit de database en Open Graph per event — allebei pas zinnig met
+  echte foto's.
 
 ## 📋 Onaangeraakt
 

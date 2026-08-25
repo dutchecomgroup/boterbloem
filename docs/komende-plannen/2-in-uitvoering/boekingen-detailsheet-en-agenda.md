@@ -7,7 +7,8 @@
 
 ## 📊 Stand van zaken (bijgewerkt 25-08)
 
-**De serverkant staat en is tegen `atelierboterbloem_dev` doorlopen. Er is nog geen scherm.**
+**Stap 1 t/m 12 staan en zijn tegen `atelierboterbloem_dev` doorlopen — server én schermen.**
+Wat er nog open is, is stap 13: de scenario's die een muis en meerdere stappen vragen.
 
 | # | Stap uit §10 | Stand |
 |---|---|---|

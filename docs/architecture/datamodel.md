@@ -103,11 +103,13 @@ Additief en idempotent; dry run tegen live geslaagd op 25-08. Hier het overzicht
 | Tabel | Wijziging | Plan |
 |---|---|---|
 | `packages` | **nieuw** — pakketten met vanaf-prijs, personen-bereik, "wat zit erin" | [pakketten-en-prijzen](../komende-plannen/1-klaar-voor-livegang/pakketten-en-prijzen.md) |
+| `packages` | `vatRate`, `vatSplitLow`, `vatSplitHigh` — één tarief, of een verdeling per eenheid tussen eten (9%) en styling (21%) | btw-per-regel |
+| `order_items` | `vatRate` — het tarief hoort bij het bedrag, en dat staat op de regel | btw-per-regel |
 | `gallery_albums` | **nieuw** — event-laag tussen categorie en foto | [portfolio-categorie-albums](../komende-plannen/1-klaar-voor-livegang/portfolio-categorie-albums.md) |
 | `reviews` | **nieuw** — echte reviews met publicatie-schakelaar | [content-reviews](../komende-plannen/1-klaar-voor-livegang/content-reviews.md) |
 | `gallery_items` | `albumId` | portfolio |
 | `gallery_categories` | `description`, `published` | portfolio |
-| `products` | `publicVisible` | pakketten |
+| `products` | `publicVisible`, `vatRate` | pakketten · btw-per-regel |
 | `orders` | `eventTime`, `location` | [agenda-boekingen](../komende-plannen/1-klaar-voor-livegang/agenda-boekingen.md) |
 | `contact_requests` | `packageId`, `categoryId` | [aanvragen-formulier-uitbreiding](../komende-plannen/1-klaar-voor-livegang/aanvragen-formulier-uitbreiding.md) |
 | `site_settings` | sleutel `levertijden` — **geen** schemawijziging (jsonb) | agenda |

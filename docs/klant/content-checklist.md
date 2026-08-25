@@ -1,6 +1,6 @@
 # Content-checklist — wat we van de klant nodig hebben
 
-> **Laatst bijgewerkt:** 2026-08-24
+> **Laatst bijgewerkt:** 2026-08-25
 > **Komt voort uit:** [2026-08-24-meeting-wensen.md](2026-08-24-meeting-wensen.md)
 
 Deze lijst loopt mee met
@@ -20,20 +20,27 @@ Werk de statuskolom bij zodra iets binnenkomt: ⏳ open · 📥 ontvangen · ✅
 |---|---|---|---|
 | Foto's, gegroepeerd per event | **livegang** | ⏳ open | Bouwen kan door op demo — zie de eisen hieronder |
 | ~~Definitieve lijst gelegenheden~~ | — | ✅ **vervalt** | Startset wordt geseed, zij past het zelf aan in het beheerpaneel |
-| Vanaf-prijzen per pakket | fase 3 | ⏳ open | Drie pakketten |
+| Vanaf-prijzen per pakket | fase 3 | ⏳ open | **Vier** pakketten sinds Grazing Table erbij kwam. Er staan nu demo-prijzen |
 | "Wat zit er in het pakket"-regels | fase 3 | ⏳ open | 4–8 regels per pakket |
 | Basis-prijslijst taarten | fase 3 | ⏳ open | Naam + vanaf-prijs + eenheid |
-| Reviews | **livegang** | ⏳ open | Minimaal 3, liefst 6. Blok verdwijnt vanzelf zolang er geen zijn |
+| Reviews | **livegang** | ⏳ open | Minimaal 3, liefst 6. Er staan nu **vijf verzonnen** demo-reviews die weg moeten |
 | Over-tekst | **livegang** | ⏳ open | 150–250 woorden |
-| Contactgegevens + openingstijden | **livegang** | ⏳ open | Zelf in te vullen in het beheerscherm |
+| Contactgegevens | **livegang** | ⏳ open | Zelf in te vullen in het beheerscherm. WhatsApp-nummer is nieuw en levert een knop op |
+| ~~Openingstijden~~ | — | ✅ **vervalt** | Veld is 25-08 verwijderd: een atelier op afspraak heeft ze niet |
+| **Btw-verdeling per pakket** | **livegang** | ⏳ open | Welk deel van de prijs is eten (9%) en welk deel styling en opbouw (21%). Met haar boekhouder afstemmen |
+| **Btw-tarief per taart** | **livegang** | ⏳ open | Meestal 9%; in te stellen op `/admin/producten` |
 | ~~Beslissing mail-hosting~~ | — | ✅ **beslist 25-08** | Buiten scope — blijft Gmail op haar telefoon |
 | E-mailadres voor op de contactpagina | **livegang** | ⏳ open | Dit is wat de `mailto:`-link opent |
 | Toegang mijndomein (DNS) | fase 0 | ⏳ open | Inloggegevens of iemand die de records zet |
 | Logo in vectorformaat | **livegang** | ⏳ open | Voor favicon + voorbeeldweergave bij delen |
 | Gewenste live-datum | planning | ⏳ open | |
 
-**Wat er nog écht blokkeert vóór livegang:** foto's, prijzen, reviews, over-tekst,
-contactgegevens. Alles wat daar niet in staat, kunnen we voorbouwen.
+**Wat er nog écht blokkeert vóór livegang:** foto's, prijzen, de btw-verdeling, reviews,
+over-tekst en contactgegevens. Alles wat daar niet in staat, kunnen we voorbouwen.
+
+> 🔴 **Sinds 25-08 staat er democontent in de dev-database**: 36 stockfoto's en vijf verzonnen
+> reviews. Die zijn er om te laten zien hoe de site eruit gaat zien, en ze moeten er vóór de
+> livegang uit met `npm run seed:demo -- --verwijder`.
 
 ---
 

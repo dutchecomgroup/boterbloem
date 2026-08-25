@@ -1,6 +1,6 @@
 # Teksten: van taart-eerst naar tables-eerst
 
-> **Status:** 🟡 Gebouwd (25-08) — wacht op de teksten van de klant
+> **Status:** 🟡 Gebouwd (25-08) — wacht op de teksten van de klant. Kastlijntjes eruit 25-08.
 > **Thema:** ⭐ content
 > **Laatst bijgewerkt:** 2026-08-25
 > **Afhankelijk van:** terugkoppeling van de klant op de toon
@@ -77,7 +77,7 @@ wijzen. Dat wacht op een echte foto; zie de content-checklist.
 - [x] `npm run typecheck`, `npm test` (27), `npm run build` groen
 - [x] `robots.txt` en `sitemap.xml` komen mee in `dist/client/`
 - [x] Titel in de gebouwde `index.html` klopt
-- [ ] Portretfoto op `/over` is terug — **klikronde**
-- [ ] Marquee toont de nieuwe volgorde — **klikronde**
-- [ ] Onbekende slug in `demoImageForSlug` geeft een console-waarschuwing én een beeld
+- [x] Portretfoto op `/over` is terug — gefixt en doorgeklikt 25-08
+- [x] Marquee toont de nieuwe volgorde — `HomePage.tsx` zet tables voorop
+- [x] Onbekende slug in `demoImageForSlug` geeft een console-waarschuwing én een beeld
 - [ ] Klant leest de teksten en herkent zichzelf erin

@@ -49,6 +49,8 @@ hernoeming gooit het je data weg. Er is één database en die is live. Volledige
 - `shared/schema.ts` — alles wat Drizzle + Zod beide nodig hebben
 - `uploads/` — gegenereerde WebP files (gitignored). In productie serveert Express deze als static of via Apache `Alias`.
 - `scripts/seed-admin.ts` — eenmalig: admin user + galerij-categorieën + default site_settings
+- `scripts/seed-demo-content.ts` — democontent (stockfoto's, verzonnen reviews). 🔴 **Weg vóór de
+  livegang**: `npm run seed:demo -- --verwijder`
 
 ## Belangrijke regels
 
@@ -58,6 +60,9 @@ hernoeming gooit het je data weg. Er is één database en die is live. Volledige
 - **Multer in-memory only** — Sharp streamt naar disk, dus geen tijdelijke uploads op disk.
 - **Admin auth**: `requireAuth` middleware op alles onder `/api/admin/*` behalve `/auth/*`.
 - **Currency** opslaan als `numeric(10,2)` (string in JS); converteer met `Number()` waar nodig.
+- **Btw hoort bij de regel**, niet bij de boeking: het tarief geldt over een bedrag, en het bedrag
+  staat op `order_items`. Een pakket kan zichzelf splitsen in twee regels (eten 9% · styling 21%).
+  Er is bewust géén bedrijfsbrede standaard meer — die concurreerde met het pakket.
 - **Datums** voor evenementen als `date` (geen tijd), `paidAt` als `timestamp`.
 
 ## Routes
