@@ -269,6 +269,40 @@ export const orderItems = pgTable("order_items", {
   sortOrder: integer("sort_order").notNull().default(0),
 });
 
+// ---------- Betalingen ----------
+
+/**
+ * Wat er daadwerkelijk binnengekomen is op een boeking, als losse regels.
+ *
+ * **Waarom een tabel en geen vinkje.** Het model kende alleen `depositAmount` (afgesproken) en
+ * `depositPaid` (binnen). Daarmee was "de aanbetaling is voldaan" vast te leggen en "de rest
+ * ook" niet: een afgeleverde boeking van EUR 295 bleef voor altijd op openstaand staan, tenzij je
+ * deed alsof de aanbetaling het hele bedrag was. Een klant die in twee of drie keer betaalt is
+ * bovendien gewoon normaal.
+ *
+ * Ontvangen is vanaf nu de som van deze regels, niet een afgeleide van de aanbetaling.
+ * `depositAmount` blijft bestaan en betekent nog steeds wat het altijd betekende: het bedrag
+ * dat is **afgesproken** en dat op de offerte staat als "nu te voldoen".
+ *
+ * `paidOn` is een datum en geen tijdstip -- niemand weet of het geld om 11:04 of om 14:20
+ * binnenkwam, en die precisie voorstellen is doen alsof.
+ */
+export const orderPayments = pgTable("order_payments", {
+  id: serial("id").primaryKey(),
+  orderId: integer("order_id").notNull().references(() => orders.id, { onDelete: "cascade" }),
+  amount: numeric("amount", { precision: 10, scale: 2 }).notNull(),
+  /** Wanneer het geld binnenkwam. Bepaalt in welke periode de betaling meetelt. */
+  paidOn: date("paid_on").notNull(),
+  /** Contant, overboeking, tikkie of anders. Mag leeg -- het bedrag is wat telt. */
+  method: varchar("method", { length: 32 }),
+  note: text("note"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => ({
+  orderIdx: index("order_payments_order_idx").on(table.orderId, table.paidOn),
+  /** De omzetpagina telt betalingen per periode op; dan is de datum de ingang. */
+  paidOnIdx: index("order_payments_paid_on_idx").on(table.paidOn),
+}));
+
 // ---------- Contact requests ----------
 
 export const contactRequests = pgTable("contact_requests", {
@@ -410,6 +444,14 @@ export const ordersRelations = relations(orders, ({ one, many }) => ({
     references: [customers.id],
   }),
   items: many(orderItems),
+  payments: many(orderPayments),
+}));
+
+export const orderPaymentsRelations = relations(orderPayments, ({ one }) => ({
+  order: one(orders, {
+    fields: [orderPayments.orderId],
+    references: [orders.id],
+  }),
 }));
 
 export const orderItemsRelations = relations(orderItems, ({ one }) => ({
@@ -489,6 +531,13 @@ export const insertOrderItemSchema = createInsertSchema(orderItems, {
   // met een ruwe databasefout in beeld.
   vatRate: z.enum(["geen", "laag", "hoog"]).nullable().optional(),
 }).omit({ id: true, lineTotal: true });
+
+/** `orderId` komt uit het webadres, niet uit de body: anders kun je op een andere boeking boeken. */
+export const insertOrderPaymentSchema = createInsertSchema(orderPayments, {
+  amount: z.string().min(1, "Bedrag is verplicht"),
+  paidOn: z.string().min(1, "Datum is verplicht"),
+  method: z.enum(["contant", "overboeking", "tikkie", "anders"]).nullable().optional(),
+}).omit({ id: true, orderId: true, createdAt: true });
 
 export const insertOrderEventSchema = createInsertSchema(orderEvents).omit({
   id: true,
@@ -693,6 +742,8 @@ export type Order = typeof orders.$inferSelect;
 export type InsertOrder = z.infer<typeof insertOrderSchema>;
 export type OrderItem = typeof orderItems.$inferSelect;
 export type InsertOrderItem = z.infer<typeof insertOrderItemSchema>;
+export type OrderPayment = typeof orderPayments.$inferSelect;
+export type InsertOrderPayment = z.infer<typeof insertOrderPaymentSchema>;
 export type OrderEvent = typeof orderEvents.$inferSelect;
 export type InsertOrderEvent = z.infer<typeof insertOrderEventSchema>;
 /** De soorten gebeurtenissen op de tijdlijn. */

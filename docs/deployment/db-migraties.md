@@ -123,6 +123,7 @@ in de SELECT, dus één ontbrekende kolom breekt élke query op die tabel.
 | 2026-08-24 | [`2026-08-25-btw.sql`](sql-pending/2026-08-25-btw.sql) | Btw: `orders.vat_rate` met CHECK op geen/laag/hoog + standaardtarief in `site_settings.btw` | ✅ | ⏳ |
 | 2026-08-24 | [`2026-08-25-regel-details.sql`](sql-pending/2026-08-25-regel-details.sql) | `order_items.details` voor subregels; bestaande `· `-regels van € 0,00 samengevoegd tot subregels en verwijderd | ✅ | ⏳ |
 | 2026-08-24 | [`2026-08-25-album-blokken.sql`](sql-pending/2026-08-25-album-blokken.sql) | `gallery_albums.blocks` — tekst en foto's door elkaar per event, met CHECK dat het een array is | ✅ | ⏳ |
+| 2026-08-25 | [`2026-08-25-betalingen.sql`](sql-pending/2026-08-25-betalingen.sql) | Betalingen: nieuwe tabel `order_payments` (bedrag, datum, wijze, notitie) + betaalde aanbetalingen overgezet als betaalregel | ✅ | ⏳ |
 | 2026-08-24 | [`2026-08-24-herstel-testdata.sql`](sql-pending/2026-08-24-herstel-testdata.sql) | Herstel: `contact`/`hero` terug naar seed-waarden + 8 testrijen uit `contact_requests` | n.v.t. | ⏳ |
 
 > **Volgorde op live:** fase 1 → boekingen → btw → regel-details → album-blokken. `boekingen.sql` legt een
@@ -207,3 +208,28 @@ niet meer af te lezen was welk antwoord wint.
 
 Geen schemawijziging; een datacorrectie. Zie de rode waarschuwing hierboven bij *De
 dev-database* voor wat er misging.
+
+### 2026-08-25 — betalingen
+
+**Status: DEV ✅ — gedraaid en geverifieerd. LIVE ⏳.**
+
+Aanleiding: `orders.paid_at` werd door de hele codebase alleen **gelezen** en nooit geschreven,
+terwijl de omzettegels erop filterden. Die stonden daardoor structureel op € 0,00. En er was geen
+veld om vast te leggen dat een boeking volledig betaald was — het model kende alleen een
+afgesproken aanbetaling en een vinkje of díe binnen was.
+
+Op `atelierboterbloem_dev` uitgevoerd en gecontroleerd:
+
+- tabel `order_payments` met twee indexen en een CHECK op `method`
+- **idempotent**: de tweede run sloeg tabel en indexen over en zette geen tweede betaalregel neer
+- **betaalde aanbetalingen overgezet**: ABB-2026-007 kreeg zijn € 125,00 als betaalregel, met
+  `orders.created_at` als datum. Niet vandaag — dan zou een oude betaling in de huidige maand
+  opduiken en de cijfers vervuilen
+- de afsluitende controle in het bestand gooit een fout als er een betaalde aanbetaling zonder
+  betaalregel overblijft; die kwam schoon door
+- endpoint-controle tegen dev: `/api/admin/omzet` over 2026 geeft € 770,00 over 3 afgeleverde
+  boekingen, met € 475,00 in augustus en € 295,00 in september
+- `npm run typecheck`, `npm test` (96) en `npm run build` groen tegen dev
+
+**`deposit_paid` en `paid_at` blijven staan** maar worden niet meer gelezen. De migratie is
+additief; ze weghalen hoort een eigen migratie te zijn, na een ronde waarin niets ze mist.

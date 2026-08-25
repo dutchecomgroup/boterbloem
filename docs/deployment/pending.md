@@ -25,14 +25,17 @@ hebben die de code nog niet gebruikt.
 5. sql-pending/2026-08-25-regel-details.sql draaien
 6. sql-pending/2026-08-25-album-blokken.sql draaien
 7. sql-pending/2026-08-25-btw-per-regel.sql draaien
-8. db-migraties.md → LIVE ✅
-9. git pull && npm ci && npm run build && pm2 reload
-10. Oude taart-categorieën opruimen in het galerijscherm
-11. testscript-master.md doorlopen
+8. sql-pending/2026-08-25-betalingen.sql draaien
+9. db-migraties.md → LIVE ✅
+10. git pull && npm ci && npm run build && pm2 reload
+11. Oude taart-categorieën opruimen in het galerijscherm
+12. testscript-master.md doorlopen
 ```
 
 De volgorde is niet vrij: `boekingen.sql` verwijst naar `packages`, en die tabel komt uit fase 1.
 `btw-per-regel.sql` raakt `order_items` en `packages`, dus die twee moeten er al staan.
+`betalingen.sql` legt een foreign key naar `orders` en leest `deposit_paid`; die staan er al vanaf
+het begin, dus hij mag achteraan.
 
 ---
 
@@ -46,11 +49,58 @@ De volgorde is niet vrij: `boekingen.sql` verwijst naar `packages`, en die tabel
 | [`2026-08-25-regel-details.sql`](sql-pending/2026-08-25-regel-details.sql) | ✅ | ⏳ | 🚨 **Vóór de code.** `order_items.details` + oude `·`-regels opruimen |
 | [`2026-08-25-album-blokken.sql`](sql-pending/2026-08-25-album-blokken.sql) | ✅ | ⏳ | 🚨 **Vóór de code.** `gallery_albums.blocks` |
 | [`2026-08-25-btw-per-regel.sql`](sql-pending/2026-08-25-btw-per-regel.sql) | ✅ | ⏳ | 🚨 **Vóór de code.** Btw op regel, pakket en product |
+| [`2026-08-25-betalingen.sql`](sql-pending/2026-08-25-betalingen.sql) | ✅ | ⏳ | 🚨 **Vóór de code.** Tabel `order_payments` + betaalde aanbetalingen overgezet |
 | [`2026-08-24-herstel-testdata.sql`](sql-pending/2026-08-24-herstel-testdata.sql) | n.v.t. | ✅ | Gedraaid 24-08, datacorrectie |
 
 ---
 
 ## Pending features
+
+### 💶 Omzet zichtbaar maken — betalingen, omzetpagina, hub gerepareerd
+
+Aanleiding: boeking ABB-2026-014 stond op `afgeleverd` met € 295,00 en er verscheen nergens
+omzet. In de woorden van de gebruiker: *"Boeking is afgeleverd, maar ik zie geen omzet bij de
+klant en in de hub?"*
+
+**Twee fouten, allebei in het model.**
+
+`orders.paid_at` werd door de hele codebase alleen **gelezen** — vier keer in `stats.ts`. Geen
+route, geen script en geen migratie schreef hem ooit. De omzettegels en de 12-maandsgrafiek
+filterden op `paid_at IS NOT NULL` en stonden daarmee structureel op € 0,00, voor elke boeking,
+altijd. En er was geen manier om "de rest is ook betaald" vast te leggen: het model kende alleen
+`deposit_amount` (afgesproken) en `deposit_paid` (binnen), dus ontvangen kon nooit meer worden dan
+de aanbetaling.
+
+Daar kwam bij dat er **twee definities van omzet** naast elkaar stonden: de hub eiste `afgeleverd`
++ `paid_at`, de klantdetailpagina keek alleen naar `afgeleverd`. Twee schermen, twee antwoorden.
+
+**Wat er nu staat:**
+
+- **`order_payments`** — betalingen als losse regels (bedrag, datum, wijze, notitie). Een klant die
+  in twee keer betaalt past er in, en je ziet wánneer. `deposit_amount` behoudt zijn betekenis: het
+  **afgesproken** bedrag dat op de offerte staat als "nu te voldoen".
+- **Omzet telt op de datum van het feest**, bij status `afgeleverd` (besloten 25-08). Het werk is
+  dan geleverd, dus de omzet is verdiend, ook als de klant later betaalt. `paid_at` zit in geen
+  enkele omzetvraag meer.
+- **`/admin/omzet`** — periodekiezer (week · maand · kwartaal · jaar · vrij), kerncijfers met
+  vergelijking met de even lange vorige periode, staafgrafiek, **btw per tarief**, omzet per pakket,
+  openstaande posten over álle perioden, en een CSV-export voor de boekhouder.
+- **De hub gebruikt dezelfde regel** als de omzetpagina. Dat is het punt — ze stonden los.
+- **Betaalblok in de boekingsheet**, in plaats van het selectievakje *Ontvangen: binnen*.
+
+**Niets gaat automatisch.** Een betaling bestaat pas als hij is vastgelegd; een status op
+`afgeleverd` zetten raakt de betalingen niet aan.
+
+**Getest tegen dev:** migratie idempotent (tweede run zet niets dubbel), betaalde aanbetalingen
+overgezet (ABB-2026-007 → € 125,00), `/api/admin/omzet` over 2026 geeft € 770,00 over 3 boekingen
+met de juiste maandverdeling, een omgekeerde periode geeft 400, en ABB-2026-014 staat na het
+vastleggen van € 295,00 op openstaand € 0,00. 18 nieuwe tests (96 totaal).
+
+> ⚠️ **`deposit_paid` en `paid_at` worden niet meer gelezen.** Ze blijven staan omdat de migratie
+> additief is. Weghalen kan pas na een ronde waarin niets ze mist — en dat is dan een eigen
+> migratie, geen bijvangst.
+
+---
 
 ### 🖼️ Portfolio per gelegenheid — categorie → album → foto's
 

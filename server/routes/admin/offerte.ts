@@ -1,11 +1,11 @@
 import { Router } from "express";
 import { db } from "../../db.js";
 import {
-  orders, orderItems, customers, packages, siteSettings,
+  orders, orderItems, orderPayments, customers, packages, siteSettings,
   contactSettingsSchema, btwSettingsSchema,
 } from "@shared/schema";
 import { eq } from "drizzle-orm";
-import { formatBedrag, btwPerTarief, openstaand } from "../../lib/orderTotals.js";
+import { formatBedrag, btwPerTarief, openstaand, ontvangen, naarCenten } from "../../lib/orderTotals.js";
 import { logOrderEvent, gebeurtenis } from "../../lib/orderEvents.js";
 import type { AuthedRequest } from "../../auth.js";
 
@@ -30,7 +30,7 @@ offerteRouter.get("/:id/offerte", async (req: AuthedRequest, res, next) => {
     const [order] = await db.select().from(orders).where(eq(orders.id, id)).limit(1);
     if (!order) return res.status(404).type("html").send(pagina404());
 
-    const [klant, pakket, regels, instellingen] = await Promise.all([
+    const [klant, pakket, regels, instellingen, betalingen] = await Promise.all([
       order.customerId
         ? db.select().from(customers).where(eq(customers.id, order.customerId)).limit(1)
         : Promise.resolve([]),
@@ -39,6 +39,7 @@ offerteRouter.get("/:id/offerte", async (req: AuthedRequest, res, next) => {
         : Promise.resolve([]),
       db.select().from(orderItems).where(eq(orderItems.orderId, id)).orderBy(orderItems.sortOrder),
       db.select().from(siteSettings),
+      db.select().from(orderPayments).where(eq(orderPayments.orderId, id)),
     ]);
 
     const contact = leesInstelling(instellingen, "contact", contactSettingsSchema);
@@ -54,7 +55,10 @@ offerteRouter.get("/:id/offerte", async (req: AuthedRequest, res, next) => {
     await logOrderEvent(db, id, gebeurtenis.offerteBekeken(), req.session?.username ?? null);
 
     res.type("html").send(
-      offerteHtml({ order, klant: klant[0] ?? null, pakket: pakket[0] ?? null, regels, contact, btwRegels, btwInstelling }),
+      offerteHtml({
+        order, klant: klant[0] ?? null, pakket: pakket[0] ?? null, regels, contact, btwRegels,
+        btwInstelling, ontvangenBedrag: ontvangen(betalingen),
+      }),
     );
   } catch (err) {
     next(err);
@@ -129,14 +133,18 @@ type OfferteData = {
   contact: { email?: string; phone?: string; address?: string; postcode?: string; city?: string } | null;
   btwRegels: Array<{ percentage: number; over: string; excl: string; btw: string }>;
   btwInstelling: { toelichting: string } | null;
+  /** Wat er binnen is, uit `order_payments`. Niet af te leiden uit de aanbetaling. */
+  ontvangenBedrag: string;
 };
 
-function offerteHtml({ order, klant, pakket, regels, contact, btwRegels, btwInstelling }: OfferteData): string {
+function offerteHtml({ order, klant, pakket, regels, contact, btwRegels, btwInstelling, ontvangenBedrag }: OfferteData): string {
   const nummer = order.reference ?? `Boeking ${order.id}`;
-  const open = openstaand(order.totalPrice, order.depositAmount, order.depositPaid);
+  const open = openstaand(order.totalPrice, ontvangenBedrag);
   const heeftAanbetaling = Number(order.depositAmount) !== 0;
-  /** Wat er ná de aanbetaling nog komt. Altijd totaal min aanbetaling, los van of hij al binnen is. */
-  const restNaAanbetaling = openstaand(order.totalPrice, order.depositAmount, true);
+  /** Of er al iets binnen is. Bepaalt of de offerte terugkijkt of vooruit. */
+  const erIsBetaald = naarCenten(ontvangenBedrag) > 0;
+  /** Wat er ná de aanbetaling nog komt. Altijd totaal min de *afgesproken* aanbetaling. */
+  const restNaAanbetaling = openstaand(order.totalPrice, order.depositAmount);
 
   return `<!doctype html>
 <html lang="nl">
@@ -321,11 +329,11 @@ function offerteHtml({ order, klant, pakket, regels, contact, btwRegels, btwInst
            * openstaande bedrag was het totaal min de aanbetaling — ook als die nog niet betaald
            * was. Dan lees je "nog € 95,00" terwijl er € 295,00 moet komen.
            */ ""}
-        ${!heeftAanbetaling
+        ${!heeftAanbetaling && !erIsBetaald
           ? ""
-          : order.depositPaid
-            ? `<div class="zacht"><span>Aanbetaling ontvangen</span>
-                 <span>− ${esc(formatBedrag(order.depositAmount))}</span></div>
+          : erIsBetaald
+            ? `<div class="zacht"><span>Reeds ontvangen</span>
+                 <span>− ${esc(formatBedrag(ontvangenBedrag))}</span></div>
                <div class="open hoofd"><span class="tag" style="align-self:center">Nog te voldoen</span>
                  <span class="bedrag">${esc(formatBedrag(open))}</span></div>`
             : `<div class="open hoofd"><span class="tag" style="align-self:center">Nu te voldoen · aanbetaling</span>

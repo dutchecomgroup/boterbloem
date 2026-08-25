@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
-  regelTotaal, boekingTotaal, openstaand, pakketNaarRegels,
+  regelTotaal, boekingTotaal, openstaand, ontvangen, pakketNaarRegels,
   naarCenten, naarBedrag, BedragTeGroot, MAX_BEDRAG,
   btwUitBedrag, geldendTarief, btwPerTarief,
 } from "./orderTotals.js";
@@ -94,31 +94,59 @@ describe("boekingtotaal", () => {
   });
 });
 
+describe("ontvangen bedrag", () => {
+  it("telt de betaalregels op", () => {
+    expect(ontvangen([{ amount: "125.00" }, { amount: "170.00" }])).toBe("295.00");
+  });
+
+  it("geen betalingen is nul, niet leeg", () => {
+    expect(ontvangen([])).toBe("0.00");
+  });
+
+  it("blijft exact bij bedragen die in een float scheefgaan", () => {
+    expect(ontvangen([{ amount: "0.10" }, { amount: "0.20" }])).toBe("0.30");
+  });
+});
+
 describe("openstaand bedrag", () => {
-  it("scenario 51 — € 445 totaal, € 125 aanbetaald", () => {
-    expect(openstaand("445.00", "125.00", true)).toBe("320.00");
+  it("scenario 51 — € 445 totaal, € 125 ontvangen", () => {
+    expect(openstaand("445.00", "125.00")).toBe("320.00");
   });
 
   it("scenario 52 — volledig betaald", () => {
-    expect(openstaand("370.00", "370.00", true)).toBe("0.00");
+    expect(openstaand("370.00", "370.00")).toBe("0.00");
   });
 
   it("scenario 55 — te veel betaald geeft een negatief bedrag", () => {
-    expect(openstaand("100.00", "150.00", true)).toBe("-50.00");
+    expect(openstaand("100.00", "150.00")).toBe("-50.00");
   });
 
-  it("geen aanbetaling", () => {
-    expect(openstaand("275.00", "0", false)).toBe("275.00");
+  it("niets ontvangen laat het hele bedrag openstaan", () => {
+    expect(openstaand("275.00", "0")).toBe("275.00");
   });
 
   /*
-   * De fout die dit oploste: `depositAmount` is de afgesproken aanbetaling, niet een ontvangen
-   * bedrag. Werd hij afgetrokken zonder naar `depositPaid` te kijken, dan zag een boeking
-   * waarvan nog niets binnen was eruit alsof er nog maar een restje open stond.
+   * De fout van 25-08, nu vastgelegd in het model in plaats van in een vlag: `depositAmount` is
+   * de *afgesproken* aanbetaling en nooit een ontvangen bedrag. Een afspraak zonder betaling
+   * heeft geen regel in `order_payments`, dus ontvangen is 0 en het hele bedrag staat open.
    */
   it("een afgesproken maar onbetaalde aanbetaling verlaagt het openstaande bedrag niet", () => {
-    expect(openstaand("295.00", "200.00", false)).toBe("295.00");
-    expect(openstaand("295.00", "200.00", true)).toBe("95.00");
+    const geenBetaling: Array<{ amount: string }> = [];
+    expect(openstaand("295.00", ontvangen(geenBetaling))).toBe("295.00");
+    expect(openstaand("295.00", ontvangen([{ amount: "200.00" }]))).toBe("95.00");
+  });
+
+  /*
+   * De aanleiding voor `order_payments`: ABB-2026-014 was afgeleverd én volledig betaald, maar
+   * kon dat nergens kwijt. Met een betaalregel voor het hele bedrag staat er niets meer open.
+   */
+  it("een volledig betaalde boeking staat op nul, ook zonder aanbetaling", () => {
+    expect(openstaand("295.00", ontvangen([{ amount: "295.00" }]))).toBe("0.00");
+  });
+
+  it("in delen betalen komt op hetzelfde uit als in één keer", () => {
+    const inDelen = ontvangen([{ amount: "100.00" }, { amount: "95.00" }, { amount: "100.00" }]);
+    expect(openstaand("295.00", inDelen)).toBe("0.00");
   });
 });
 

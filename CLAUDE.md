@@ -63,7 +63,15 @@ hernoeming gooit het je data weg. Er is één database en die is live. Volledige
 - **Btw hoort bij de regel**, niet bij de boeking: het tarief geldt over een bedrag, en het bedrag
   staat op `order_items`. Een pakket kan zichzelf splitsen in twee regels (eten 9% · styling 21%).
   Er is bewust géén bedrijfsbrede standaard meer — die concurreerde met het pakket.
-- **Datums** voor evenementen als `date` (geen tijd), `paidAt` als `timestamp`.
+- **Datums** voor evenementen als `date` (geen tijd).
+- **Omzet telt op de datum van het feest**, bij status `afgeleverd` — niet op de betaaldatum.
+  Diezelfde regel geldt op het dashboard én op `/admin/omzet`; ze stonden eerder los van elkaar
+  en gaven daardoor andere getallen.
+- **Ontvangen is de som van `order_payments`**, nooit een afgeleide van de aanbetaling.
+  `depositAmount` is wat er is *afgesproken* (en op de offerte staat), niet wat er binnen is.
+  Er gaat niets automatisch: een betaling bestaat pas als hij is vastgelegd.
+- `orders.deposit_paid` en `orders.paid_at` zijn **dood** sinds 25-08. Niet opnieuw gaan gebruiken;
+  ze staan er alleen nog omdat de migratie additief was.
 
 ## Routes
 
@@ -80,6 +88,8 @@ Admin (sessie vereist):
 - `/api/admin/gallery` — POST is multipart (`files[]`, optionele `categoryId`), `/categories/*`, `/reorder`
 - `/api/admin/contact-requests` — incl. `:id/status`
 - `/api/admin/settings` — JSONB upserts per key (`contact`, `hero`, `about`)
+- `/api/admin/orders/:id/betalingen` — betaalregels; POST voegt toe, DELETE draait terug
+- `/api/admin/omzet` — `?van=&tot=&groep=maand|week`: omzet, btw per tarief, per pakket, openstaand
 - `/api/admin/stats/dashboard` — totalen + 12-maands omzet
 
 ## Deploy (VPS)

@@ -37,6 +37,13 @@ export async function logOrderEvent(
   });
 }
 
+/** "2026-09-06" -> "6 september 2026". De tijdlijn wordt door een mens gelezen. */
+function datumNL(iso: string): string {
+  const d = new Date(`${iso}T00:00:00`);
+  if (Number.isNaN(d.getTime())) return iso;
+  return d.toLocaleDateString("nl-NL", { day: "numeric", month: "long", year: "numeric" });
+}
+
 /* ---------------------------------------------------------------------------
  * Vaste formuleringen. Hier staan ze bij elkaar zodat de tijdlijn één stem heeft
  * en niet een verzameling losse zinnetjes wordt.
@@ -84,6 +91,18 @@ export const gebeurtenis = {
       ? `Aanbetaling ontvangen — ${formatBedrag(bedrag)}`
       : `Aanbetaling ingesteld op ${formatBedrag(bedrag)}`,
     details: { bedrag, betaald },
+  }),
+
+  betalingOntvangen: (bedrag: string, datum: string) => ({
+    kind: "betaling" as const,
+    summary: `Betaling ontvangen — ${formatBedrag(bedrag)} op ${datumNL(datum)}`,
+    details: { bedrag, datum },
+  }),
+
+  betalingVerwijderd: (bedrag: string, datum: string) => ({
+    kind: "betaling" as const,
+    summary: `Betaling teruggedraaid — ${formatBedrag(bedrag)} van ${datumNL(datum)}`,
+    details: { bedrag, datum },
   }),
 
   offerteBekeken: () => ({

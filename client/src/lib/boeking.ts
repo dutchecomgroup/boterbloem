@@ -98,25 +98,37 @@ export function standaardAantal(pakket: { priceUnit: string }, personen: number 
  * De drie getallen bovenaan de sheet. Openstaand mag negatief zijn: te veel betaald is een
  * echte situatie en het scherm hoort hem te benoemen, niet af te ronden naar nul.
  *
- * **`betaald` hoort erbij.** `depositAmount` is wat er is *afgesproken*, niet wat er binnen is;
- * `depositPaid` zegt dat laatste. Zonder dat onderscheid las een boeking van € 295 met een nog
- * niet betaalde aanbetaling van € 200 als "openstaand € 95,00", terwijl er niets ontvangen was.
+ * **`ontvangen` is een bedrag, geen vlag.** Dit stond er eerder als
+ * `bedragen(totaal, aanbetaling, betaald)`, omdat ontvangen toen niets anders kón zijn dan de
+ * aanbetaling. Daar liep een afgeleverde, volledig betaalde boeking op vast: er was geen veld
+ * om dat in te zetten, dus bleef het hele bedrag openstaan. Ontvangen komt nu uit
+ * `order_payments` -- zie `BetalingenBlok`.
+ *
+ * `aanbetaling` blijft meekomen omdat het iets anders betekent: wat er is **afgesproken**, en
+ * wat op de offerte staat als "nu te voldoen". Daarmee kan het strookje zeggen dat er nog een
+ * afgesproken aanbetaling open staat.
  */
-export function bedragen(totaal: string | null, aanbetaling: string | null, betaald: boolean) {
+export function bedragen(
+  totaal: string | null,
+  ontvangenBedrag: string | null,
+  aanbetaling: string | null = "0",
+) {
   const totaalC = naarCenten(totaal);
+  const ontvangenC = naarCenten(ontvangenBedrag);
   const afgesprokenC = naarCenten(aanbetaling);
-  const ontvangenC = betaald ? afgesprokenC : 0;
   const openC = totaalC - ontvangenC;
   return {
     totaal: centenNaarTekst(totaalC),
-    /** Wat er is afgesproken, betaald of niet. */
+    /** Wat er is afgesproken als aanbetaling, los van wat er binnen is. */
     aanbetaling: centenNaarTekst(afgesprokenC),
-    /** Wat er daadwerkelijk binnen is. */
+    /** Wat er daadwerkelijk binnen is: de som van de betaalregels. */
     ontvangen: centenNaarTekst(ontvangenC),
+    /** Hetzelfde bedrag in centen — voor een scherm dat erop wil rekenen of kleuren. */
+    ontvangenCenten: ontvangenC,
     openstaand: centenNaarTekst(openC),
     openCenten: openC,
-    /** Er is een aanbetaling afgesproken die nog niet binnen is. */
-    wachtOpAanbetaling: afgesprokenC > 0 && !betaald,
+    /** Er is een aanbetaling afgesproken en er is nog niet genoeg binnen om die te dekken. */
+    wachtOpAanbetaling: afgesprokenC > 0 && ontvangenC < afgesprokenC,
     voldaan: openC === 0 && totaalC !== 0,
     teVeelBetaald: openC < 0,
   };

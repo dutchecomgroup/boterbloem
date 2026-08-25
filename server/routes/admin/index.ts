@@ -11,6 +11,7 @@ import { statsRouter } from "./stats.js";
 import { packagesRouter } from "./packages.js";
 import { reviewsRouter } from "./reviews.js";
 import { agendaRouter } from "./agenda.js";
+import { omzetRouter } from "./omzet.js";
 import { requireAuth } from "../../auth.js";
 
 export const adminRouter = Router();
@@ -33,3 +34,4 @@ adminRouter.use("/stats", statsRouter);
 adminRouter.use("/packages", packagesRouter);
 adminRouter.use("/reviews", reviewsRouter);
 adminRouter.use("/agenda", agendaRouter);
+adminRouter.use("/omzet", omzetRouter);

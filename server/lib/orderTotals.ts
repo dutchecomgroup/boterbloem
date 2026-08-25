@@ -74,24 +74,31 @@ export function boekingTotaal(regels: Array<{ lineTotal: string | number }>): st
 }
 
 /**
+ * Wat er daadwerkelijk binnen is: de som van de betaalregels.
+ *
+ * Eén plek waar dat bedrag ontstaat. Het stond eerder verspreid over de sheet, de offerte en
+ * het dashboard, en die drie kwamen niet op hetzelfde uit.
+ */
+export function ontvangen(betalingen: Array<{ amount: string | number }>): string {
+  const centen = betalingen.reduce((som, b) => som + naarCenten(b.amount), 0);
+  return naarBedrag(centen);
+}
+
+/**
  * Wat er nog openstaat. Negatief betekent dat er te veel betaald is, dat mag, en het scherm
  * zegt het erbij.
  *
- * **`betaald` is niet optioneel voor de betekenis.** `depositAmount` is de *afgesproken*
- * aanbetaling, niet een ontvangen bedrag; `depositPaid` zegt of hij binnen is. Die twee zijn
- * hier eerst door elkaar gehaald, waardoor een boeking van € 295 met een afgesproken maar
- * onbetaalde aanbetaling van € 200 als "€ 95 openstaand" in beeld kwam. Dat is precies het
- * getal waarop je afgaat als je iemand belt over zijn rekening.
+ * **Twee argumenten, en het tweede is een ontvangen bedrag.** Dit stond er eerder als
+ * `openstaand(totaal, aanbetaling, betaald)`, omdat "ontvangen" toen niets anders kón zijn dan
+ * de aanbetaling. Dat model liep vast op een afgeleverde boeking van € 295 die volledig betaald
+ * was: er was geen veld om dat in te zetten, dus bleef er € 295 openstaan. Ontvangen komt nu uit
+ * `order_payments` en kan elk bedrag zijn.
  *
- * Zolang er niets binnen is, staat het hele bedrag open.
+ * Een afgesproken maar niet ontvangen aanbetaling verlaagt dit bedrag niet -- die heeft simpelweg
+ * geen betaalregel. Dat was eerder een expliciete controle en is nu een eigenschap van het model.
  */
-export function openstaand(
-  totaal: string | number,
-  aanbetaling: string | number,
-  betaald: boolean,
-): string {
-  const ontvangen = betaald ? naarCenten(aanbetaling) : 0;
-  return naarBedrag(naarCenten(totaal) - ontvangen);
+export function openstaand(totaal: string | number, ontvangenBedrag: string | number): string {
+  return naarBedrag(naarCenten(totaal) - naarCenten(ontvangenBedrag));
 }
 
 /**

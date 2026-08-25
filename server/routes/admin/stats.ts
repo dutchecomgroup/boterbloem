@@ -1,9 +1,14 @@
 import { Router } from "express";
 import { db } from "../../db.js";
 import { orders, contactRequests } from "@shared/schema";
-import { sql, and, eq, gte, lte, isNotNull } from "drizzle-orm";
+import { sql, and, eq, gte, lte } from "drizzle-orm";
 
 export const statsRouter = Router();
+
+/** `Date` → "YYYY-MM-DD". `event_date` is een `date`, dus vergelijken gaat op tekst. */
+function isoDatum(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
 
 // GET /api/admin/stats/dashboard
 statsRouter.get("/dashboard", async (_req, res, next) => {
@@ -30,10 +35,18 @@ statsRouter.get("/dashboard", async (_req, res, next) => {
         ),
       );
 
+    /*
+     * Omzet telt op de **datum van het feest** en op status `afgeleverd`. Zie
+     * `server/routes/admin/omzet.ts` voor de redenering; de omzetpagina gebruikt dezelfde
+     * regel, en dat is het punt -- ze stonden eerder los van elkaar en gaven andere getallen.
+     *
+     * Hier stond `paid_at IS NOT NULL` bij. Dat veld werd door niets ooit geschreven, dus
+     * deze twee tegels en de grafiek hieronder stonden structureel op € 0,00.
+     */
     const [{ revenueThisMonth }] = await db
       .select({ revenueThisMonth: sql<string>`coalesce(sum(${orders.totalPrice}), 0)::text` })
       .from(orders)
-      .where(and(eq(orders.status, "afgeleverd"), gte(orders.paidAt, startOfMonth), isNotNull(orders.paidAt)));
+      .where(and(eq(orders.status, "afgeleverd"), gte(orders.eventDate, isoDatum(startOfMonth))));
 
     const [{ revenueLastMonth }] = await db
       .select({ revenueLastMonth: sql<string>`coalesce(sum(${orders.totalPrice}), 0)::text` })
@@ -41,9 +54,8 @@ statsRouter.get("/dashboard", async (_req, res, next) => {
       .where(
         and(
           eq(orders.status, "afgeleverd"),
-          gte(orders.paidAt, startOfLastMonth),
-          lte(orders.paidAt, endOfLastMonth),
-          isNotNull(orders.paidAt),
+          gte(orders.eventDate, isoDatum(startOfLastMonth)),
+          lte(orders.eventDate, isoDatum(endOfLastMonth)),
         ),
       );
 
@@ -61,7 +73,7 @@ statsRouter.get("/dashboard", async (_req, res, next) => {
         coalesce(sum(o.total_price), 0)::text AS revenue
       FROM months m
       LEFT JOIN orders o
-        ON date_trunc('month', o.paid_at) = m.month
+        ON date_trunc('month', o.event_date) = m.month
         AND o.status = 'afgeleverd'
       GROUP BY m.month
       ORDER BY m.month ASC

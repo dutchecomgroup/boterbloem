@@ -4,15 +4,17 @@ import {
   orders,
   orderItems,
   orderEvents,
+  orderPayments,
   customers,
   packages,
   contactRequests,
   insertOrderSchema,
   insertOrderItemSchema,
+  insertOrderPaymentSchema,
 } from "@shared/schema";
-import { desc, eq, sql } from "drizzle-orm";
+import { and, desc, eq, sql } from "drizzle-orm";
 import { requireFields } from "../../lib/patch.js";
-import { boekingTotaal, regelTotaal, pakketNaarRegels, naarCenten } from "../../lib/orderTotals.js";
+import { boekingTotaal, regelTotaal, pakketNaarRegels, naarCenten, ontvangen } from "../../lib/orderTotals.js";
 import { logOrderEvent, gebeurtenis, GELOGDE_VELDEN, type Tx } from "../../lib/orderEvents.js";
 import type { AuthedRequest } from "../../auth.js";
 import { z } from "zod";
@@ -126,6 +128,12 @@ ordersRouter.get("/", async (req, res, next) => {
         totalPrice: orders.totalPrice,
         depositAmount: orders.depositAmount,
         depositPaid: orders.depositPaid,
+        // Ontvangen komt uit de betaalregels, niet uit `depositPaid`. Als subquery zodat de
+        // lijst één zoekopdracht blijft -- per boeking apart tellen is precies waar een
+        // overzichtsscherm traag wordt.
+        ontvangen: sql<string>`coalesce((
+          SELECT sum(p.amount) FROM order_payments p WHERE p.order_id = ${orders.id}
+        ), 0)::text`,
         deliveryType: orders.deliveryType,
         persons: orders.persons,
         location: orders.location,
@@ -162,7 +170,19 @@ ordersRouter.get("/:id", async (req, res, next) => {
       .from(orderItems)
       .where(eq(orderItems.orderId, id))
       .orderBy(orderItems.sortOrder);
-    res.json({ ...order, customer, pakket: pakket ?? null, items });
+    const betalingen = await db
+      .select()
+      .from(orderPayments)
+      .where(eq(orderPayments.orderId, id))
+      .orderBy(orderPayments.paidOn, orderPayments.id);
+    res.json({
+      ...order,
+      customer,
+      pakket: pakket ?? null,
+      items,
+      betalingen,
+      ontvangen: ontvangen(betalingen),
+    });
   } catch (err) {
     next(err);
   }
@@ -412,6 +432,83 @@ ordersRouter.delete("/:id/items/:itemId", async (req: AuthedRequest, res, next) 
 
     if ("fout" in resultaat) return res.status(404).json({ error: resultaat.fout });
     res.json({ ok: true, ...resultaat });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/* ===========================================================================
+ * Betalingen
+ *
+ * Wat er binnen is, als losse regels. Zie de kop van
+ * `docs/deployment/sql-pending/2026-08-25-betalingen.sql` voor waarom dit een tabel is en
+ * geen tweede vinkje naast de aanbetaling.
+ * ========================================================================= */
+
+ordersRouter.get("/:id/betalingen", async (req, res, next) => {
+  try {
+    const id = Number(req.params.id);
+    const rows = await db
+      .select()
+      .from(orderPayments)
+      .where(eq(orderPayments.orderId, id))
+      .orderBy(orderPayments.paidOn, orderPayments.id);
+    res.json({ betalingen: rows, ontvangen: ontvangen(rows) });
+  } catch (err) {
+    next(err);
+  }
+});
+
+ordersRouter.post("/:id/betalingen", async (req: AuthedRequest, res, next) => {
+  try {
+    const id = Number(req.params.id);
+    const invoer = insertOrderPaymentSchema.parse(req.body);
+    const actor = wie(req);
+
+    // Nul is geen betaling, en een bedrag boven het maximum van `numeric(10,2)` klapt anders
+    // pas in de database. Negatief mag wél: dat is een terugbetaling.
+    const centen = naarCenten(invoer.amount);
+    if (centen === 0) return res.status(400).json({ error: "Een betaling van € 0,00 zegt niets" });
+
+    const resultaat = await db.transaction(async (tx) => {
+      await haalBoeking(tx, id);
+      const [rij] = await tx.insert(orderPayments).values({ ...invoer, orderId: id }).returning();
+      await logOrderEvent(tx, id, gebeurtenis.betalingOntvangen(rij.amount, rij.paidOn), actor);
+
+      const alle = await tx.select().from(orderPayments).where(eq(orderPayments.orderId, id));
+      return { betaling: rij, ontvangen: ontvangen(alle) };
+    });
+
+    res.status(201).json(resultaat);
+  } catch (err) {
+    next(err);
+  }
+});
+
+ordersRouter.delete("/:id/betalingen/:betalingId", async (req: AuthedRequest, res, next) => {
+  try {
+    const id = Number(req.params.id);
+    const betalingId = Number(req.params.betalingId);
+    const actor = wie(req);
+
+    const resultaat = await db.transaction(async (tx) => {
+      await haalBoeking(tx, id);
+      const [weg] = await tx
+        .delete(orderPayments)
+        .where(and(eq(orderPayments.id, betalingId), eq(orderPayments.orderId, id)))
+        .returning();
+      if (!weg) {
+        const fout = new Error("Betaling niet gevonden") as Error & { status?: number };
+        fout.status = 404;
+        throw fout;
+      }
+      await logOrderEvent(tx, id, gebeurtenis.betalingVerwijderd(weg.amount, weg.paidOn), actor);
+
+      const alle = await tx.select().from(orderPayments).where(eq(orderPayments.orderId, id));
+      return { ontvangen: ontvangen(alle) };
+    });
+
+    res.json(resultaat);
   } catch (err) {
     next(err);
   }
