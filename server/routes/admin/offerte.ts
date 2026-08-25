@@ -5,7 +5,7 @@ import {
   contactSettingsSchema, btwSettingsSchema,
 } from "@shared/schema";
 import { eq } from "drizzle-orm";
-import { formatBedrag, btwUitBedrag, geldendTarief, openstaand } from "../../lib/orderTotals.js";
+import { formatBedrag, btwPerTarief, openstaand } from "../../lib/orderTotals.js";
 import { logOrderEvent, gebeurtenis } from "../../lib/orderEvents.js";
 import type { AuthedRequest } from "../../auth.js";
 
@@ -44,15 +44,17 @@ offerteRouter.get("/:id/offerte", async (req: AuthedRequest, res, next) => {
     const contact = leesInstelling(instellingen, "contact", contactSettingsSchema);
     const btwInstelling = leesInstelling(instellingen, "btw", btwSettingsSchema);
 
-    const tarief = geldendTarief(order.vatRate, btwInstelling?.standaardTarief);
-    const btw = btwUitBedrag(order.totalPrice, tarief);
+    // Per tarief uitgesplitst: één offerte kan een grazing table (9%) en styling (21%) naast
+    // elkaar bevatten, en dan is één percentage over het hele totaal simpelweg fout. Het tarief
+    // komt van de regel zelf, die het meekreeg van het pakket of product waaruit hij ontstond.
+    const btwRegels = btwPerTarief(regels);
 
     // Dat er een offerte uit is gegaan hoort in de tijdlijn: het is het moment waarop een
     // bedrag naar buiten ging (scenario 85 — "de klant zegt dat de offerte niet klopt").
     await logOrderEvent(db, id, gebeurtenis.offerteBekeken(), req.session?.username ?? null);
 
     res.type("html").send(
-      offerteHtml({ order, klant: klant[0] ?? null, pakket: pakket[0] ?? null, regels, contact, btw, btwInstelling }),
+      offerteHtml({ order, klant: klant[0] ?? null, pakket: pakket[0] ?? null, regels, contact, btwRegels, btwInstelling }),
     );
   } catch (err) {
     next(err);
@@ -93,6 +95,23 @@ function escMeerRegels(v: unknown): string {
   return esc(v).replace(/\n/g, "<br>");
 }
 
+/**
+ * Eén regel in de feestgegevens: een naam en een waarde.
+ *
+ * De gegevens stonden eerst als drie zinnen met punten ertussen — *"Jaren 60 · 26 augustus
+ * 2026 · 15 personen"* en *"bezorgen · feest om 20:00 · opbouw om 19:00"*. Dat leest voor
+ * degene die het invulde, want die weet wat elk stukje is. Voor de klant die de offerte
+ * openslaat is het raden welk getal waar bij hoort.
+ *
+ * Een lege waarde levert geen regel op, geen regel met een streepje: op een offerte hoort niet
+ * te staan wat er nog níét bekend is.
+ */
+function rij(naam: string, waarde: string | null | undefined, meerRegels = false): string {
+  const v = waarde?.toString().trim();
+  if (!v || v === "nog te bepalen") return "";
+  return `<dt>${esc(naam)}</dt><dd>${meerRegels ? escMeerRegels(v) : esc(v)}</dd>`;
+}
+
 function pagina404(): string {
   return `<!doctype html><html lang="nl"><meta charset="utf-8">
 <title>Boeking niet gevonden</title>
@@ -108,26 +127,16 @@ type OfferteData = {
   pakket: typeof packages.$inferSelect | null;
   regels: Array<typeof orderItems.$inferSelect>;
   contact: { email?: string; phone?: string; address?: string; postcode?: string; city?: string } | null;
-  btw: { percentage: number; btw: string; exclusief: string } | null;
+  btwRegels: Array<{ percentage: number; over: string; excl: string; btw: string }>;
   btwInstelling: { toelichting: string } | null;
 };
 
-function offerteHtml({ order, klant, pakket, regels, contact, btw, btwInstelling }: OfferteData): string {
+function offerteHtml({ order, klant, pakket, regels, contact, btwRegels, btwInstelling }: OfferteData): string {
   const nummer = order.reference ?? `Boeking ${order.id}`;
-  const open = openstaand(order.totalPrice, order.depositAmount);
+  const open = openstaand(order.totalPrice, order.depositAmount, order.depositPaid);
   const heeftAanbetaling = Number(order.depositAmount) !== 0;
-
-  const feestRegel = [
-    order.theme,
-    datumNl(order.eventDate),
-    order.persons ? `${order.persons} personen` : null,
-  ].filter(Boolean).map(esc).join(" · ");
-
-  const leveringRegel = [
-    order.deliveryType === "bezorgen" ? "bezorgen" : "afhalen",
-    order.eventTime ? `feest om ${order.eventTime.slice(0, 5)}` : null,
-    order.setupTime ? `opbouw om ${order.setupTime.slice(0, 5)}` : null,
-  ].filter(Boolean).map(esc).join(" · ");
+  /** Wat er ná de aanbetaling nog komt. Altijd totaal min aanbetaling, los van of hij al binnen is. */
+  const restNaAanbetaling = openstaand(order.totalPrice, order.depositAmount, true);
 
   return `<!doctype html>
 <html lang="nl">
@@ -171,6 +180,12 @@ function offerteHtml({ order, klant, pakket, regels, contact, btw, btwInstelling
   .zacht { color:rgba(43,41,38,.6); }
 
   .blok { margin-bottom:1.75rem; }
+
+  .gegevens { display:flex; gap:2.5rem; flex-wrap:wrap; }
+  .gegevens > div { flex:1 1 220px; }
+  .gegevens dl { display:grid; grid-template-columns:auto 1fr; gap:.15rem 1rem; margin:.35rem 0 0; }
+  .gegevens dt { font-size:12px; color:rgba(43,41,38,.55); }
+  .gegevens dd { margin:0; }
 
   table { width:100%; border-collapse:collapse; margin-top:.5rem; }
   th { font-size:10px; text-transform:uppercase; letter-spacing:.16em; color:rgba(43,41,38,.55);
@@ -229,17 +244,27 @@ function offerteHtml({ order, klant, pakket, regels, contact, btw, btwInstelling
       </div>
     </header>
 
-    <section class="blok">
-      <span class="tag">Voor</span>
-      <p style="margin:.25rem 0 0">
-        <strong>${esc(klant?.name ?? "—")}</strong>
-        ${klant?.email ? `<br><span class="zacht">${esc(klant.email)}</span>` : ""}
-        ${klant?.phone ? `<span class="zacht"> · ${esc(klant.phone)}</span>` : ""}
-      </p>
-      ${feestRegel ? `<p class="zacht" style="margin:.5rem 0 0">${feestRegel}</p>` : ""}
-      ${order.location ? `<p class="zacht" style="margin:.1rem 0 0">${escMeerRegels(order.location)}</p>` : ""}
-      ${leveringRegel ? `<p class="zacht" style="margin:.1rem 0 0">${leveringRegel}</p>` : ""}
-      ${pakket ? `<p class="zacht" style="margin:.5rem 0 0">Pakket: ${esc(pakket.name)}</p>` : ""}
+    <section class="blok gegevens">
+      <div>
+        <span class="tag">Voor</span>
+        <p style="margin:.35rem 0 0">
+          <strong>${esc(klant?.name ?? "—")}</strong>
+          ${klant?.email ? `<br><span class="zacht">${esc(klant.email)}</span>` : ""}
+          ${klant?.phone ? `<br><span class="zacht">${esc(klant.phone)}</span>` : ""}
+        </p>
+      </div>
+      <div>
+        <span class="tag">Het feest</span>
+        <dl>
+          ${rij("Gelegenheid", order.theme)}
+          ${rij("Datum", datumNl(order.eventDate))}
+          ${rij("Aanvang", order.eventTime ? `${order.eventTime.slice(0, 5)} uur` : null)}
+          ${rij("Opbouw", order.setupTime ? `${order.setupTime.slice(0, 5)} uur` : null)}
+          ${rij("Aantal personen", order.persons ? String(order.persons) : null)}
+          ${rij(order.deliveryType === "bezorgen" ? "Bezorgen op" : "Afhalen", order.location, true)}
+          ${rij("Pakket", pakket?.name ?? null)}
+        </dl>
+      </div>
     </section>
 
     <section class="blok">
@@ -282,16 +307,31 @@ function offerteHtml({ order, klant, pakket, regels, contact, btw, btwInstelling
           <span class="tag" style="align-self:center">Totaal</span>
           <span class="bedrag">${esc(formatBedrag(order.totalPrice))}</span>
         </div>
-        ${btw
-          ? `<div class="zacht" style="font-size:12px">
-               <span>waarvan btw (${btw.percentage}%)</span><span>${esc(formatBedrag(btw.btw))}</span>
-             </div>`
-          : ""}
-        ${heeftAanbetaling
-          ? `<div class="zacht"><span>Aanbetaling${order.depositPaid ? " (ontvangen)" : ""}</span>
-               <span>${esc(formatBedrag(order.depositAmount))}</span></div>
-             <div class="open"><span>Openstaand</span><span>${esc(formatBedrag(open))}</span></div>`
-          : ""}
+        ${/*
+           * Eén regel per tarief. Bij één tarief leest dat als voorheen; bij twee zie je waar
+           * elk bedrag vandaan komt, en dat is precies wat een boekhouder wil kunnen navlooien.
+           */ ""}
+        ${btwRegels.map((b) => `<div class="zacht" style="font-size:12px">
+               <span>${esc(formatBedrag(b.over))} incl. ${b.percentage}% btw &rarr; ${esc(formatBedrag(b.excl))} excl.</span>
+               <span>btw ${esc(formatBedrag(b.btw))}</span>
+             </div>`).join("")}
+        ${/*
+           * De betaling in twee stappen, want dat is de vraag van de klant: hoeveel maak ik nu
+           * over, en hoeveel later? Er stond alleen "Aanbetaling" en "Openstaand", en dat
+           * openstaande bedrag was het totaal min de aanbetaling — ook als die nog niet betaald
+           * was. Dan lees je "nog € 95,00" terwijl er € 295,00 moet komen.
+           */ ""}
+        ${!heeftAanbetaling
+          ? ""
+          : order.depositPaid
+            ? `<div class="zacht"><span>Aanbetaling ontvangen</span>
+                 <span>− ${esc(formatBedrag(order.depositAmount))}</span></div>
+               <div class="open hoofd"><span class="tag" style="align-self:center">Nog te voldoen</span>
+                 <span class="bedrag">${esc(formatBedrag(open))}</span></div>`
+            : `<div class="open hoofd"><span class="tag" style="align-self:center">Nu te voldoen · aanbetaling</span>
+                 <span class="bedrag">${esc(formatBedrag(order.depositAmount))}</span></div>
+               <div class="zacht"><span>Daarna, bij oplevering</span>
+                 <span>${esc(formatBedrag(restNaAanbetaling))}</span></div>`}
       </div>
     </section>
 
@@ -308,8 +348,8 @@ function offerteHtml({ order, klant, pakket, regels, contact, btw, btwInstelling
       : ""}
 
     <footer class="voet">
-      ${btw
-        ? `<p style="margin:0">Alle bedragen zijn inclusief ${btw.percentage}% btw.</p>`
+      ${btwRegels.length
+        ? `<p style="margin:0">Alle bedragen zijn inclusief btw (${btwRegels.map((b) => `${b.percentage}%`).join(" en ")}).</p>`
         // Bij de kleineondernemersregeling hoort er géén btw-bedrag op de offerte te staan.
         : `<p style="margin:0">Er wordt geen btw in rekening gebracht.</p>`}
       ${btwInstelling?.toelichting ? `<p style="margin:.35rem 0 0">${escMeerRegels(btwInstelling.toelichting)}</p>` : ""}

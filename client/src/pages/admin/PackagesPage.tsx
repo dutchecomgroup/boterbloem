@@ -1,12 +1,14 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { api } from "../../lib/api";
-import type { Package } from "@shared/schema";
+import { BTW_LABEL, type BtwTarief, type Package } from "@shared/schema";
 import { Plus, Trash2, GripVertical, X, ChevronUp, ChevronDown, ExternalLink } from "lucide-react";
+import { personenBereik } from "../../lib/utils";
 
 const LEEG: Partial<Package> = {
   name: "", slug: "", tagline: "", description: "",
   priceFrom: "0", priceUnit: "totaal", includes: [], active: false, featured: false,
+  vatRate: null, vatSplitLow: null, vatSplitHigh: null,
 };
 
 export default function PackagesPage() {
@@ -32,6 +34,9 @@ export default function PackagesPage() {
         priceFrom: String(p.priceFrom ?? "0"), priceUnit: p.priceUnit ?? "totaal",
         personsMin: p.personsMin ?? null, personsMax: p.personsMax ?? null,
         includes: p.includes ?? [], active: p.active ?? false, featured: p.featured ?? false,
+        vatRate: p.vatRate ?? null,
+        vatSplitLow: p.vatSplitLow ? String(p.vatSplitLow).replace(",", ".") : null,
+        vatSplitHigh: p.vatSplitHigh ? String(p.vatSplitHigh).replace(",", ".") : null,
         sortOrder: p.sortOrder ?? (pakketten?.length ?? 0),
       };
       return p.id ? api.patch(`/api/admin/packages/${p.id}`, body) : api.post("/api/admin/packages", body);
@@ -105,11 +110,17 @@ export default function PackagesPage() {
                 ) : (
                   <span className="text-burgundy">nog geen prijs ingevuld</span>
                 )}
-                {(p.personsMin || p.personsMax) && (
+                {personenBereik(p.personsMin, p.personsMax) && (
                   <span className="text-charcoal/50 ml-2">
-                    · {p.personsMin ?? "?"}–{p.personsMax ?? "∞"} personen
+                    · {personenBereik(p.personsMin, p.personsMax)}
                   </span>
                 )}
+                {/*
+                  Er is geen bedrijfsbrede btw-instelling meer, dus dit is het enige wat je
+                  eraan herinnert dat dit pakket nog geen tarief heeft. Zonder markering zou het
+                  stil op "geen btw" blijven staan zodra je btw-plichtig wordt.
+                */}
+                <span className="ml-2 text-charcoal/50">· btw {btwOmschrijving(p)}</span>
               </div>
               {p.includes.length > 0 && (
                 <ul className="mt-2 text-xs text-charcoal/60 space-y-0.5">
@@ -232,6 +243,10 @@ function Formulier({ pakket, onChange, onOpslaan, onAnnuleer, bezig }: {
           <input className="input" type="number" min="1" value={pakket.personsMax ?? ""}
             onChange={(e) => onChange({ ...pakket, personsMax: e.target.value ? Number(e.target.value) : null })} />
         </div>
+        <div className="sm:col-span-2 rounded-lg bg-cream/60 p-4 ring-1 ring-gold/15">
+          <BtwBlok pakket={pakket} onChange={onChange} />
+        </div>
+
         <div className="sm:col-span-2">
           <label className="label">Beschrijving</label>
           <textarea className="input min-h-[80px]" value={pakket.description ?? ""}
@@ -278,8 +293,16 @@ function Formulier({ pakket, onChange, onOpslaan, onAnnuleer, bezig }: {
 
       <div className="mt-6 flex justify-end gap-3">
         <button className="btn-ghost !py-2 !px-4 text-xs" onClick={onAnnuleer}>Annuleren</button>
-        <button className="btn-gold !py-2 !px-5 text-xs" disabled={!pakket.name?.trim() || bezig}
-          onClick={onOpslaan}>{bezig ? "Opslaan…" : "Opslaan"}</button>
+        {/* Een verdeling die niet optelt tot de pakketprijs zou een ander bedrag op de offerte
+            zetten dan de klant op de site zag. Dat mag niet stil gebeuren. */}
+        <button
+          className="btn-gold !py-2 !px-5 text-xs"
+          disabled={!pakket.name?.trim() || bezig || verdelingKlopt(pakket) === false}
+          title={verdelingKlopt(pakket) === false ? "De btw-verdeling telt niet op tot de vanaf-prijs." : undefined}
+          onClick={onOpslaan}
+        >
+          {bezig ? "Opslaan…" : "Opslaan"}
+        </button>
       </div>
     </div>
   );
@@ -288,4 +311,152 @@ function Formulier({ pakket, onChange, onOpslaan, onAnnuleer, bezig }: {
 function slugify(s: string): string {
   return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "")
     .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 120);
+}
+
+/* -------------------------------------------------------------------------- */
+
+/** De optelsom van de verdeling in centen, zodat er niet met halve centen vergeleken wordt. */
+function centen(v: string | null | undefined): number {
+  const n = Number(String(v ?? "0").replace(",", "."));
+  return Number.isFinite(n) ? Math.round(n * 100) : 0;
+}
+
+export function heeftVerdeling(p: Partial<Package>): boolean {
+  return centen(p.vatSplitLow) > 0 || centen(p.vatSplitHigh) > 0;
+}
+
+/**
+ * Klopt de verdeling met de pakketprijs? `null` betekent: er is geen verdeling, dus niets te
+ * controleren.
+ *
+ * Dit is geen nette-heid maar een rem: wijkt de som af, dan staat er op de offerte een ander
+ * bedrag dan de prijs die de klant op de site zag.
+ */
+export function verdelingKlopt(p: Partial<Package>): boolean | null {
+  if (!heeftVerdeling(p)) return null;
+  return centen(p.vatSplitLow) + centen(p.vatSplitHigh) === centen(p.priceFrom);
+}
+
+/**
+ * Btw bij een pakket.
+ *
+ * Twee vormen, want een pakket is óf één ding óf een samenstelling:
+ *
+ * - **Eén tarief** als het pakket één prestatie is — een taart bezorgen is eten, en dat is 9%.
+ * - **Een verdeling** als er eten én verhuur/opbouw in zit. De Belastingdienst staat niet toe
+ *   dat het 21%-deel meelift op het lage tarief van het eten; bij één prijs naar de klant moet
+ *   het bedrag aan de achterkant gesplitst worden volgens de marktwaarde.
+ *
+ * De bedragen zijn **per eenheid**, net als de vanaf-prijs. Staat de prijs per persoon, dan is
+ * dit dus € 22,00 eten en € 3,00 servies bij € 25,00 p.p.; het aantal gasten op de regel doet
+ * de vermenigvuldiging.
+ */
+function BtwBlok({
+  pakket,
+  onChange,
+}: {
+  pakket: Partial<Package>;
+  onChange: (p: Partial<Package>) => void;
+}) {
+  const gesplitst = heeftVerdeling(pakket);
+  const klopt = verdelingKlopt(pakket);
+  const som = centen(pakket.vatSplitLow) + centen(pakket.vatSplitHigh);
+  const perStuk = pakket.priceUnit === "per_persoon" ? " p.p." : "";
+
+  return (
+    <fieldset>
+      <legend className="label">Btw over dit pakket</legend>
+
+      <label className="mt-1 flex items-start gap-2.5 text-sm">
+        <input
+          type="radio"
+          name="btwvorm"
+          className="mt-1"
+          checked={!gesplitst}
+          onChange={() => onChange({ ...pakket, vatSplitLow: null, vatSplitHigh: null })}
+        />
+        <span>
+          Eén tarief voor het hele pakket
+          {!gesplitst && (
+            <select
+              className="input mt-1.5"
+              value={pakket.vatRate ?? ""}
+              onChange={(e) => onChange({ ...pakket, vatRate: e.target.value || null })}
+            >
+              <option value="">Nog niet ingesteld</option>
+              {(Object.keys(BTW_LABEL) as BtwTarief[]).map((t) => (
+                <option key={t} value={t}>{BTW_LABEL[t]}</option>
+              ))}
+            </select>
+          )}
+        </span>
+      </label>
+
+      <label className="mt-3 flex items-start gap-2.5 text-sm">
+        <input
+          type="radio"
+          name="btwvorm"
+          className="mt-1"
+          checked={gesplitst}
+          onChange={() =>
+            onChange({ ...pakket, vatSplitLow: String(pakket.priceFrom ?? "0"), vatSplitHigh: "0" })
+          }
+        />
+        <span className="flex-1">
+          Splitsen, want er zit eten <em>en</em> styling of materiaal in
+        </span>
+      </label>
+
+      {gesplitst && (
+        <div className="mt-3 space-y-3 border-l-2 border-gold/30 pl-4">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div>
+              <label className="label">Waarvan eten en drinken (9%)</label>
+              <input
+                className="input"
+                inputMode="decimal"
+                value={pakket.vatSplitLow ?? ""}
+                onChange={(e) => onChange({ ...pakket, vatSplitLow: e.target.value })}
+              />
+            </div>
+            <div>
+              <label className="label">Waarvan styling, materiaal en opbouw (21%)</label>
+              <input
+                className="input"
+                inputMode="decimal"
+                value={pakket.vatSplitHigh ?? ""}
+                onChange={(e) => onChange({ ...pakket, vatSplitHigh: e.target.value })}
+              />
+            </div>
+          </div>
+
+          {/* De optelsom in beeld, want een verdeling die niet klopt zet een ander bedrag op de
+              offerte dan de prijs die de klant op de site zag. */}
+          <p className={`text-xs ${klopt ? "text-emerald-700" : "text-burgundy"}`}>
+            Samen € {(som / 100).toFixed(2).replace(".", ",")}{perStuk}
+            {klopt
+              ? " — klopt met de vanaf-prijs."
+              : ` — dit hoort € ${Number(pakket.priceFrom ?? 0).toFixed(2).replace(".", ",")}${perStuk} te zijn.`}
+          </p>
+
+          <p className="text-xs text-charcoal/55">
+            Dit pakket wordt in een boeking twee regels, elk met het eigen tarief. Bij een prijs
+            per persoon doet het aantal gasten de vermenigvuldiging. Overleg de verdeling met je
+            boekhouder: de Belastingdienst wil een reële verdeling zien, geen ronde greep.
+          </p>
+        </div>
+      )}
+    </fieldset>
+  );
+}
+
+/** Wat er over de btw van dit pakket in de lijst staat. */
+function btwOmschrijving(p: Package): string {
+  if (heeftVerdeling(p)) {
+    const laag = Number(p.vatSplitLow ?? 0).toFixed(2).replace(".", ",");
+    const hoog = Number(p.vatSplitHigh ?? 0).toFixed(2).replace(".", ",");
+    return `gesplitst (€ ${laag} laag · € ${hoog} hoog)`;
+  }
+  if (!p.vatRate) return "nog niet ingesteld";
+  return BTW_LABEL[p.vatRate as BtwTarief] ?? p.vatRate;
 }

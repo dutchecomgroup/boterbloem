@@ -480,41 +480,60 @@ ordersRouter.post("/:id/apply-package", async (req: AuthedRequest, res, next) =>
       if (!pakket) return { fout: "Pakket niet gevonden" as const };
 
       const nieuw = pakketNaarRegels(pakket, order.persons, aantal);
-      const hoofd = nieuw[0];
 
-      // Staat dit pakket er al, tegen dezelfde stuksprijs?
       const bestaandeRegels = await tx
         .select()
         .from(orderItems)
         .where(eq(orderItems.orderId, id))
         .orderBy(orderItems.sortOrder);
 
-      const zelfde = bestaandeRegels.find(
-        (r) => r.details?.packageId === packageId && naarCenten(r.unitPrice) === naarCenten(hoofd.unitPrice),
-      );
+      /*
+       * Staat dit pakket er al? Dan verhogen we het aantal in plaats van een tweede identieke
+       * regel neer te zetten.
+       *
+       * **Per deel matchen, niet alleen op pakket.** Een pakket met een btw-verdeling levert
+       * twee regels op — eten en styling — en die hebben elk hun eigen stuksprijs. Werd er
+       * alleen op `packageId` gezocht, dan verhoogde de tweede toevoeging alleen de eerste
+       * regel en kwam de andere er los naast te staan, waarna het totaal niet meer klopte met
+       * wat de klant besteld had.
+       */
+      const zoekBestaande = (r: (typeof nieuw)[number]) =>
+        bestaandeRegels.find(
+          (b) =>
+            b.details?.packageId === packageId &&
+            (b.details?.deel ?? null) === (r.details.deel ?? null) &&
+            naarCenten(b.unitPrice) === naarCenten(r.unitPrice),
+        );
 
-      let regels: Array<typeof orderItems.$inferSelect>;
+      const regels: Array<typeof orderItems.$inferSelect> = [];
       let verhoogd = false;
+      let laatsteSort = bestaandeRegels.at(-1)?.sortOrder ?? -1;
 
-      if (zelfde) {
-        const nieuwAantal = Number(zelfde.quantity) + Number(hoofd.quantity);
-        regels = await tx
-          .update(orderItems)
-          .set({
-            quantity: String(nieuwAantal),
-            lineTotal: regelTotaal(nieuwAantal, zelfde.unitPrice),
-            // De inhoud opnieuw vastleggen: het pakket kan sinds de vorige keer veranderd zijn.
-            details: hoofd.details,
-          })
-          .where(eq(orderItems.id, zelfde.id))
-          .returning();
-        verhoogd = true;
-      } else {
-        const laatsteSort = bestaandeRegels.at(-1)?.sortOrder ?? -1;
-        regels = await tx
-          .insert(orderItems)
-          .values(nieuw.map((r, idx) => ({ ...r, orderId: id, sortOrder: laatsteSort + 1 + idx })))
-          .returning();
+      for (const r of nieuw) {
+        const zelfde = zoekBestaande(r);
+        if (zelfde) {
+          const nieuwAantal = Number(zelfde.quantity) + Number(r.quantity);
+          const [bij] = await tx
+            .update(orderItems)
+            .set({
+              quantity: String(nieuwAantal),
+              lineTotal: regelTotaal(nieuwAantal, zelfde.unitPrice),
+              // De inhoud opnieuw vastleggen: het pakket kan sinds de vorige keer veranderd zijn.
+              details: r.details,
+              vatRate: r.vatRate,
+            })
+            .where(eq(orderItems.id, zelfde.id))
+            .returning();
+          regels.push(bij);
+          verhoogd = true;
+        } else {
+          laatsteSort += 1;
+          const [erbij] = await tx
+            .insert(orderItems)
+            .values({ ...r, orderId: id, sortOrder: laatsteSort })
+            .returning();
+          regels.push(erbij);
+        }
       }
 
       // Het pakket ook op de boeking zelf vastleggen, zodat de sheet en de offerte weten

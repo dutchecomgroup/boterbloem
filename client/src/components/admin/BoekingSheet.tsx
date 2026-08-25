@@ -11,8 +11,8 @@ import { AllergieBlok } from "./boeking/AllergieBlok";
 import { RegelTabel, type Regel } from "./boeking/RegelTabel";
 import { PakketToevoegen, type PakketOptie } from "./boeking/PakketToevoegen";
 import { Tijdlijn, type Gebeurtenis } from "./boeking/Tijdlijn";
+import { KlantKoppelen } from "./boeking/KlantKoppelen";
 import { STATUSSEN, STATUS_LABEL, STATUS_KLEUR, LEVERING_LABEL } from "../../lib/boeking";
-import { BTW_LABEL, type BtwTarief } from "@shared/schema";
 
 /**
  * De detailsheet van één boeking — wireframe W2.
@@ -217,7 +217,11 @@ export function BoekingSheet({
 
       {boeking && (
         <>
-          <BedragenStrip totalPrice={boeking.totalPrice} depositAmount={boeking.depositAmount} />
+          <BedragenStrip
+            totalPrice={boeking.totalPrice}
+            depositAmount={boeking.depositAmount}
+            depositPaid={boeking.depositPaid}
+          />
 
           <AllergieBlok allergies={boeking.allergies} opslaan={veld("allergies")} />
 
@@ -255,10 +259,14 @@ export function BoekingSheet({
               </div>
             ) : (
               // Scenario 3 en 76: een boeking zonder klant is geldig — iemand appt "kan er iets
-              // voor zondag?" zonder naam, of de klant is verwijderd.
-              <p className="rounded-md bg-charcoal/[0.03] px-3 py-2.5 text-sm text-charcoal/65">
-                Nog geen klant gekoppeld.
-              </p>
+              // voor zondag?" zonder naam, of de klant is verwijderd. Maar zodra de naam er wél
+              // is, moet je hem kwijt kunnen; hier stond alleen een mededeling.
+              <>
+                <p className="rounded-md bg-charcoal/[0.03] px-3 py-2.5 text-sm text-charcoal/65">
+                  Nog geen klant gekoppeld.
+                </p>
+                <KlantKoppelen boekingId={boeking.id} />
+              </>
             )}
           </SheetSectie>
 
@@ -315,11 +323,12 @@ export function BoekingSheet({
                   {boeking.depositPaid ? "Binnen" : "Nog niet"}
                 </label>
               </div>
-              {/* Leeg = volg de standaard uit de instellingen; dat staat als eerste optie. */}
-              <VeldInline label="Btw" type="select" waarde={boeking.vatRate} opslaan={veld("vatRate")}
-                leegTekst="Standaard uit instellingen"
-                opties={(Object.keys(BTW_LABEL) as BtwTarief[]).map((t) => ({ waarde: t, label: BTW_LABEL[t] }))}
-                className="col-span-2" />
+              {/*
+                Hier stond een btw-keuze voor de hele boeking. Die is eruit: het tarief hoort bij
+                het bedrag, en het bedrag staat op de regel. Met een keuze op pakket-, boekings-
+                én regelniveau was niet meer af te lezen welke wint. Nu bepaalt het pakket de
+                startwaarde en heeft de regel het laatste woord.
+              */}
             </div>
           </SheetSectie>
 

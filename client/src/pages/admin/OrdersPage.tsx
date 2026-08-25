@@ -89,7 +89,7 @@ export default function OrdersPage() {
           <tbody>
             {orders?.length ? (
               orders.map((o) => {
-                const b = bedragen(o.totalPrice, o.depositAmount);
+                const b = bedragen(o.totalPrice, o.depositAmount, o.depositPaid);
                 return (
                   <tr
                     key={o.id}

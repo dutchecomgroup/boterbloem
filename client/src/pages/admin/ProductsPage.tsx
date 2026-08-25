@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { api } from "../../lib/api";
-import type { Product } from "@shared/schema";
+import { BTW_LABEL, type BtwTarief, type Product } from "@shared/schema";
 import { formatCurrency } from "../../lib/utils";
 import { Trash2, Plus } from "lucide-react";
 
@@ -16,7 +16,7 @@ export default function ProductsPage() {
     queryFn: () => api.get<Product[]>("/api/admin/products"),
   });
 
-  const empty = { slug: "", name: "", category: "overig" as Product["category"], basePrice: "0", unit: "stuk", active: true, sortOrder: 0, description: "" };
+  const empty = { slug: "", name: "", category: "overig" as Product["category"], basePrice: "0", unit: "stuk", active: true, sortOrder: 0, description: "", vatRate: null as string | null };
   const [showNew, setShowNew] = useState(false);
   const [form, setForm] = useState(empty);
 
@@ -62,6 +62,19 @@ export default function ProductsPage() {
           </div>
           <div><label className="label">Basisprijs (€)</label><input className="input" type="number" step="0.01" value={form.basePrice} onChange={(e) => setForm({ ...form, basePrice: e.target.value })} /></div>
           <div><label className="label">Eenheid</label><input className="input" value={form.unit} onChange={(e) => setForm({ ...form, unit: e.target.value })} /></div>
+          <div>
+            <label className="label">Btw-tarief</label>
+            <select className="input" value={form.vatRate ?? ""}
+              onChange={(e) => setForm({ ...form, vatRate: e.target.value || null })}>
+              <option value="">Nog niet ingesteld</option>
+              {(Object.keys(BTW_LABEL) as BtwTarief[]).map((t) => (
+                <option key={t} value={t}>{BTW_LABEL[t]}</option>
+              ))}
+            </select>
+            {/* Geen verdeling zoals bij een pakket: een taart is één ding, en dat ding is eten
+                (9%). Blijkt een product tóch samengesteld, dan hoort het een pakket te zijn. */}
+            <p className="mt-1 text-xs text-charcoal/55">Taarten en desserts vallen onder 9%.</p>
+          </div>
           <div className="sm:col-span-2"><label className="label">Omschrijving</label><textarea className="input min-h-[80px]" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
           <div className="sm:col-span-2 flex justify-end gap-3">
             <button type="button" className="btn-ghost" onClick={() => setShowNew(false)}>Annuleren</button>
@@ -73,7 +86,7 @@ export default function ProductsPage() {
       <div className="card p-0 overflow-hidden">
         <table className="w-full text-sm">
           <thead className="bg-charcoal/5 text-charcoal/60 text-xs uppercase tracking-widest">
-            <tr><th className="text-left px-4 py-3">Naam</th><th className="text-left px-4 py-3">Categorie</th><th className="text-right px-4 py-3">Prijs</th><th className="text-center px-4 py-3">Op de site</th><th></th></tr>
+            <tr><th className="text-left px-4 py-3">Naam</th><th className="text-left px-4 py-3">Categorie</th><th className="text-right px-4 py-3">Prijs</th><th className="text-left px-4 py-3">Btw</th><th className="text-center px-4 py-3">Op de site</th><th></th></tr>
           </thead>
           <tbody>
             {products?.length ? products.map((p) => (
@@ -81,6 +94,11 @@ export default function ProductsPage() {
                 <td className="px-4 py-3 font-medium">{p.name}</td>
                 <td className="px-4 py-3 text-charcoal/60">{p.category}</td>
                 <td className="px-4 py-3 text-right">{formatCurrency(p.basePrice)} / {p.unit}</td>
+                {/* Zonder bedrijfsbrede btw-instelling is dit het enige wat je eraan herinnert
+                    dat dit product nog geen tarief heeft. */}
+                <td className={`px-4 py-3 ${p.vatRate ? "text-charcoal/60" : "text-burgundy"}`}>
+                  {p.vatRate ? BTW_LABEL[p.vatRate as BtwTarief] : "nog niet ingesteld"}
+                </td>
                 <td className="px-4 py-3 text-center">
                   <input type="checkbox" checked={p.publicVisible}
                     onChange={(e) => zichtbaar.mutate({ id: p.id, publicVisible: e.target.checked })} />
@@ -92,7 +110,7 @@ export default function ProductsPage() {
                 </td>
               </tr>
             )) : (
-              <tr><td colSpan={5} className="px-4 py-12 text-center text-charcoal/40">Nog geen producten</td></tr>
+              <tr><td colSpan={6} className="px-4 py-12 text-center text-charcoal/40">Nog geen producten</td></tr>
             )}
           </tbody>
         </table>

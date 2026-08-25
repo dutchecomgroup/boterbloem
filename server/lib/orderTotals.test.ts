@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   regelTotaal, boekingTotaal, openstaand, pakketNaarRegels,
   naarCenten, naarBedrag, BedragTeGroot, MAX_BEDRAG,
-  btwUitBedrag, geldendTarief,
+  btwUitBedrag, geldendTarief, btwPerTarief,
 } from "./orderTotals.js";
 
 /**
@@ -96,19 +96,29 @@ describe("boekingtotaal", () => {
 
 describe("openstaand bedrag", () => {
   it("scenario 51 — € 445 totaal, € 125 aanbetaald", () => {
-    expect(openstaand("445.00", "125.00")).toBe("320.00");
+    expect(openstaand("445.00", "125.00", true)).toBe("320.00");
   });
 
   it("scenario 52 — volledig betaald", () => {
-    expect(openstaand("370.00", "370.00")).toBe("0.00");
+    expect(openstaand("370.00", "370.00", true)).toBe("0.00");
   });
 
   it("scenario 55 — te veel betaald geeft een negatief bedrag", () => {
-    expect(openstaand("100.00", "150.00")).toBe("-50.00");
+    expect(openstaand("100.00", "150.00", true)).toBe("-50.00");
   });
 
   it("geen aanbetaling", () => {
-    expect(openstaand("275.00", "0")).toBe("275.00");
+    expect(openstaand("275.00", "0", false)).toBe("275.00");
+  });
+
+  /*
+   * De fout die dit oploste: `depositAmount` is de afgesproken aanbetaling, niet een ontvangen
+   * bedrag. Werd hij afgetrokken zonder naar `depositPaid` te kijken, dan zag een boeking
+   * waarvan nog niets binnen was eruit alsof er nog maar een restje open stond.
+   */
+  it("een afgesproken maar onbetaalde aanbetaling verlaagt het openstaande bedrag niet", () => {
+    expect(openstaand("295.00", "200.00", false)).toBe("295.00");
+    expect(openstaand("295.00", "200.00", true)).toBe("95.00");
   });
 });
 
@@ -246,5 +256,100 @@ describe("centen heen en terug", () => {
   it("rondt een derde decimaal af op hele centen", () => {
     expect(naarBedrag(naarCenten("0.335"))).toBe("0.34");
     expect(naarBedrag(naarCenten("0.334"))).toBe("0.33");
+  });
+});
+
+
+/*
+ * De btw-uitsplitsing. Aanleiding: een sweet table bevat eten (9%) én verhuur, materiaal en
+ * opbouw (21%), en de Belastingdienst staat niet toe dat het 21%-deel meelift op het lage
+ * tarief. Eén tarief over het totaal is dus geen vereenvoudiging maar een fout.
+ */
+describe("btw per tarief", () => {
+  it("splitst een offerte met twee tarieven", () => {
+    const uit = btwPerTarief([
+      { lineTotal: "440.00", vatRate: "laag" },
+      { lineTotal: "60.00", vatRate: "hoog" },
+    ]);
+    expect(uit).toHaveLength(2);
+    // 440 incl. 9% → 440 × 9/109 = 36,33
+    expect(uit[0]).toMatchObject({ percentage: 9, over: "440.00", excl: "403.67", btw: "36.33" });
+    // 60 incl. 21% → 60 × 21/121 = 10,41
+    expect(uit[1]).toMatchObject({ percentage: 21, over: "60.00", excl: "49.59", btw: "10.41" });
+  });
+
+  it("telt per tarief op vóór het rekenen, niet per regel", () => {
+    // Twee regels van 10,01 onder hetzelfde tarief: per regel afronden en optellen kan een cent
+    // afwijken van het tarief los op het subtotaal toepassen.
+    const samen = btwPerTarief([
+      { lineTotal: "10.01", vatRate: "laag" },
+      { lineTotal: "10.01", vatRate: "laag" },
+    ]);
+    const inEen = btwPerTarief([{ lineTotal: "20.02", vatRate: "laag" }]);
+    expect(samen[0].btw).toBe(inEen[0].btw);
+  });
+
+  it("een regel zonder tarief levert geen btw-regel op", () => {
+    expect(btwPerTarief([{ lineTotal: "295.00" }])).toEqual([]);
+    expect(btwPerTarief([{ lineTotal: "295.00", vatRate: "geen" }])).toEqual([]);
+  });
+
+  it("houdt een vaste volgorde, laag vóór hoog", () => {
+    const uit = btwPerTarief([
+      { lineTotal: "60.00", vatRate: "hoog" },
+      { lineTotal: "440.00", vatRate: "laag" },
+    ]);
+    expect(uit.map((b) => b.percentage)).toEqual([9, 21]);
+  });
+});
+
+describe("pakket met een btw-verdeling", () => {
+  const perPersoon = {
+    id: 7,
+    name: "Luxe Buffet",
+    priceFrom: "25.00",
+    priceUnit: "per_persoon",
+    includes: ["Eten en drinken", "Servies en bestek"],
+    vatSplitLow: "22.00",
+    vatSplitHigh: "3.00",
+  };
+
+  it("wordt twee regels, elk met zijn eigen tarief", () => {
+    const regels = pakketNaarRegels(perPersoon, 20);
+    expect(regels).toHaveLength(2);
+    expect(regels[0]).toMatchObject({ unitPrice: "22.00", lineTotal: "440.00", vatRate: "laag" });
+    expect(regels[1]).toMatchObject({ unitPrice: "3.00", lineTotal: "60.00", vatRate: "hoog" });
+  });
+
+  it("de twee regels samen zijn de pakketprijs maal het aantal", () => {
+    const regels = pakketNaarRegels(perPersoon, 20);
+    expect(boekingTotaal(regels)).toBe("500.00");
+    expect(boekingTotaal(regels)).toBe(regelTotaal(20, perPersoon.priceFrom));
+  });
+
+  it("markeert welk deel elke regel is, zodat nog eens toevoegen beide verhoogt", () => {
+    const regels = pakketNaarRegels(perPersoon, 20);
+    expect(regels.map((r) => r.details.deel)).toEqual(["laag", "hoog"]);
+  });
+
+  it("zet de inhoud alleen onder het eten-deel", () => {
+    const regels = pakketNaarRegels(perPersoon, 20);
+    expect(regels[0].details.inbegrepen).toHaveLength(2);
+    expect(regels[1].details.inbegrepen).toBeUndefined();
+  });
+
+  it("een deel van nul levert geen regel op", () => {
+    const regels = pakketNaarRegels({ ...perPersoon, vatSplitHigh: "0" }, 20);
+    expect(regels).toHaveLength(1);
+    expect(regels[0].vatRate).toBe("laag");
+  });
+
+  it("zonder verdeling blijft het één regel met het pakket-tarief", () => {
+    const regels = pakketNaarRegels(
+      { ...perPersoon, vatSplitLow: null, vatSplitHigh: null, vatRate: "laag" },
+      20,
+    );
+    expect(regels).toHaveLength(1);
+    expect(regels[0]).toMatchObject({ unitPrice: "25.00", lineTotal: "500.00", vatRate: "laag" });
   });
 });

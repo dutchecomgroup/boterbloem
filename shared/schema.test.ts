@@ -39,8 +39,16 @@ describe("site-instellingen: sleutel → schema", () => {
 
   it("vult standaardwaarden in voor hero", () => {
     const r = siteSettingSchemas.hero.parse({});
-    expect(r.title).toBe("Atelier Boterbloem");
+    expect(r.tagline).toContain("Sweet tables");
     expect(r.ctaHref).toBe("/contact");
+  });
+
+  // `title` en `imageFilename` zijn eruit gehaald omdat niets ze uitlas: de kop op de homepage
+  // staat hardgecodeerd en de hero toont een carousel. Dit legt vast dat ze niet terugsluipen.
+  it("kent geen hero-titel of hero-afbeelding meer", () => {
+    const r = siteSettingSchemas.hero.parse({});
+    expect(r).not.toHaveProperty("title");
+    expect(r).not.toHaveProperty("imageFilename");
   });
 });
 
@@ -106,7 +114,7 @@ describe("levertijden", () => {
   it("vult standaardwaarden in", () => {
     const r = siteSettingSchemas.levertijden.parse({});
     expect(r.standaardDagen).toBe(10);
-    expect(r.taartenDagen).toBe(5);
+    expect(r).not.toHaveProperty("taartenDagen");
   });
 
   it("weigert een onzinnig aantal dagen", () => {

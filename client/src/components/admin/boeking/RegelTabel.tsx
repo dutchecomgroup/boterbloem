@@ -23,6 +23,8 @@ export type Regel = {
   lineTotal: string;
   /** Wat er in deze regel zit — bij een pakket: waar het uit bestaat. */
   details: { inbegrepen?: string[] } | null;
+  /** Btw-tarief van déze regel. `null` = volg de boeking. */
+  vatRate?: string | null;
 };
 
 type Props = {
@@ -198,6 +200,31 @@ function RegelRij({
           breedte="w-20"
           label="Stuksprijs"
         />
+
+        {/*
+          Btw per regel, want btw wordt over een bedrag gerekend en het bedrag staat hier. Eén
+          offerte kan een grazing table (9%) en styling met glaswerk (21%) naast elkaar
+          bevatten; één tarief over het hele totaal is dan gewoon fout.
+
+          Het tarief komt mee uit het pakket of product waaruit de regel ontstond; hier pas je
+          het aan als deze ene regel afwijkt. Leeg betekent dat er geen btw over dit bedrag
+          gerekend wordt — de veilige kant, want er verschijnt dan geen bedrag op de offerte dat
+          er misschien niet hoort te staan.
+        */}
+        <select
+          value={regel.vatRate ?? ""}
+          onChange={(e) => void wijzigen({ vatRate: e.target.value || null })}
+          disabled={bezig}
+          aria-label={`Btw voor "${regel.description}"`}
+          title="Btw-tarief van deze regel"
+          className={`w-16 shrink-0 rounded border border-transparent bg-transparent px-1 py-0.5 text-xs tabular-nums hover:border-charcoal/15 focus:border-gold focus:outline-none ${
+            regel.vatRate ? "text-charcoal/70" : "text-charcoal/35"
+          }`}
+        >
+          <option value="">geen</option>
+          <option value="laag">9%</option>
+          <option value="hoog">21%</option>
+        </select>
 
         <span
           className={`w-24 shrink-0 text-right text-sm tabular-nums ${

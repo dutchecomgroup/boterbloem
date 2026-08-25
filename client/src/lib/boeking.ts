@@ -97,16 +97,26 @@ export function standaardAantal(pakket: { priceUnit: string }, personen: number 
 /**
  * De drie getallen bovenaan de sheet. Openstaand mag negatief zijn: te veel betaald is een
  * echte situatie en het scherm hoort hem te benoemen, niet af te ronden naar nul.
+ *
+ * **`betaald` hoort erbij.** `depositAmount` is wat er is *afgesproken*, niet wat er binnen is;
+ * `depositPaid` zegt dat laatste. Zonder dat onderscheid las een boeking van € 295 met een nog
+ * niet betaalde aanbetaling van € 200 als "openstaand € 95,00", terwijl er niets ontvangen was.
  */
-export function bedragen(totaal: string | null, aanbetaling: string | null) {
+export function bedragen(totaal: string | null, aanbetaling: string | null, betaald: boolean) {
   const totaalC = naarCenten(totaal);
-  const aanbetaaldC = naarCenten(aanbetaling);
-  const openC = totaalC - aanbetaaldC;
+  const afgesprokenC = naarCenten(aanbetaling);
+  const ontvangenC = betaald ? afgesprokenC : 0;
+  const openC = totaalC - ontvangenC;
   return {
     totaal: centenNaarTekst(totaalC),
-    aanbetaald: centenNaarTekst(aanbetaaldC),
+    /** Wat er is afgesproken, betaald of niet. */
+    aanbetaling: centenNaarTekst(afgesprokenC),
+    /** Wat er daadwerkelijk binnen is. */
+    ontvangen: centenNaarTekst(ontvangenC),
     openstaand: centenNaarTekst(openC),
     openCenten: openC,
+    /** Er is een aanbetaling afgesproken die nog niet binnen is. */
+    wachtOpAanbetaling: afgesprokenC > 0 && !betaald,
     voldaan: openC === 0 && totaalC !== 0,
     teVeelBetaald: openC < 0,
   };

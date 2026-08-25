@@ -100,6 +100,14 @@ export const products = pgTable("products", {
   active: boolean("active").notNull().default(true),
   /** Zichtbaar op de publieke taart-prijslijst. Default false: bewust aanzetten. */
   publicVisible: boolean("public_visible").notNull().default(false),
+  /**
+   * Btw-tarief van dit product: `geen`, `laag` of `hoog`. `null` = nog niet ingesteld, en dat
+   * wordt in het beheerscherm zichtbaar gemarkeerd.
+   *
+   * Geen verdeling zoals bij een pakket: een taart of een schaal mini desserts is één ding,
+   * en dat ding is eten. Blijkt een product tóch samengesteld, dan hoort het een pakket te zijn.
+   */
+  vatRate: varchar("vat_rate", { length: 8 }),
   sortOrder: integer("sort_order").notNull().default(0),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 }, (table) => ({
@@ -123,6 +131,29 @@ export const packages = pgTable("packages", {
   /** Array van strings: wat zit er in het pakket. */
   includes: jsonb("includes").$type<string[]>().notNull().default([]),
   coverItemId: integer("cover_item_id"),
+  /**
+   * Het btw-tarief dat een regel uit dit pakket meekrijgt, als het pakket **één** prestatie is.
+   * `null` = volg de instelling. Bij een gesplitst pakket (zie hieronder) doet dit veld niets.
+   */
+  vatRate: varchar("vat_rate", { length: 8 }),
+  /**
+   * De btw-verdeling van de pakketprijs: welk deel is eten en drinken (9%) en welk deel is
+   * verhuur, materiaal en opbouw (21%).
+   *
+   * **Waarom een verdeling en niet één tarief.** Een sweet table bevat allebei, en de
+   * Belastingdienst staat niet toe dat het 21%-deel meelift op het lage tarief van het eten.
+   * Bij één prijs naar de klant moet het bedrag aan de achterkant gesplitst worden volgens de
+   * marktwaarde. Eén tarief over het geheel is dus geen vereenvoudiging maar een fout.
+   *
+   * **Per eenheid, net als `priceFrom`.** Staat `priceUnit` op `per_persoon`, dan zijn dit
+   * bedragen per persoon: € 22,00 eten en € 3,00 servies bij een pakketprijs van € 25,00 p.p.
+   * Het aantal op de regel doet de vermenigvuldiging, zodat twintig gasten vanzelf op € 440,00
+   * en € 60,00 uitkomen.
+   *
+   * Allebei leeg = geen verdeling; dan is het pakket één regel met `vatRate`.
+   */
+  vatSplitLow: numeric("vat_split_low", { precision: 10, scale: 2 }),
+  vatSplitHigh: numeric("vat_split_high", { precision: 10, scale: 2 }),
   featured: boolean("featured").notNull().default(false),
   /** Default false: pas zichtbaar als de prijzen bekend zijn. */
   active: boolean("active").notNull().default(false),
@@ -131,6 +162,15 @@ export const packages = pgTable("packages", {
 }, (table) => ({
   slugIdx: uniqueIndex("packages_slug_unique").on(table.slug),
 }));
+
+/**
+ * Welk deel van een gesplitst pakket een regel vertegenwoordigt: het lage tarief (eten en
+ * drinken) of het hoge (verhuur, materiaal en opbouw).
+ *
+ * Staat in `order_items.details` zodat hetzelfde pakket nog eens toevoegen het aantal van
+ * **beide** regels verhoogt, in plaats van er twee nieuwe naast te zetten.
+ */
+export type PakketDeel = "laag" | "hoog";
 
 // ---------- Orders / Bookings ----------
 
@@ -212,7 +252,20 @@ export const orderItems = pgTable("order_items", {
    * uitdrukkelijk een herkomst-notitie en geen verwijzing: het pakket mag verdwijnen zonder
    * dat deze regel iets verliest.
    */
-  details: jsonb("details").$type<{ inbegrepen?: string[]; packageId?: number }>(),
+  details: jsonb("details").$type<{ inbegrepen?: string[]; packageId?: number; deel?: PakketDeel }>(),
+  /**
+   * Het btw-tarief van déze regel: `geen`, `laag` of `hoog`. `null` betekent "volg de boeking",
+   * en die volgt op zijn beurt de instelling.
+   *
+   * **Waarom per regel en niet per boeking.** Eén offerte kan twee tarieven bevatten: een
+   * grazing table valt onder 9% (eten en drinken), de styling en het glaswerk ernaast onder
+   * 21%. Met één tarief voor de hele boeking is het bedrag op zo'n offerte simpelweg fout, en
+   * bij btw is "ongeveer goed" niet goed genoeg.
+   *
+   * `null` als standaard houdt bestaande boekingen ongemoeid en zorgt dat je het tarief alleen
+   * aanraakt bij de regel die afwijkt.
+   */
+  vatRate: varchar("vat_rate", { length: 8 }),
   sortOrder: integer("sort_order").notNull().default(0),
 });
 
@@ -428,9 +481,13 @@ export const insertOrderItemSchema = createInsertSchema(orderItems, {
     .object({
       inbegrepen: z.array(z.string()).optional(),
       packageId: z.number().int().positive().optional(),
+      deel: z.enum(["laag", "hoog"]).optional(),
     })
     .nullable()
     .optional(),
+  // Anders loopt 'onzin' pas stuk op de CHECK in de database, en dat komt binnen als een 500
+  // met een ruwe databasefout in beeld.
+  vatRate: z.enum(["geen", "laag", "hoog"]).nullable().optional(),
 }).omit({ id: true, lineTotal: true });
 
 export const insertOrderEventSchema = createInsertSchema(orderEvents).omit({
@@ -438,7 +495,9 @@ export const insertOrderEventSchema = createInsertSchema(orderEvents).omit({
   at: true,
 });
 
-export const insertProductSchema = createInsertSchema(products).omit({
+export const insertProductSchema = createInsertSchema(products, {
+  vatRate: z.enum(["geen", "laag", "hoog"]).nullable().optional(),
+}).omit({
   id: true,
   createdAt: true,
 });
@@ -477,6 +536,9 @@ export const insertPackageSchema = createInsertSchema(packages, {
   slug: z.string().min(1, "Slug is verplicht"),
   priceUnit: z.enum(["totaal", "per_persoon"]),
   includes: z.array(z.string()),
+  // Zonder deze zou 'onzin' pas op de CHECK in de database stuklopen, en dat komt binnen als
+  // een 500 met een ruwe databasefout in beeld. Hier is het een 400 met een leesbare melding.
+  vatRate: z.enum(["geen", "laag", "hoog"]).nullable().optional(),
 }).omit({ id: true, createdAt: true });
 
 export const insertReviewSchema = createInsertSchema(reviews, {
@@ -487,27 +549,39 @@ export const insertReviewSchema = createInsertSchema(reviews, {
 
 // ---------- Site settings shape (JSONB validation) ----------
 
+/**
+ * `facebook` en `openingHours` stonden hier maar hadden geen veld in het beheerscherm en
+ * werden nergens uitgelezen. Een atelier dat op afspraak werkt heeft geen openingstijden, en
+ * er is geen Facebook-pagina. Weg dus: een instelling die niemand kan invullen en niemand
+ * leest, is alleen maar iets om je later over af te vragen wat het ook alweer deed.
+ *
+ * De sleutels mogen in bestaande jsonb-rijen blijven staan; niets leest ze meer.
+ */
 export const contactSettingsSchema = z.object({
   email: z.string().email().optional().or(z.literal("")),
   phone: z.string().optional(),
+  /** Alleen cijfers, spaties en een eventuele +. Wordt een `wa.me`-link op de site. */
   whatsapp: z.string().optional(),
   address: z.string().optional(),
   city: z.string().optional(),
   postcode: z.string().optional(),
   instagram: z.string().optional(),
-  facebook: z.string().optional(),
-  openingHours: z.array(z.object({
-    day: z.string(),
-    hours: z.string(),
-  })).default([]),
 });
 
+/**
+ * `title` en `imageFilename` stonden hier maar werden nergens gebruikt: de kop op de homepage
+ * staat hardgecodeerd als "Atelier" plus "Boterbloem" in het sierlijke lettertype, en de hero
+ * toont een carousel van uitgelichte galerijfoto's in plaats van één vaste foto. Twee velden in
+ * het beheerscherm die niets deden, wat erger is dan geen veld: je vult het in en er gebeurt
+ * niets.
+ */
 export const heroSettingsSchema = z.object({
-  title: z.string().default("Atelier Boterbloem"),
-  tagline: z.string().default("Handgemaakte taarten voor jouw mooiste momenten"),
+  /** De zin onder de naam. Het eerste wat een bezoeker leest. */
+  tagline: z.string().default("Sweet tables en grazing tables voor jouw mooiste momenten"),
+  /** Opschrift van de gouden knop. */
   ctaLabel: z.string().default("Vraag offerte aan"),
+  /** Waar die knop heen gaat. Een pad op de eigen site, of een volledig adres. */
   ctaHref: z.string().default("/contact"),
-  imageFilename: z.string().optional(),
 });
 
 export const aboutSettingsSchema = z.object({
@@ -522,12 +596,14 @@ export const aboutSettingsSchema = z.object({
  * `agendaFeedToken` hoort hier omdat het naast de levertijden de enige instelling is die
  * niet in een eigen tabel thuishoort. Wie het token heeft, ziet alle boekingen met
  * klantnaam; het is los te vervangen zonder wachtwoordwijziging.
+ *
+ * `taartenDagen` stond hier ook, maar werd nergens uitgelezen: het label in het beheerscherm
+ * zei "(informatief)" en dat was letterlijk waar. De tekst hieronder noemt de taarten al.
  */
 export const levertijdenSettingsSchema = z.object({
   standaardDagen: z.number().int().min(0).max(365).default(10),
-  taartenDagen: z.number().int().min(0).max(365).default(5),
   tekst: z.string().default(
-    "Vraag je aan minimaal 10 dagen van tevoren aan. Voor taarten kunnen we vaak flexibeler zijn — vraag gerust.",
+    "Vraag je aan minimaal 10 dagen van tevoren aan. Voor taarten kunnen we vaak flexibeler zijn, vraag gerust.",
   ),
   agendaFeedToken: z.string().default(""),
 });
@@ -554,10 +630,15 @@ export const BTW_TARIEVEN = {
 
 export type BtwTarief = keyof typeof BTW_TARIEVEN;
 
+/**
+ * In gewone taal. Er stond "9% — laag tarief", en dan moet je eerst weten wát het lage tarief
+ * is. Deze labels voeden zowel de instellingen als de keuzelijst in de boekingsheet, dus ze
+ * moeten los van hun schermpje te begrijpen zijn.
+ */
 export const BTW_LABEL: Record<BtwTarief, string> = {
   geen: "Geen btw (kleineondernemersregeling)",
-  laag: "9% — laag tarief",
-  hoog: "21% — algemeen tarief",
+  laag: "9% (eten en drinken)",
+  hoog: "21%",
 };
 
 export function isBtwTarief(v: unknown): v is BtwTarief {

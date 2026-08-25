@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Link, useParams } from "wouter";
+import { Link, useLocation, useParams } from "wouter";
 import { ArrowLeft, Mail, Phone, MapPin } from "lucide-react";
 import { api } from "../../lib/api";
 import type { Customer, Order } from "@shared/schema";
@@ -16,8 +16,16 @@ const STATUS_LABEL: Record<string, string> = {
  * De server leverde de boekingenhistorie al mee via `GET /api/admin/customers/:id`, maar er
  * was geen scherm dat die route aanriep. Dit is dat scherm.
  */
+/**
+ * Waar een boeking opent. `/admin/boekingen` leest `?boeking=` uit en schuift de sheet open —
+ * zie `useSheetParam`. Vanuit de klanthistorie kom je zo direct in de boeking zelf uit, in
+ * plaats van in de lijst waar je 'm dan nog moet opzoeken.
+ */
+const boekingHref = (orderId: number) => `/admin/boekingen?boeking=${orderId}`;
+
 export default function CustomerDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const [, navigeer] = useLocation();
 
   const { data: klant, isLoading, isError } = useQuery({
     queryKey: ["admin", "customers", id],
@@ -101,14 +109,35 @@ export default function CustomerDetailPage() {
             <table className="w-full text-sm">
               <thead className="bg-charcoal/5 text-charcoal/60 text-xs uppercase tracking-widest">
                 <tr>
+                  <th className="text-left px-4 py-2.5">Boeking</th>
                   <th className="text-left px-4 py-2.5">Datum</th>
                   <th className="text-left px-4 py-2.5">Status</th>
                   <th className="text-right px-4 py-2.5">Bedrag</th>
                 </tr>
               </thead>
               <tbody>
+                {/*
+                  De rij hád al een hover-kleur maar geen link, dus hij zag eruit als klikbaar
+                  en was het niet. Nu allebei: een klik op de rij voor het gemak, én een echte
+                  link op het boekingsnummer zodat het met het toetsenbord en met een
+                  schermlezer ook werkt — en zodat "openen in nieuw tabblad" doet wat je
+                  verwacht.
+                */}
                 {klant.orders.map((o) => (
-                  <tr key={o.id} className="border-t border-charcoal/5 hover:bg-cream/40">
+                  <tr
+                    key={o.id}
+                    onClick={() => navigeer(boekingHref(o.id))}
+                    className="cursor-pointer border-t border-charcoal/5 hover:bg-cream/40"
+                  >
+                    <td className="px-4 py-3">
+                      <Link
+                        href={boekingHref(o.id)}
+                        onClick={(e) => e.stopPropagation()}
+                        className="font-medium text-gold-dark hover:underline"
+                      >
+                        {o.reference ?? `#${o.id}`}
+                      </Link>
+                    </td>
                     <td className="px-4 py-3">{o.eventDate ? formatDateShort(o.eventDate) : "—"}</td>
                     <td className="px-4 py-3 text-charcoal/70">{STATUS_LABEL[o.status] ?? o.status}</td>
                     <td className="px-4 py-3 text-right">{formatCurrency(Number(o.totalPrice))}</td>
