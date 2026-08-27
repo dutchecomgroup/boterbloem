@@ -7,7 +7,10 @@ wil over een half jaar kunnen terugvinden waarom iets zo gedaan is, of waarom ju
 |---|---|
 | [planning/](planning/) | Afgeronde plan-documenten uit `komende-plannen/` |
 
-**Nog leeg** — er is nog niets afgerond.
+**Nog leeg**, en dat klopt: zes plannen zijn op dev afgerond, maar archiveren gebeurt pas ná
+de deploy naar live — de werkwijze hieronder vraagt om een deploy-datum en een commit, en alle
+acht migraties staan nog op `LIVE ⏳`. Zie
+[planning/README.md](planning/README.md).
 
 ---
 

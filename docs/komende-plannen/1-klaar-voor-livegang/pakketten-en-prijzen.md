@@ -12,7 +12,7 @@ Twee dingen uit de meeting van 24-08 die samen één stuk werk zijn.
 
 **Ten eerste de focus.** Sweet Tables & Grazing Tables zijn de hoofdfocus; taarten blijven
 in het aanbod maar klein. De site doet nu het omgekeerde: van de zes blokken in
-[`ServicesPage.tsx:9-46`](../../../client/src/pages/public/ServicesPage.tsx) gaan er vier
+[`AanbodPage.tsx:9-46`](../../../client/src/pages/public/AanbodPage.tsx) gaan er vier
 over taarten en staat "Sweet tables & party setups" op plek vijf.
 
 **Ten tweede de prijzen.** Ze wil richting pakketten werken — normale sweet table, XL table,
@@ -106,7 +106,7 @@ uitlegt dat dit de publieke taart-prijslijst is.
 
 ### Fase D — Publieke `/aanbod` (~3 uur)
 
-[`ServicesPage.tsx`](../../../client/src/pages/public/ServicesPage.tsx) wordt herschreven.
+[`AanbodPage.tsx`](../../../client/src/pages/public/AanbodPage.tsx) wordt herschreven.
 De hardcoded `SERVICES`-array verdwijnt. Nieuwe opbouw van de pagina:
 
 1. **Kop** — Sweet Tables & Grazing Tables, waar het atelier voor staat
@@ -147,7 +147,7 @@ in het beheerscherm, onzichtbaar op de site tot de klant de prijzen heeft doorge
 | `client/src/pages/admin/ProductsPage.tsx` | `publicVisible`-schakelaar |
 | `client/src/components/layout/AdminLayout.tsx` | menu-item |
 | `client/src/App.tsx` | route `/admin/pakketten` |
-| `client/src/pages/public/ServicesPage.tsx` | volledig herschreven |
+| `client/src/pages/public/AanbodPage.tsx` | volledig herschreven |
 | `client/src/pages/public/HomePage.tsx` | `SERVICE_PREVIEWS` → featured pakketten |
 | `scripts/seed-admin.ts` | `ensurePackages()` |
 

@@ -107,17 +107,22 @@ Iedereen die de homepage bezoekt laadt het beheerpaneel mee.
 
 ### Fase D — De laatste livegang-punten (~2 uur)
 
-- 🚫 **Stockfoto's eruit — dit is de harde poort.** Het portfolio wordt gebouwd op
-  demo-materiaal (besloten 25-08), maar dat mag niet mee live: andermans taarten tonen als
-  haar werk misleidt bezoekers die op basis daarvan een offerte aanvragen. `demoGallery.ts`
-  eruit, de vlag uit, en controleren dat er geen `images.unsplash.com` meer in de gebouwde
-  bundel zit. Zie [portfolio-categorie-albums.md](../1-klaar-voor-livegang/portfolio-categorie-albums.md).
-- **Verzonnen quotes eruit** — zie [content-reviews.md](../1-klaar-voor-livegang/content-reviews.md)
+- 🚫 **Stockfoto's eruit — dit is de harde poort.** Grotendeels gedaan op 27-08: de demo-laag
+  `demoGallery.ts` is verwijderd, de 36 stockfoto's en 6 verzonnen reviews zijn uit de
+  database, en de site draait op haar eigen twintig foto's. **Wat er nog staat:** drie
+  Unsplash-foto's bij de grazing-pakketten, omdat er bij haar aanlevering geen enkele grazing
+  table zit. Weg met `npx tsx scripts/seed-demo-grazefotos.ts --verwijder` zodra ze eigen
+  foto's heeft. `npm run check:demo -- --strict` controleert nu zowel de gebouwde bundel als
+  de database en faalt hierop.
+- ✅ **Verzonnen quotes eruit** — gedaan op 27-08; het reviewblok is leeg tot ze er aanlevert
 - **Contactgegevens ingevuld** in het beheerscherm — het e-mailadres dat daar staat is wat de
   `mailto:`-link opent, dus dat moet kloppen
 - **Vindbaarheid**: paginatitels en omschrijvingen per pagina, Open Graph-afbeelding voor
   wanneer iemand de link deelt, `robots.txt`, `sitemap.xml`
-- **Favicon** uit haar logo — zie de [content-checklist](../../klant/content-checklist.md)
+- **Favicon** uit haar logo. Er staat sinds 27-08 een zelfgetekende boterbloem in
+  `client/public/favicon.svg`; die verwijzing gaf daarvóór een 404. Vervangen zodra haar
+  vectorlogo er is — de aangeleverde bestanden zijn bitmaps met linnen ondergrond en op 32×32
+  onleesbaar. Zie [content-invulplan.md](../../klant/content-invulplan.md).
 - **Instagram-link** controleren in de instellingen (staat nu op een standaardwaarde uit de seed)
 - **Testronde** volgens [../../deployment/testscript-master.md](../../deployment/testscript-master.md)
 

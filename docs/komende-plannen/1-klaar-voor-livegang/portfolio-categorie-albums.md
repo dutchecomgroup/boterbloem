@@ -25,7 +25,9 @@ haalt alles op via `GET /api/public/gallery` en filtert client-side op categorie
 metselwerk-grid. Er is geen manier om te zien welke foto's bij hetzelfde event horen.
 
 Daarbovenop toont de site nu **stockfoto's van Unsplash** via
-[`demoGallery.ts`](../../../client/src/lib/demoGallery.ts).
+`demoGallery.ts`. **Dat bestand bestaat niet meer** — het is op 27-08 verwijderd toen de
+site op haar eigen foto's ging draaien. De types die eruit kwamen staan nu in
+[`lib/galerij.ts`](../../../client/src/lib/galerij.ts).
 
 > **✅ Besloten 25-08: we bouwen door op die demo-foto's.** Het portfolio wordt gebouwd en
 > getoond met opvulmateriaal tot de klant haar eigen foto's aanlevert. Dat haalt dit plan van

@@ -28,6 +28,11 @@ Op basis van de roadmap in [../komende-plannen/werkblok-huidig.md](../komende-pl
 | `portfolio.md` | Drie lagen (categorie → album → foto) en een datamigratie | fase 2 |
 | `agenda.md` | ICS-formaat, token-auth buiten de sessie om, hele-dag versus tijdgebonden events | fase 5 |
 
+Het **ontwerpsysteem** heeft geen apart document nodig: de kleurrollen, contrastregels en
+componentklassen staan compleet in
+[../architecture/design-system.md](../architecture/design-system.md), inclusief de redenering
+achter de sectievlakken en de kleur per pakketfamilie.
+
 ## Werkwijze
 
 Een feature is af → plan-document naar [../archive/planning/](../archive/planning/) met status

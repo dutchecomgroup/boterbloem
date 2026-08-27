@@ -1,6 +1,6 @@
 # Atelier Boterbloem — Documentatie
 
-**Laatste update:** 26 augustus 2026 (einde dag)
+**Laatste update:** 27 augustus 2026 (einde dag)
 
 > Voor AI/Claude-instructies: zie [`CLAUDE.md`](../CLAUDE.md) in de projectroot.
 > Voor de dagelijkse dev-workflow: zie [workflow/werkwijze.md](workflow/werkwijze.md).
@@ -16,6 +16,10 @@ eerste opgepakt wordt, en waar we op wachten.
 
 **Waar komt het vandaan?** → [klant/2026-08-24-meeting-wensen.md](klant/2026-08-24-meeting-wensen.md)
 — de meeting met de klant waarin de scope scherp is geworden.
+
+**Welke content er is, en wat er nog mist?** →
+[klant/content-invulplan.md](klant/content-invulplan.md) — sinds 27-08 draait de site op haar
+eigen foto's en teksten. Dit document zegt wat er binnen is en wat de livegang nog blokkeert.
 
 ---
 
@@ -37,6 +41,8 @@ eerste opgepakt wordt, en waar we op wachten.
 
 Website + mini-bedrijfssysteem voor een taartenatelier: een publieke showcase met portfolio
 en prijzen, en een beheerpaneel voor boekingen, klanten, omzet en galerij.
+
+**Publieke pagina's:** home · `/galerij` · `/aanbod` · `/werkwijze` · `/over` · `/contact`.
 
 **Hoofdfocus (besloten 24-08):** Sweet Tables & Grazing Tables. Taarten blijven in het
 aanbod, maar klein en met een basis-prijslijst.

@@ -27,19 +27,25 @@ productie.
 | Route | Bestand | Wat |
 |---|---|---|
 | `/` | `pages/public/HomePage.tsx` | Hero met carrousel, uitgelicht werk, procesverhaal, testimonials, Instagram-raster |
-| `/galerij` | `pages/public/GalleryPage.tsx` | Metselwerk-raster met categoriefilter + lightbox |
-| `/galerij/:slug` | idem | Zelfde pagina, voorgefilterd op categorie |
-| `/aanbod` | `pages/public/AanbodPage.tsx` | Zes hardcoded aanbod-blokken |
+| `/galerij` | `pages/public/GalleryPage.tsx` | Sticky stapel: één volle kaart per gelegenheid |
+| `/galerij/:slug` | idem | De events binnen één gelegenheid |
+| `/galerij/:slug/:albumSlug` | idem | Eén event, met zijn verhaal en foto's |
+| `/aanbod` | `pages/public/AanbodPage.tsx` | Pakketten per familie, taart-menukaart, smaken |
+| `/werkwijze` | `pages/public/WerkwijzePage.tsx` | Haar procesverhaal in zeven stappen |
 | `/over` | `pages/public/AboutPage.tsx` | Tekst uit `site_settings.about` |
 | `/contact` | `pages/public/ContactPage.tsx` | Aanvraagformulier + contactgegevens |
 
 Alles binnen `PublicLayout` (sticky navigatie, voettekst met contactgegevens uit de
 instellingen) en een `PageTransition`.
 
-> ⚠️ **Hardcoded content die eruit moet:** de `SERVICES`-array in `AanbodPage.tsx:9-46`, de
-> `TESTIMONIALS`-array in `HomePage.tsx:121`, en `lib/demoGallery.ts` (Unsplash-stockfoto's
-> die als eigen werk getoond worden). Zie
-> [../komende-plannen/werkblok-huidig.md](../komende-plannen/werkblok-huidig.md).
+> ✅ **Opgelost op 27-08.** Hier stond dat `SERVICES`, `TESTIMONIALS` en `lib/demoGallery.ts`
+> eruit moesten. Dat is gebeurd: de pakketten en reviews komen uit de database, en de
+> demo-laag is verwijderd. De publieke pagina's draaien volledig op haar eigen content.
+>
+> 🔴 **Eén uitzondering, tijdelijk:** drie Unsplash-foto's bij de grazing-pakketten, omdat er
+> bij haar twintig foto's geen enkele grazing table zit. Ze dragen `source: "demo"`, staan
+> onder een niet-gepubliceerde gelegenheid, en `npm run check:demo -- --strict` faalt er
+> bewust op. Weghalen: `npx tsx scripts/seed-demo-grazefotos.ts --verwijder`.
 
 ---
 

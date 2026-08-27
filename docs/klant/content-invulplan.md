@@ -18,7 +18,7 @@ draait nu volledig op haar eigen materiaal.
 | **Foto's** | 20 geïmporteerd, verdeeld over 5 gelegenheden |
 | **Gelegenheden zichtbaar** | 5 van de 7 — Communie en Geboorte hebben nul foto's en staan op verborgen |
 | **Events** | 0, met opzet: haar foto's zijn niet per feest gegroepeerd |
-| **Pakketten** | 6 aangemaakt uit haar PDF, **allemaal onzichtbaar want zonder prijs** |
+| **Pakketten** | 6 uit haar PDF, zichtbaar met *"Prijs op aanvraag"* — de **prijzen ontbreken nog** |
 | **Taarten** | 3 prijzen live, 4 smaken op `/aanbod` |
 | **Reviews** | 0 — er is niets aangeleverd |
 | **Huisstijl** | omgezet naar haar moodboard: salie, off-white, Playfair Display, Montserrat |
@@ -115,21 +115,27 @@ of babyshower een set foto's heeft, is dat het moment.
 
 ## 3. Pakketten
 
-Zes pakketten uit `Informatie website.pdf`. Ze staan in de database met haar namen, taglines en
-gastenaantallen, maar **staan niet op de site** omdat er geen prijzen bij zaten.
+Zes pakketten uit `Informatie website.pdf`, met haar namen, taglines en gastenaantallen. Ze
+**staan op de site**, met *"Prijs op aanvraag"* in plaats van een bedrag: `PakketKaart` zet
+nooit € 0,00 op de pagina. Zodra ze een vanaf-prijs invult op `/admin/pakketten` verschijnt die
+vanzelf.
+
+Op `/aanbod` staan ze in twee groepen met een eigen kleur — blush voor de Tables, salie voor de
+Grazes — zodat je ziet welke drie bij elkaar horen.
 
 | Pakket | Personen | Prijs | Coverfoto |
 |---|---|---|---|
 | Petite Table | 10–20 | ⏳ **ontbreekt** | citroen mini desserts |
 | Signature Table | 20–30 | ⏳ **ontbreekt** | zeemeermintaart |
 | Grande Table | 30–50 | ⏳ **ontbreekt** | jubileum coupe-toren |
-| The little graze | 20–30 | ⏳ **ontbreekt** | ⚠️ **geen foto** |
-| The classic graze | 40–60 | ⏳ **ontbreekt** | ⚠️ **geen foto** |
-| The grand graze | 70–100 | ⏳ **ontbreekt** | ⚠️ **geen foto** |
+| The little graze | 20–30 | ⏳ **ontbreekt** | 🔴 tijdelijke Unsplash-foto |
+| The classic graze | 40–60 | ⏳ **ontbreekt** | 🔴 tijdelijke Unsplash-foto |
+| The grand graze | 70–100 | ⏳ **ontbreekt** | 🔴 tijdelijke Unsplash-foto |
 
-Er geldt nu een regel die zichzelf handhaaft: **een pakket zonder prijs kan niet zichtbaar
-zijn.** Zij vult een vanaf-prijs in op `/admin/pakketten`, zet het pakket aan, en het verschijnt
-op de site. Tot die tijd toont `/aanbod` een net "Binnenkort"-blok in plaats van € 0,00.
+> 🔴 **De drie graze-covers zijn stockfoto's van Unsplash**, geplaatst omdat er bij haar
+> aanlevering geen enkele grazing table zit. Ze staan onder een niet-gepubliceerde gelegenheid,
+> dus ze komen niet in de galerij of op de homepage — alleen op de pakketkaart. Weg vóór de
+> livegang: `npx tsx scripts/seed-demo-grazefotos.ts --verwijder`.
 
 ### De "wat zit erin"-regels zijn van ons
 
@@ -247,13 +253,13 @@ Volledige uitleg in [../architecture/design-system.md](../architecture/design-sy
 | # | Wat | Waarom het blokkeert |
 |---|---|---|
 | 1 | **Prijs voor alle zes de pakketten** | Zonder prijs staan ze op onzichtbaar en heeft `/aanbod` geen aanbod. Dit is het grootste gat. |
-| 2 | **Foto's van een grazing table** | Bij de twintig foto's zit er **geen enkele**. Alles is zoet. Drie van haar zes pakketten zijn hartig en hebben dus geen beeld, terwijl de site op "Sweet & grazing tables" kopt. |
+| 2 | **Foto's van een grazing table** | Bij de twintig foto's zit er **geen enkele**. Alles is zoet. Er staan nu drie **tijdelijke Unsplash-foto's** bij de graze-pakketten zodat de pagina compleet oogt; die moeten eruit vóór de livegang (`npx tsx scripts/seed-demo-grazefotos.ts --verwijder`). |
 | 3 | **Reviews** | Nul aangeleverd; de zes die er stonden waren verzonnen en zijn verwijderd. Het blok is nu leeg. Minimaal drie, liefst zes. |
 | 4 | **Over-tekst** (150–250 woorden) | De huidige tekst op `/over` is van ons. Na de foto's is dit het meest gelezen stuk. |
 | 5 | **Btw-verdeling per pakket** | Welk deel is eten (9%) en welk deel styling en opbouw (21%). Met haar boekhouder. Staat open sinds 25-08. |
 | 6 | **Btw-tarief per taart** | Vermoedelijk 9%, maar dat mag zij bevestigen. |
 | 7 | **Contactgegevens** | `hallo@atelierboterbloem.nl` staat in de database maar is nooit bevestigd. Telefoon, WhatsApp, adres en plaats zijn leeg. |
-| 8 | **Logo in vectorformaat** | Beide bestanden zijn bitmaps met linnen ondergrond, zonder transparantie — op 32×32 onleesbaar. Er staat nu een zelfgetekende boterbloem als favicon; die hoort vervangen te worden. |
+| 8 | **Logo in vectorformaat** | Beide bestanden zijn bitmaps met linnen ondergrond, zonder transparantie — op 32×32 onleesbaar. Er staat nu een zelfgetekende boterbloem in `client/public/favicon.svg`; die hoort vervangen te worden zodra het vectorbestand er is. |
 | 9 | **Portretfoto voor `/over`** | Er is er geen, dus die pagina toont nu alleen tekst. |
 
 ### ❓ Vragen die beantwoord moeten worden
@@ -271,6 +277,9 @@ Volledige uitleg in [../architecture/design-system.md](../architecture/design-sy
 ### Wat ze zelf kan doen zodra er materiaal is
 
 - **Foto's toevoegen** — `/admin/galerij`, gelegenheid kiezen, *Foto's kiezen*. Let op: geen HEIC.
+- **De drie foto's bovenaan de homepage kiezen** — `/admin/instellingen`, blok *Bovenaan de
+  homepage*, veld *Foto's bovenaan*. Laat ze leeg en de site pakt de uitgelichte foto's.
+- **De coverfoto van een pakket kiezen** — `/admin/pakketten`, pakket openen, blok *Coverfoto*.
 - **De omslag wisselen** — het afbeelding-icoon op een foto.
 - **Een gelegenheid weer zichtbaar maken** — zodra er foto's onder staan.
 - **Prijzen invullen en een pakket aanzetten** — `/admin/pakketten`.
@@ -285,4 +294,6 @@ Volledige uitleg in [../architecture/design-system.md](../architecture/design-sy
 |---|---|
 | `npx tsx scripts/import-klantfotos.ts` | Foto's uit `uploads/content/fotos/` importeren. Idempotent, met `--dry-run` en `--verwijder`. Zet ook de omslagen en verbergt lege gelegenheden. |
 | `npx tsx scripts/seed-klantcontent.ts` | Intro-teksten, zes pakketten, taartprijzen en de hero-tagline. Idempotent; raakt prijzen en btw die zij zelf invulde niet aan. |
-| `npm run seed:demo -- --verwijder` | De democontent verwijderen. Is al gedraaid; er staat niets meer van. |
+| `npm run seed:demo -- --verwijder` | De oude democontent verwijderen. Is al gedraaid; er staat niets meer van. |
+| `npx tsx scripts/seed-demo-grazefotos.ts` | 🔴 **Tijdelijk.** Drie Unsplash-foto's bij de graze-pakketten, omdat er geen eigen grazing-foto's zijn. Ze staan onder een verborgen gelegenheid en dragen `source: "demo"`. Weg met `--verwijder`. |
+| `npm run check:demo -- --strict` | Controleert de gebouwde bundel **en** de database op demo-materiaal. Faalt nu bewust op de drie graze-foto's. |

@@ -62,6 +62,27 @@ het begin, dus hij mag achteraan.
 
 ## Pending features
 
+### 🎨 Ontwerp, pakketbeheer en kleur (27-08, tweede ronde)
+
+**Geen schemawijziging** — puur client, plus één instelling in bestaande jsonb.
+
+- **Pakketbeheer**: coverfoto instelbaar (`FotoKiezer` geeft nu ook het item terug), bewerken
+  in een `Sheet` met `?pakket=…` in het webadres, en de admin-route stuurt de cover mee.
+- **Ontwerp**: editoriale collage-hero met scroll-parallax, `/galerij` als sticky stapel,
+  taart-menukaart op `/aanbod`, en de nieuwe pagina-brede kleurstructuur.
+- **Instelling**: `hero.fotoIds` — de drie header-foto's, te kiezen op `/admin/instellingen`.
+  Staat in `site_settings` (jsonb), dus alleen het Zod-schema veranderde. Oude rijen zonder de
+  sleutel vallen terug op de uitgelichte foto's.
+- **Bugfixes**: het mobiele menu (`fixed` binnen een `backdrop-blur`-header werd afgeknipt),
+  de ontbrekende `favicon.svg`, en twee fouten in `seed-klantcontent.ts` waardoor één run de
+  zichtbaarheid en de covers van pakketten overschreef.
+
+> ⚠️ **Bij het deployen**: `npx tsx scripts/seed-demo-grazefotos.ts` plaatst drie tijdelijke
+> Unsplash-foto's bij de grazing-pakketten. **Draai dat script niet op live** — of draai het
+> daarna met `--verwijder`. `npm run check:demo -- --strict` bewaakt dit.
+
+---
+
 ### 🖼️ Content van de klant + huisstijl omgezet (27-08)
 
 Het materiaal van de klant is binnen en verwerkt: **20 foto's, 2 PDF's, een logo en een

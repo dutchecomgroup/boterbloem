@@ -44,6 +44,8 @@
 | — | [Betalingen + omzetpagina](#omzet) | ✅ **DEV ✅ / LIVE ⏳** |
 | — | [Kleur door het beheerpaneel](#kleur) | ✅ |
 | — | [Klantcontent + huisstijl](#klantcontent) | ✅ **DEV ✅ / LIVE ⏳** |
+| — | [Pakketbeheer in een sheet + coverfoto](#pakketsheet) | ✅ |
+| — | [Ontwerp: hero, galerijstapel, kleur](#ontwerp) | ✅ |
 | **7** | Livegang: SEO, testronde | ⏳ wacht op prijzen, reviews en over-tekst |
 
 ---
@@ -298,6 +300,84 @@ bestanden — zodat een token niet iets anders heet dan het is. Het beheerpaneel
 opnieuw geldt: *een pakket zonder prijs is niet zichtbaar*. Dat kwam voort uit een zes pakketten
 die na de eerste seed toch als actief in de database stonden, met € 0,00 op de homepage.
 
+### <a id="pakketsheet"></a>🖼️ Pakketbeheer: een sheet, en eindelijk een coverfoto
+
+*"waar moet ik de foto toevoegen/wijzigen van een pakket?!"* — het antwoord was: nergens.
+`packages.cover_item_id` bestond, de publieke site las hem uit via een LEFT JOIN en
+`PakketKaart` toonde hem, maar het beheerscherm had er geen enkel veld voor. De covers die er
+stonden waren alleen via een seed-script ingevuld.
+
+- **`FotoKiezer` geeft nu ook het item terug**, niet alleen de bestandsnaam. De instellingen
+  bewaren een bestandsnaam in jsonb, een pakket bewaart een id in `cover_item_id`; één van
+  beide teruggeven zou de ander dwingen de hele galerij op te halen
+- **De admin-route stuurt de cover mee**, zodat de lijst een miniatuur toont — met een
+  markering als hij ontbreekt
+- **Bewerken in een `Sheet`** die van rechts inschuift, zoals bij boekingen. Het formulier
+  stond als kaart bóven de lijst: alles schoof weg bij het openen en de opslaan-knop verdween
+  onder de vouw. `useSheetParam` kent nu ook `"pakket"` en de waarde `nieuw`, dus de terugknop
+  sluit de sheet en `?pakket=19` is een deelbare link
+- **De taarten op `/aanbod` zijn een menukaart geworden** met een foto ernaast — de vorm die
+  op haar eigen moodboard staat
+
+### <a id="ontwerp"></a>🎨 Het ontwerp een niveau hoger, en kleur terug
+
+Twee rondes, na onderzoek naar wat winnende food-sites in 2026 doen: groot editoriaal
+letterwerk, scroll-gebonden verhalen in plaats van scroll-jacking, en bijschriften als
+redactionele laag in plaats van hover-geheimen.
+
+- **Hero als editoriale collage.** De zin over de volle breedte met "één keer" cursief in
+  salie, en drie foto's als licht gedraaide kaarten met scroll-parallax. De carrousel die er
+  stond wisselde op een timer — beweging die niemand gevraagd had. De kaarten staan in een
+  **flexwaaier en niet op absolute posities**: die stonden vast op `left`/`right` binnen een
+  kolom die meeschaalt, en dan viel de rechterkaart eruit
+- **`/galerij` is een sticky stapel**, één volle kaart per gelegenheid met haar eigen
+  intro-tekst. Stapelen gebeurt pas vanaf `md`: op een telefoon is een kaart hoger dan het
+  scherm, en dan heeft `sticky` geen ruimte en kruipen de kaarten over elkaar heen
+- **Header-foto's zijn instelbaar**: `hero.fotoIds` in `site_settings` (jsonb, dus geen
+  migratie), drie kiezers in het instellingenscherm. Leeg = de uitgelichte foto's
+
+#### 🔴 "Bijna alles is WIT op de hele website"
+
+De klacht van de gebruiker, en hij was meetbaar: **28 bijna-witte vlakken tegen 9
+kleurvlakken**. Twee structurele oorzaken:
+
+1. **Elk sectie-verloop begon én eindigde op linen `#F7F5F0`.** Bij iedere naad viel de kleur
+   dus weg; vier secties op elkaar gaven één doorlopend wit veld met een vage zweem in het
+   midden. De verlopen hieven zichzelf op
+2. **Elke kaart was `bg-white`** op een bijna-witte sectie — geen rand om op te vallen. Daarom
+   lazen de pakketkaarten als niets
+
+Nu vlakke velden, de regel *twee aangrenzende secties nooit hetzelfde vlak*, en `.card` op
+linen. Plus het **massieve saliepaneel** dat op haar moodboard staat maar in de uitvoering
+volledig ontbrak. Dat vroeg werk: `text-linen` op de sectie wint niet van de `text-charcoal`
+die `h2` uit `@layer base` krijgt, dus stond er donkere tekst op donker en verdween `btn-sage`
+(salie op salie) helemaal. Beide omgekeerd met afstammelingsselectors, en **geen
+doorzichtigheid daar**: linen op `sage-deep` haalt 5,04:1, maar al bij 85% zak je onder AA.
+
+**Pakketkaarten krijgen kleur per familie** — blush voor de drie Tables, salie voor de drie
+Grazes, met een kop boven elke groep zodat de tint iets zégt. Kop en tagline hebben vaste
+hoogte, want anders begint de prijsband per kaart op een andere hoogte.
+
+Details in [../architecture/design-system.md](../architecture/design-system.md).
+
+### 🐛 Wat er stuk bleek te zijn
+
+- **Het mobiele menu klapte niet uit.** Het stond als `fixed inset-0` bínnen de header, en
+  `backdrop-blur` maakt van een element een containing block voor `position: fixed` — dus
+  `inset-0` viel terug op de 64 px hoge balk en het paneel werd bovenaan afgeknipt. Nu via een
+  Radix-portal: half scherm, doorschijnend met de pagina wazig erachter
+- **Foto's uit een verborgen gelegenheid lekten naar de homepage** (zie hierboven bij
+  klantcontent)
+- **`seed-klantcontent.ts` overschreef instellingen.** Eén run om een tekstje bij te werken
+  zette alle zes pakketten terug op onzichtbaar en wiste de covers van de graze-pakketten. Twee
+  fouten: "niet genoemd in dit script" werd behandeld als "maak leeg", en er stond een regel
+  die bij elke run afdwong dat een pakket zonder prijs onzichtbaar moest zijn. Die regel is
+  weg — `PakketKaart` toont een prijsloos pakket al als *"Prijs op aanvraag"* en zet nooit
+  € 0,00 op de site, dus het probleem dat hij oploste bestond niet
+- **`/favicon.svg` gaf een 404** — er stond een verwijzing zonder bestand
+- **"Patisserie · Op maat"** in de hero was de oude taart-eerste framing; een grazing table is
+  hartig en dus geen patisserie
+
 ---
 
 ## Beslissingen die de scope bepaalden
@@ -313,6 +393,10 @@ weg en de site draait op haar eigen foto's. De blokkerende stap in
 hangen los onder hun gelegenheid. De eventlaag komt eronder zodra ze materiaal per feest heeft.
 Een gelegenheid zonder foto's staat op verborgen: een tegel zonder beeld en een pagina die "nog
 geen foto's" zegt, is erger dan geen pagina.
+
+**🎨 Kleur is de ondergrond, niet de ster (27-08).** Secties en kaarten dragen kleur zodat de
+pagina ritme heeft, maar haar foto's blijven het eerste wat opvalt. Eén massief saliepaneel per
+pagina, niet meer.
 
 **🎨 De huisstijl van de klant wint (27-08).** Het moodboard dat zij aanleverde is leidend, ook
 al betekende dat een paletwissel door de hele codebase. Een site in een stijl die niet bij haar
@@ -357,12 +441,20 @@ Niet om te bouwen — wel om **live** te gaan. Status per item:
 1. **De acht migraties naar live**, dan deployen, dan de foto's en de twee contentscripts op de
    server draaien — zie de deployvolgorde in [../deployment/pending.md](../deployment/pending.md)
 2. **De klant de gatenlijst voorleggen** uit
-   [../klant/content-invulplan.md](../klant/content-invulplan.md) — prijzen, grazing-foto's,
-   reviews en de over-tekst zijn wat er nu blokkeert
-3. **`check:demo` uitbreiden** met een databasecontrole; hij scant nu alleen de gebouwde bundel
-4. **De klikronde**: stap 13 plus de breedtes van de nieuwe schermen
-5. **`DEMO_PREVIEW`-slot** — nu minder dringend: er staat geen stockmateriaal meer op de site,
-   dus de preview toont echt werk. Het `noindex` blijft wel nodig zolang het domein niet leeft
+   [../klant/content-invulplan.md](../klant/content-invulplan.md). Wat nu blokkeert: de
+   **prijzen** van alle zes pakketten, **foto's van een grazing table** (er zit er geen enkele
+   bij haar twintig), **reviews** en de **over-tekst**
+3. **De klikronde**: stap 13 van het boekingenplan, plus de nieuwe schermen op 375 / 768 / 1440
+4. **Reduced motion nakijken** in de browser — de hero-parallax en de galerijstapel schakelen
+   zichzelf uit via `usePrefersReducedMotion`, maar dat is alleen op code gecontroleerd
+5. **`DEMO_PREVIEW`-slot** — minder dringend nu er geen stockmateriaal meer op de site staat,
+   maar `noindex` blijft nodig zolang het domein niet leeft
 
 **Opgelost sinds vorige keer:** `demoImageForSlug()` lekte op `/over`, `/contact` en de
-processtappen van de homepage — die hele laag is verwijderd.
+processtappen van de homepage — die hele laag is verwijderd. En `check:demo` controleert nu
+ook de database, niet alleen de gebouwde bundel.
+
+> ⚠️ **Eén ding staat er bewust nog in de weg:** drie Unsplash-foto's bij de grazing-pakketten.
+> `npm run check:demo -- --strict` faalt daarop, en dat is de bedoeling — het is de bewaker die
+> voorkomt dat ze meegaan naar live. Weghalen:
+> `npx tsx scripts/seed-demo-grazefotos.ts --verwijder`.
