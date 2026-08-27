@@ -194,7 +194,7 @@ export default function AgendaPage() {
 
       {/* Maandraster — vanaf md. Een raster van 35 vakjes is op een telefoon onleesbaar. */}
       <div className="card hidden overflow-hidden p-0 md:block">
-        <div className="grid grid-cols-7 border-b border-gold/25 bg-butter/45">
+        <div className="grid grid-cols-7 border-b border-sage/40 bg-sand">
           {["ma", "di", "wo", "do", "vr", "za", "zo"].map((d) => (
             <div key={d} className="px-2 py-2 text-center text-[10px] font-medium uppercase tracking-widest text-charcoal/80">
               {d}
@@ -225,13 +225,13 @@ export default function AgendaPage() {
                   verplaatsNaar(datum);
                 }}
                 className={`min-h-[104px] cursor-pointer border-b border-r border-charcoal/5 p-1.5 transition
-                  ${buitenMaand ? "bg-charcoal/[0.02]" : weekend ? "bg-cream/50" : ""}
-                  ${isToday(d) ? "ring-1 ring-inset ring-gold/40" : ""}
-                  ${overDag === datum ? "bg-gold/15 ring-1 ring-inset ring-gold" : "hover:bg-butter/25"}`}
+                  ${buitenMaand ? "bg-charcoal/[0.02]" : weekend ? "bg-linen/50" : ""}
+                  ${isToday(d) ? "ring-1 ring-inset ring-sage/40" : ""}
+                  ${overDag === datum ? "bg-sage/15 ring-1 ring-inset ring-sage" : "hover:bg-sand"}`}
               >
                 <div className={`mb-1 text-xs ${
                   isToday(d)
-                    ? "inline-flex h-5 w-5 items-center justify-center rounded-full bg-gold text-cream"
+                    ? "inline-flex h-5 w-5 items-center justify-center rounded-full bg-sage text-linen"
                     : buitenMaand ? "text-charcoal/25" : "text-charcoal/50"
                 }`}>
                   {format(d, "d")}
@@ -264,7 +264,7 @@ export default function AgendaPage() {
         <button
           type="button"
           onClick={() => setNieuwOpDatum(format(new Date(), "yyyy-MM-dd"))}
-          className="btn-gold w-full"
+          className="btn-sage w-full"
         >
           <Plus className="h-4 w-4" /> Nieuwe boeking
         </button>
@@ -356,7 +356,7 @@ function Chip({
           e.stopPropagation();
           openen?.();
         }}
-        className={`block w-full rounded border border-dashed border-charcoal/30 bg-white/60 px-1.5 py-1 text-left text-charcoal/70 hover:border-gold ${
+        className={`block w-full rounded border border-dashed border-charcoal/30 bg-white/60 px-1.5 py-1 text-left text-charcoal/70 hover:border-sage ${
           groot ? "text-sm" : "text-[11px]"
         }`}
       >
@@ -387,7 +387,7 @@ function Chip({
       }}
       onContextMenu={contextmenu}
       title={[item.customerName, item.location, item.notes].filter(Boolean).join(" · ")}
-      className={`block cursor-pointer rounded px-1.5 py-1 hover:ring-1 hover:ring-gold ${
+      className={`block cursor-pointer rounded px-1.5 py-1 hover:ring-1 hover:ring-sage ${
         STATUS_KLEUR[item.status] ?? ""
       } ${groot ? "text-sm" : "text-[11px]"}`}
     >

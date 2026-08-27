@@ -1,0 +1,25 @@
+<!--
+  Tijdelijk merkteken: een boterbloem in de kleuren van het logo (olijf #6E7B4E, geel #F2C230,
+  linnen #F7F5F0). `client/index.html` verwees hier al naar, maar het bestand bestond niet —
+  elke bezoeker kreeg een 404 en de browser viel terug op een leeg blaadje.
+
+  ⚠️ Dit is niet háár logo. De aangeleverde bestanden zijn bitmaps met een linnen ondergrond en
+  zonder transparantie, en die zijn op 32×32 onleesbaar. Zodra het vectorbestand er is, hoort
+  dit vervangen te worden — zie docs/klant/content-invulplan.md.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <rect width="64" height="64" rx="12" fill="#F7F5F0"/>
+  <!-- Steel en blad -->
+  <path d="M32 56 V30" stroke="#6E7B4E" stroke-width="3" stroke-linecap="round" fill="none"/>
+  <path d="M32 44 C25 43 21 39 20 33 C27 33 31 37 32 44 Z" fill="#8A9A7B"/>
+  <path d="M32 38 C39 37 43 33 44 27 C37 27 33 31 32 38 Z" fill="#6E7B4E"/>
+  <!-- Bloem: vijf blaadjes rond een hart -->
+  <g fill="#F2C230">
+    <ellipse cx="32" cy="14" rx="7" ry="8"/>
+    <ellipse cx="43" cy="21" rx="7" ry="8" transform="rotate(72 43 21)"/>
+    <ellipse cx="39" cy="33" rx="7" ry="8" transform="rotate(144 39 33)"/>
+    <ellipse cx="25" cy="33" rx="7" ry="8" transform="rotate(216 25 33)"/>
+    <ellipse cx="21" cy="21" rx="7" ry="8" transform="rotate(288 21 21)"/>
+  </g>
+  <circle cx="32" cy="24" r="5.5" fill="#E0A81F"/>
+</svg>

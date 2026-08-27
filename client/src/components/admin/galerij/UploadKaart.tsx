@@ -68,7 +68,7 @@ export function UploadKaart({
           type="button"
           onClick={() => bestandRef.current?.click()}
           disabled={bezig || !categoryId}
-          className="btn-gold !px-5 !py-2 text-xs"
+          className="btn-sage !px-5 !py-2 text-xs"
         >
           <Upload size={14} /> {bezig ? "Bezig…" : "Foto's kiezen"}
         </button>

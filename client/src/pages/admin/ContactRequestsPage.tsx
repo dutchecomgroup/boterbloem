@@ -50,7 +50,7 @@ export default function ContactRequestsPage() {
         actie={
           // Alleen tonen als er iets ligt: een teller op nul is geen informatie.
           nieuw > 0 ? (
-            <Badge toon="butter">
+            <Badge toon="boterbloem">
               {nieuw} nieuw{nieuw === 1 ? "" : "e"}
             </Badge>
           ) : undefined

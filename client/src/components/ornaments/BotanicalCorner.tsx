@@ -26,7 +26,7 @@ const POSITIONS: Record<Position, string> = {
 export function BotanicalCorner({
   position = "tl",
   className,
-  color = "text-gold/40",
+  color = "text-sage/40",
 }: Props) {
   return (
     <div

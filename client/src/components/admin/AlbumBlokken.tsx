@@ -65,13 +65,13 @@ export function AlbumBlokken({
             // hoort zichtbaar te zijn vóór je op de knop drukt en niet erna.
             const leeg = blok.soort === "fotos" ? blok.itemIds.length === 0 : !blok.inhoud.trim();
             return (
-            <li key={i} className={`rounded border bg-white p-2 ${leeg ? "border-dashed border-gold/60" : "border-charcoal/10"}`}>
+            <li key={i} className={`rounded border bg-white p-2 ${leeg ? "border-dashed border-sage/60" : "border-charcoal/10"}`}>
               <div className="mb-1.5 flex items-center gap-1.5">
                 <span className="text-[10px] uppercase tracking-wider text-charcoal/60">
                   {blok.soort === "kop" ? "Tussenkop" : blok.soort === "tekst" ? "Tekst" : "Foto's"}
                 </span>
                 {leeg && (
-                  <span className="text-[10px] text-gold-dark">nog leeg — wordt niet opgeslagen</span>
+                  <span className="text-[10px] text-sage-dark">nog leeg — wordt niet opgeslagen</span>
                 )}
                 <div className="flex-1" />
                 <button type="button" aria-label="Omhoog" disabled={i === 0}
@@ -148,7 +148,7 @@ function Knop({
     <button
       type="button"
       onClick={onClick}
-      className="inline-flex items-center gap-1 rounded-full border border-gold/50 px-2.5 py-1 text-[11px] text-gold-dark transition hover:bg-gold/10"
+      className="inline-flex items-center gap-1 rounded-full border border-sage/50 px-2.5 py-1 text-[11px] text-sage-dark transition hover:bg-sage/10"
     >
       {icoon}
       {children}
@@ -185,7 +185,7 @@ function FotoKiezer({
                 onChange(aan ? gekozen.filter((id) => id !== f.id) : [...gekozen, f.id])
               }
               className={`relative aspect-square overflow-hidden rounded transition ${
-                aan ? "ring-2 ring-gold" : "opacity-60 ring-1 ring-charcoal/10 hover:opacity-100"
+                aan ? "ring-2 ring-sage" : "opacity-60 ring-1 ring-charcoal/10 hover:opacity-100"
               }`}
             >
               <img
@@ -194,7 +194,7 @@ function FotoKiezer({
                 className="absolute inset-0 h-full w-full object-cover"
               />
               {aan && (
-                <span className="absolute right-0.5 top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-gold text-[10px] text-cream">
+                <span className="absolute right-0.5 top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-sage text-[10px] text-linen">
                   {positie + 1}
                 </span>
               )}

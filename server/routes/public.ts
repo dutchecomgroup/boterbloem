@@ -85,7 +85,20 @@ function nest(cats: GalleryCategory[], albums: GalleryAlbum[], items: GalleryIte
       });
 
     const losseItems = losPerCat.get(cat.id) ?? [];
-    const eersteCover = catAlbums.find((a) => a.cover)?.cover ?? losseItems[0] ?? null;
+
+    // De omslag in volgorde van stelligheid: de foto die in het beheerscherm is aangewezen,
+    // anders de omslag van het eerste event, anders de eerste losse foto.
+    //
+    // `cover_item_id` heeft bewust geen foreign key, dus hij kan naar een verwijderde foto
+    // wijzen. Dan valt hij hier vanzelf terug op de volgorde -- precies het gedrag van vóór
+    // deze kolom bestond.
+    const gekozen =
+      cat.coverItemId != null
+        ? (losseItems.find((i) => i.id === cat.coverItemId) ??
+           catAlbums.flatMap((a) => a.items).find((i) => i.id === cat.coverItemId) ??
+           null)
+        : null;
+    const eersteCover = gekozen ?? catAlbums.find((a) => a.cover)?.cover ?? losseItems[0] ?? null;
 
     return {
       ...cat,
@@ -119,7 +132,20 @@ async function haalGalerij(categoryId?: number) {
       .from(galleryItems)
       .orderBy(desc(galleryItems.featured), asc(galleryItems.sortOrder), desc(galleryItems.createdAt)),
   ]);
-  return { cats, albums, items };
+
+  // Foto's uit een niet-gepubliceerde gelegenheid horen er ook niet in de platte lijst te
+  // staan. Die lijst voedt de hero-carrousel en het uitgelicht-blok op de homepage, dus tot
+  // 27-08 kon een portret dat via de fotokiezer onder "Sitefoto's" was gezet -- een
+  // gelegenheid die juist op verborgen staat -- gewoon op de voorpagina verschijnen. De
+  // geneste `categories` filterden wél; deze lijst niet, en dat verschil was onzichtbaar.
+  //
+  // Een foto zonder gelegenheid valt hier ook af: die staat nergens onder en is op de site
+  // niet terug te vinden, dus hem wel in de carrousel tonen is een foto die je niet kunt
+  // aanklikken.
+  const zichtbareCats = new Set(cats.map((c) => c.id));
+  const zichtbareItems = items.filter((i) => i.categoryId != null && zichtbareCats.has(i.categoryId));
+
+  return { cats, albums, items: zichtbareItems };
 }
 
 // GET /api/public/gallery — alle gelegenheden met hun albums

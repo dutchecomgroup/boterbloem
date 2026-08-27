@@ -14,7 +14,7 @@ export function Marquee({ items, className, duration = 40, reverse = false }: Pr
   return (
     <div
       className={cn(
-        "marquee group relative overflow-hidden border-y border-gold/20 bg-cream py-4 sm:py-5",
+        "marquee group relative overflow-hidden border-y border-sage/20 bg-linen py-4 sm:py-5",
         className,
       )}
     >
@@ -29,7 +29,7 @@ export function Marquee({ items, className, duration = 40, reverse = false }: Pr
             key={i}
             className="shrink-0 inline-flex items-center gap-10 sm:gap-14 text-xs sm:text-sm uppercase tracking-[0.3em] text-charcoal/70"
           >
-            <span className="font-display italic text-gold-dark normal-case tracking-normal text-base sm:text-lg">
+            <span className="font-display italic text-sage-dark normal-case tracking-normal text-base sm:text-lg">
               ❦
             </span>
             {item}

@@ -109,7 +109,7 @@ export function NieuweBoekingDialoog({
     >
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-40 bg-charcoal/40 backdrop-blur-sm data-[state=open]:animate-sheet-fade" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-lg bg-cream p-6 shadow-2xl outline-none">
+        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-lg bg-linen p-6 shadow-2xl outline-none">
           <div className="mb-5 flex items-start justify-between gap-3">
             <div>
               <Dialog.Title className="font-display text-xl text-charcoal">Nieuwe boeking</Dialog.Title>
@@ -150,7 +150,7 @@ export function NieuweBoekingDialoog({
                           setKlantId(k.id);
                           setNaam(k.name);
                         }}
-                        className="w-full px-3 py-2 text-left text-sm hover:bg-cream"
+                        className="w-full px-3 py-2 text-left text-sm hover:bg-linen"
                       >
                         {k.name}
                         {k.email && <span className="text-charcoal/65"> · {k.email}</span>}
@@ -193,7 +193,7 @@ export function NieuweBoekingDialoog({
               {/* Scenario 100: een boeking van vorig jaar invoeren voor de administratie mag —
                   een zachte melding, geen blokkade. */}
               {inHetVerleden && (
-                <p className="mt-1 text-xs text-gold-dark">
+                <p className="mt-1 text-xs text-sage-dark">
                   Deze datum ligt in het verleden. Dat mag — handig voor de administratie.
                 </p>
               )}
@@ -208,7 +208,7 @@ export function NieuweBoekingDialoog({
               type="button"
               onClick={() => aanmaken.mutate()}
               disabled={aanmaken.isPending}
-              className="btn-gold"
+              className="btn-sage"
             >
               {aanmaken.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
               Aanmaken en openen

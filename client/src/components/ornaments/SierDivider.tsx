@@ -2,12 +2,17 @@ import { cn } from "../../lib/utils";
 
 interface Props {
   className?: string;
-  /** Color utility class for the line + ornament. Default gold. */
+  /** Kleurklasse voor de lijn en het motief. Standaard salie-donker. */
   color?: string;
 }
 
-/** Horizontal hairline with a small flower in the middle. */
-export function GoldDivider({ className, color = "text-gold" }: Props) {
+/**
+ * Haarlijn met een klein bloemmotief in het midden.
+ *
+ * Heette `GoldDivider` tot 27-08, toen het palet nog goud was. De naam is nu neutraal, zodat
+ * hij de volgende kleurwissel overleeft — de vorm is de scheiding, niet de kleur.
+ */
+export function SierDivider({ className, color = "text-sage-dark" }: Props) {
   return (
     <div className={cn("flex items-center gap-4 w-full max-w-md mx-auto", color, className)}>
       <span className="flex-1 h-px bg-current opacity-40" />

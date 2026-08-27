@@ -3,7 +3,7 @@ import { useState, useMemo, useEffect } from "react";
 import { Link, useLocation, useSearch } from "wouter";
 import {
   Trash2, Plus, Pencil, Check, X, ChevronUp, ChevronDown, ChevronRight,
-  Images, Search, CalendarDays,
+  Search, CalendarDays,
   Image as ImageIcon,
 } from "lucide-react";
 import { PageKop } from "../../components/admin/ui/PageKop";
@@ -128,8 +128,9 @@ export default function GalleryAdminPage() {
         icoon={ImageIcon}
         onderschrift={
           <>
-            Een <strong>gelegenheid</strong> (babyshower, bruiloft) bevat <strong>events</strong> —
-            één uitgevoerd feest. In een event zet je de tekst en de foto&apos;s.
+            Een <strong>gelegenheid</strong> (babyshower, bruiloft) krijgt een inleiding en haar
+            eigen foto&apos;s. Wil je van één feest een verhaal maken, dan zet je daar een
+            <strong> event</strong> onder.
           </>
         }
       />
@@ -162,7 +163,7 @@ export default function GalleryAdminPage() {
                       if (e.key === "Escape") setBewerkCat(null);
                     }}
                   />
-                  <button className="p-1 text-gold-dark" aria-label="Opslaan"
+                  <button className="p-1 text-sage-dark" aria-label="Opslaan"
                     onClick={() => { catBijwerken.mutate(bewerkCat); setBewerkCat(null); }}>
                     <Check size={16} />
                   </button>
@@ -170,13 +171,13 @@ export default function GalleryAdminPage() {
               ) : (
                 <div
                   className={`flex items-center ${
-                    catId === c.id ? "bg-gold/10" : "hover:bg-cream/60"
+                    catId === c.id ? "bg-sage/10" : "hover:bg-linen/60"
                   }`}
                 >
                   <button
                     onClick={() => kies(c.id)}
                     className={`min-w-0 flex-1 px-4 py-2.5 text-left text-sm ${
-                      catId === c.id ? "font-medium text-gold-dark" : ""
+                      catId === c.id ? "font-medium text-sage-dark" : ""
                     }`}
                   >
                     <span className="block truncate">{c.name}</span>
@@ -227,7 +228,7 @@ export default function GalleryAdminPage() {
                 if (e.key === "Enter" && nieuweCat.trim()) { catAanmaken.mutate(nieuweCat.trim()); setNieuweCat(""); }
               }}
             />
-            <button className="p-1 text-gold-dark disabled:opacity-30" aria-label="Toevoegen"
+            <button className="p-1 text-sage-dark disabled:opacity-30" aria-label="Toevoegen"
               disabled={!nieuweCat.trim()}
               onClick={() => { catAanmaken.mutate(nieuweCat.trim()); setNieuweCat(""); }}>
               <Plus size={16} />
@@ -239,7 +240,7 @@ export default function GalleryAdminPage() {
           <button
             onClick={() => kies("alle")}
             className={`flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm ${
-              toonAlle ? "bg-gold/10 font-medium text-gold-dark" : "text-charcoal/75 hover:bg-cream/60"
+              toonAlle ? "bg-sage/10 font-medium text-sage-dark" : "text-charcoal/75 hover:bg-linen/60"
             }`}
           >
             <Search size={14} /> Alle foto&apos;s
@@ -272,6 +273,7 @@ export default function GalleryAdminPage() {
             losseFotos={losseFotos}
             alleAlbums={albums ?? []}
             onIntro={(description) => catBijwerken.mutate({ id: actieveCat.id, description })}
+            onOmslag={(coverItemId) => catBijwerken.mutate({ id: actieveCat.id, coverItemId })}
             onNieuwEvent={(titel) => albumAanmaken.mutate(titel)}
             onItemPatch={(v) => itemPatch.mutate(v)}
             onItemVerwijder={(id) => itemVerwijderen.mutate(id)}
@@ -295,6 +297,7 @@ function CategorieVlak({
   losseFotos,
   alleAlbums,
   onIntro,
+  onOmslag,
   onNieuwEvent,
   onItemPatch,
   onItemVerwijder,
@@ -305,13 +308,13 @@ function CategorieVlak({
   losseFotos: GalleryItem[];
   alleAlbums: GalleryAlbum[];
   onIntro: (tekst: string | null) => void;
+  onOmslag: (itemId: number) => void;
   onNieuwEvent: (titel: string) => void;
   onItemPatch: (v: { id: number } & Record<string, unknown>) => void;
   onItemVerwijder: (id: number) => void;
   onVervers: () => void;
 }) {
   const [nieuwTitel, setNieuwTitel] = useState("");
-  const [losseOpen, setLosseOpen] = useState(false);
 
   return (
     <div className="space-y-4">
@@ -341,12 +344,61 @@ function CategorieVlak({
         <p className="mt-1 text-xs text-charcoal/70">
           Verschijnt onder de titel op de publieke pagina. Opgeslagen zodra je wegklikt.
         </p>
+
+        {/* -------- Foto's van de gelegenheid zelf --------
+            Stond tot 27-08 onderaan de pagina, dichtgeklapt, onder het opschrift "Losse
+            foto's — horen bij deze gelegenheid maar nog niet bij een event". Dat beschreef ze
+            als restanten. Sinds de aanlevering van de klant zijn ze de hoofdmoot en is een
+            event de uitzondering, dus staan ze hier: bij de titel en de tekst waar ze bij
+            horen, altijd zichtbaar. */}
+        <div className="mt-6 border-t border-charcoal/10 pt-5">
+          <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
+            <h3 className="text-sm font-medium uppercase tracking-widest text-charcoal/75">
+              Foto&apos;s bij deze gelegenheid
+            </h3>
+            <span className="text-xs text-charcoal/70">
+              {losseFotos.length === 0
+                ? "nog geen foto's"
+                : `${losseFotos.length} ${losseFotos.length === 1 ? "foto" : "foto's"}`}
+            </span>
+          </div>
+
+          <p className="mb-4 text-xs leading-relaxed text-charcoal/70">
+            Deze staan meteen op de publieke pagina van deze gelegenheid. Met het
+            afbeelding-icoon kies je welke de <strong>omslag</strong> wordt: die vult de tegel
+            op <code className="text-[11px]">/galerij</code>. Met de ster licht je een foto uit
+            op de homepage.
+          </p>
+
+          <div className="space-y-4">
+            <UploadKaart
+              categoryId={categorie.id}
+              doelNaam={categorie.name}
+              onKlaar={onVervers}
+            />
+            <FotoRaster
+              items={losseFotos}
+              context={{
+                soort: "losse",
+                categoryId: categorie.id,
+                albums: alleAlbums,
+                coverItemId: categorie.coverItemId,
+              }}
+              onPatch={onItemPatch}
+              onCover={onOmslag}
+              onVerwijder={onItemVerwijder}
+              leegTekst="Nog geen foto's. Sleep ze hierboven naar binnen of kies een bestand."
+            />
+          </div>
+        </div>
       </div>
 
       {/* ---------- Events ---------- */}
       <div className="card p-0">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-charcoal/10 px-4 py-3">
-          <span className="text-xs font-medium uppercase tracking-widest text-charcoal/75">Events</span>
+          <span className="text-xs font-medium uppercase tracking-widest text-charcoal/75">
+            Events <span className="normal-case tracking-normal text-charcoal/55">(optioneel)</span>
+          </span>
           <div className="flex gap-1">
             <input
               className="input !px-2 !py-1 text-sm"
@@ -358,7 +410,7 @@ function CategorieVlak({
               }}
             />
             <button
-              className="btn-gold !px-3 !py-1.5 text-xs disabled:opacity-40"
+              className="btn-sage !px-3 !py-1.5 text-xs disabled:opacity-40"
               disabled={!nieuwTitel.trim()}
               onClick={() => { onNieuwEvent(nieuwTitel.trim()); setNieuwTitel(""); }}
             >
@@ -370,11 +422,12 @@ function CategorieVlak({
         {albums.length === 0 ? (
           <div className="px-5 py-10 text-center">
             <p className="text-sm text-charcoal/75">
-              Nog geen events onder <strong>{categorie.name}</strong>.
+              Nog geen events onder <strong>{categorie.name}</strong>, en dat hoeft ook niet.
             </p>
             <p className="mx-auto mt-2 max-w-md text-sm text-charcoal/70">
-              Een event is één uitgevoerd feest — de babyshower van Lisa, de bruiloft van Sanne.
-              Geef het een titel hierboven; daarna kun je er tekst en foto&apos;s in zetten.
+              De foto&apos;s hierboven staan al op de site. Een event is voor als je van één
+              feest een eigen verhaal wilt maken — de babyshower van Lisa, met tekst tussen de
+              foto&apos;s en een eigen webadres om te delen. Geef het een titel hierboven.
             </p>
           </div>
         ) : (
@@ -383,7 +436,7 @@ function CategorieVlak({
               <li key={a.id}>
                 <Link
                   href={`/admin/galerij/${a.id}`}
-                  className="flex items-center gap-3 px-4 py-3 transition hover:bg-cream/60"
+                  className="flex items-center gap-3 px-4 py-3 transition hover:bg-linen/60"
                 >
                   <div className="h-14 w-14 shrink-0 overflow-hidden rounded bg-blush/30">
                     <EventOmslag album={a} />
@@ -397,7 +450,7 @@ function CategorieVlak({
                         </span>
                       )}
                       <span>{a.itemCount} {a.itemCount === 1 ? "foto" : "foto's"}</span>
-                      {a.blocks?.length ? <span className="text-gold-dark">verhaal ✓</span> : null}
+                      {a.blocks?.length ? <span className="text-sage-dark">verhaal ✓</span> : null}
                       {!a.published && <span className="text-burgundy">niet zichtbaar</span>}
                     </div>
                   </div>
@@ -409,41 +462,6 @@ function CategorieVlak({
         )}
       </div>
 
-      {/* ---------- Losse foto's ---------- */}
-      <div className="card p-0">
-        <button
-          onClick={() => setLosseOpen((v) => !v)}
-          className="flex w-full items-center gap-2 px-4 py-3 text-left"
-          aria-expanded={losseOpen}
-        >
-          <Images size={15} className="text-charcoal/60" />
-          <span className="flex-1 text-sm">
-            Losse foto&apos;s <span className="text-charcoal/70">({losseFotos.length})</span>
-            <span className="block text-xs text-charcoal/70">
-              Horen bij deze gelegenheid maar nog niet bij een event — ze verschijnen publiek
-              onder &ldquo;Meer werk&rdquo;.
-            </span>
-          </span>
-          {losseOpen ? <ChevronUp size={16} className="text-charcoal/55" /> : <ChevronDown size={16} className="text-charcoal/55" />}
-        </button>
-
-        {losseOpen && (
-          <div className="space-y-4 border-t border-charcoal/10 p-4">
-            <UploadKaart
-              categoryId={categorie.id}
-              doelNaam={`${categorie.name} (zonder event)`}
-              onKlaar={onVervers}
-            />
-            <FotoRaster
-              items={losseFotos}
-              context={{ soort: "losse", categoryId: categorie.id, albums: alleAlbums }}
-              onPatch={onItemPatch}
-              onVerwijder={onItemVerwijder}
-              leegTekst="Geen losse foto's — alles zit in een event."
-            />
-          </div>
-        )}
-      </div>
     </div>
   );
 }

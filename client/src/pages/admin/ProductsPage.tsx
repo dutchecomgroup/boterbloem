@@ -20,7 +20,7 @@ function PageKopProducten({ onNieuw }: { onNieuw: () => void }) {
       bovenschrift="Taart-prijslijst"
       icoon={Package}
       actie={
-        <button onClick={onNieuw} className="btn-gold !py-2 !px-4 text-xs">
+        <button onClick={onNieuw} className="btn-sage !py-2 !px-4 text-xs">
           <Plus size={14} /> Nieuw product
         </button>
       }
@@ -92,7 +92,7 @@ export default function ProductsPage() {
           <div className="sm:col-span-2"><label className="label">Omschrijving</label><textarea className="input min-h-[80px]" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
           <div className="sm:col-span-2 flex justify-end gap-3">
             <button type="button" className="btn-ghost" onClick={() => setShowNew(false)}>Annuleren</button>
-            <button type="submit" className="btn-gold" disabled={create.isPending}>{create.isPending ? "Opslaan…" : "Opslaan"}</button>
+            <button type="submit" className="btn-sage" disabled={create.isPending}>{create.isPending ? "Opslaan…" : "Opslaan"}</button>
           </div>
         </form>
       )}
@@ -117,9 +117,9 @@ export default function ProductsPage() {
                   {p.vatRate ? (
                     <span className="text-charcoal/70">{BTW_LABEL[p.vatRate as BtwTarief]}</span>
                   ) : (
-                    // Butter en niet burgundy: er is niets kapot, er ontbreekt iets. Zie de
+                    // Boterbloem en niet burgundy: er is niets kapot, er ontbreekt iets. Zie de
                     // kleurtaal in index.css.
-                    <Badge toon="butter" titel="Zonder tarief telt dit product niet mee in de btw-uitsplitsing">
+                    <Badge toon="boterbloem" titel="Zonder tarief telt dit product niet mee in de btw-uitsplitsing">
                       nog niet ingesteld
                     </Badge>
                   )}

@@ -57,7 +57,7 @@ export function Sheet({
         {/* Op een telefoon volle breedte: 560 px past daar niet op (scenario 50). */}
         <Dialog.Content
           className={`fixed inset-y-0 right-0 z-50 flex w-full ${BREEDTE[width]} flex-col
-            bg-cream shadow-2xl outline-none data-[state=open]:animate-sheet-in`}
+            bg-linen shadow-2xl outline-none data-[state=open]:animate-sheet-in`}
         >
           <header className="flex items-start gap-3 border-b border-charcoal/10 bg-white/60 px-5 py-4">
             <div className="min-w-0 flex-1">
@@ -96,10 +96,10 @@ export function Sheet({
 }
 
 /**
- * Sectiekop binnen een sheet: klein, goud, wijd gespatieerd.
+ * Sectiekop binnen een sheet: klein, salie, wijd gespatieerd.
  *
  * Rust kwam van ruimte alleen, en dat bleek te weinig — een sheet met zeven secties las als één
- * doorlopende lap tekst. Nu een goudkleurig streepje voor de kop en een haarlijn erna, zodat de
+ * doorlopende lap tekst. Nu een saliestreepje voor de kop en een haarlijn erna, zodat de
  * secties zichtbaar uit elkaar vallen zonder dat het een formulier wordt. Zwaardere lijnen
  * houden we voor de regeltabel en de tijdlijn, waar ze betekenis dragen.
  */
@@ -114,9 +114,9 @@ export function SheetSectie({
 }) {
   return (
     <section className="mb-7 last:mb-0">
-      <div className="mb-2.5 flex items-center justify-between gap-2 border-b border-gold/20 pb-1.5">
+      <div className="mb-2.5 flex items-center justify-between gap-2 border-b border-sage/20 pb-1.5">
         <h3 className="tag flex items-center gap-2">
-          <span aria-hidden className="inline-block h-3 w-0.5 rounded-full bg-gold" />
+          <span aria-hidden className="inline-block h-3 w-0.5 rounded-full bg-sage" />
           {titel}
         </h3>
         {actie}

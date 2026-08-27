@@ -1,7 +1,9 @@
 # Werkblok — huidig (gestart 2026-08-24)
 
-> **Status:** 🟢 **Alles uit de meeting is gebouwd en draait op `atelierboterbloem_dev`.**
-> Wat er nog moet: de zes migraties op live draaien, de code deployen, en de livegang zelf.
+> **Status:** 🟢 **Alles uit de meeting is gebouwd, en sinds 27-08 draait het op de echte
+> content van de klant.** Wat er nog moet: de acht migraties op live draaien, de code deployen,
+> en de livegang zelf — waarvoor nog materiaal ontbreekt, zie
+> [../klant/content-invulplan.md](../klant/content-invulplan.md).
 > **Branch:** `development` — daar landt het werk; `main` blijft wat er live hoort te kunnen.
 > **Bij afsluiten:** archiveren als `werkblok-v0.1.md` in `../archive/planning/` en dit bestand resetten.
 
@@ -15,9 +17,10 @@
 | `npm test` | ✅ 96 tests |
 | `npm run build` | ✅ |
 | Endpoint-verificatie tegen dev | ✅ |
-| Migraties op dev | ✅ alle zeven, idempotent |
+| Migraties op dev | ✅ alle acht, idempotent |
 | Migraties op live | ⏳ **nog niet** |
-| Democontent op dev | ✅ 36 foto's, 9 events, 4 pakketten, 5 reviews |
+| Democontent | ✅ **weg** (27-08) — 36 foto's, 9 events en 6 reviews verwijderd |
+| Klantcontent op dev | ✅ 20 foto's, 5 gelegenheden, 6 pakketten, 3 taartprijzen |
 
 ---
 
@@ -40,13 +43,14 @@
 | — | [`/aanbod` opnieuw ingedeeld](2-in-uitvoering/pakketten-aanbodpagina-indeling.md) | ✅ |
 | — | [Betalingen + omzetpagina](#omzet) | ✅ **DEV ✅ / LIVE ⏳** |
 | — | [Kleur door het beheerpaneel](#kleur) | ✅ |
-| **7** | Livegang: demo eruit, SEO, testronde | ⏳ wacht op materiaal |
+| — | [Klantcontent + huisstijl](#klantcontent) | ✅ **DEV ✅ / LIVE ⏳** |
+| **7** | Livegang: SEO, testronde | ⏳ wacht op prijzen, reviews en over-tekst |
 
 ---
 
 ## Wat er nu moet gebeuren
 
-**1. De zeven migraties op live**, in de vaste volgorde uit [../deployment/pending.md](../deployment/pending.md).
+**1. De acht migraties op live**, in de vaste volgorde uit [../deployment/pending.md](../deployment/pending.md).
 `pg_dump` eerst, dan de migraties, dan pas de code. Nooit andersom: Drizzle neemt elk schemaveld
 op in de SELECT, dus code op een oud schema breekt élke query op die tabel.
 
@@ -254,13 +258,65 @@ goud dat je mág lezen.
 
 ---
 
+## Wat er op 27-08 bij is gekomen
+
+### <a id="klantcontent"></a>🖼️ De content van de klant, en haar huisstijl
+
+Het materiaal kwam binnen in `uploads/content/`: **20 werkfoto's, 2 PDF's, een logo en een
+huisstijl-moodboard**. Volledige verantwoording en de gatenlijst:
+[../klant/content-invulplan.md](../klant/content-invulplan.md).
+
+**Foto's zonder events.** Haar aanlevering is niet per feest gegroepeerd, dus de foto's hangen
+rechtstreeks onder hun gelegenheid. Dat kon het schema al, maar het beheerscherm noemde zulke
+foto's *"losse foto's die nog niet bij een event horen"* — precies het omgekeerde van wat we nu
+doen. Het fotoblok staat nu in de kaart van de gelegenheid zelf, altijd open, en events zijn
+zichtbaar optioneel. Nieuw: `gallery_categories.cover_item_id`, zodat een gelegenheid zelf haar
+omslag aanwijst in plaats van "de eerste op volgorde".
+
+**Twee bugs kwamen daarbij naar boven:**
+
+- **Foto's uit een verborgen gelegenheid lekten naar de homepage.** `haalGalerij()` filterde de
+  geneste `categories` op `published`, maar de platte `items`-lijst niet — en dát is de lijst
+  achter de hero-carrousel en het uitgelicht-blok. Een portret onder de bewust verborgen
+  gelegenheid *Sitefoto's* kon dus op de voorpagina staan.
+- **`btw-per-regel.sql` ontbrak in het migratielog** terwijl hij op dev gedraaid was. Het bestand
+  bestond, de regel niet — precies het gat dat die tabel hoort te dichten.
+
+**Haar geschreven tekst is geen blog geworden.** Eén artikel is een leeg archief met een
+inhoudsopgave, en de tekst is een procesbeschrijving. Haar eigen moodboard heeft `WERKWIJZE` al
+in de navigatie staan met vijf stappen; die pagina bestaat nu, gevuld met haar zeven beats. Dat
+geeft meteen een thuis aan `ProcessStory`, dat al in de codebase stond maar nergens gerenderd
+werd. De homepage-strip gebruikt dezelfde bron, met haar woorden in plaats van de onze.
+
+**Huisstijl omgezet.** Het moodboard bleek een andere richting te bevatten dan wat er gebouwd
+was: salie en off-white met Playfair Display en Montserrat, tegenover cream en goud met
+Cormorant, Allura en Inter. Haar logo hoort bij het eerste. De tokennamen zijn meeveranderd
+(`gold` → `sage`, `cream` → `linen`, `butter` → `boterbloem`) — 358 vervangingen in 53
+bestanden — zodat een token niet iets anders heet dan het is. Het beheerpaneel kwam gratis mee.
+
+**Pakketten kunnen zichzelf niet meer verkeerd tonen.** Er geldt nu een regel die bij elke run
+opnieuw geldt: *een pakket zonder prijs is niet zichtbaar*. Dat kwam voort uit een zes pakketten
+die na de eerste seed toch als actief in de database stonden, met € 0,00 op de homepage.
+
+---
+
 ## Beslissingen die de scope bepaalden
 
 **📭 Mail valt volledig buiten scope (25-08).** Geen mailmodule, geen notificatie bij een nieuwe
 aanvraag. Het enige signaal is de teller op het dashboard.
 
-**🖼️ We bouwen door op demofoto's (25-08).** Die mogen **niet** mee naar de publieke live site.
-Blokkerende stap in [../deployment/testscript-master.md](../deployment/testscript-master.md) §8.8.
+**🖼️ ~~We bouwen door op demofoto's (25-08).~~** ✅ **Achterhaald 27-08:** de democontent is
+weg en de site draait op haar eigen foto's. De blokkerende stap in
+[../deployment/testscript-master.md](../deployment/testscript-master.md) §8.8 is daarmee gehaald.
+
+**🖼️ Geen events bij de start (27-08).** Haar foto's zijn niet per feest gegroepeerd, dus ze
+hangen los onder hun gelegenheid. De eventlaag komt eronder zodra ze materiaal per feest heeft.
+Een gelegenheid zonder foto's staat op verborgen: een tegel zonder beeld en een pagina die "nog
+geen foto's" zegt, is erger dan geen pagina.
+
+**🎨 De huisstijl van de klant wint (27-08).** Het moodboard dat zij aanleverde is leidend, ook
+al betekende dat een paletwissel door de hele codebase. Een site in een stijl die niet bij haar
+logo past, is een site die ze niet als de hare herkent.
 
 **🌐 De preview komt op de VPS (25-08).** Vraagt een `DEMO_PREVIEW`-slot met `noindex` en een
 zichtbare demo-balk — voorwaarde, geen afwerking, vanwege de stockfoto's en de verzonnen reviews.
@@ -298,11 +354,15 @@ Niet om te bouwen — wel om **live** te gaan. Status per item:
 
 ## Volgende sessie
 
-1. **De zeven migraties naar live**, dan deployen, dan de oude taart-categorieën opruimen
-2. **`DEMO_PREVIEW`-slot** — voorwaarde voordat de preview op de server mag
+1. **De acht migraties naar live**, dan deployen, dan de foto's en de twee contentscripts op de
+   server draaien — zie de deployvolgorde in [../deployment/pending.md](../deployment/pending.md)
+2. **De klant de gatenlijst voorleggen** uit
+   [../klant/content-invulplan.md](../klant/content-invulplan.md) — prijzen, grazing-foto's,
+   reviews en de over-tekst zijn wat er nu blokkeert
 3. **`check:demo` uitbreiden** met een databasecontrole; hij scant nu alleen de gebouwde bundel
-4. **`demoImageForSlug()` lekt** op `/over`, `/contact` en de processtappen van de homepage: die
-   roepen 'm onvoorwaardelijk aan, dus daar staan stock-taarten tussen het nieuwe werk
-5. **De klikronde**: stap 13 plus de breedtes van de nieuwe schermen
-6. **De kleurronde nakijken** op 375 / 768 / 1440 px — de wassingen zijn niet in een browser
-   gezien, alleen op typecheck, tests en build
+4. **De klikronde**: stap 13 plus de breedtes van de nieuwe schermen
+5. **`DEMO_PREVIEW`-slot** — nu minder dringend: er staat geen stockmateriaal meer op de site,
+   dus de preview toont echt werk. Het `noindex` blijft wel nodig zolang het domein niet leeft
+
+**Opgelost sinds vorige keer:** `demoImageForSlug()` lekte op `/over`, `/contact` en de
+processtappen van de homepage — die hele laag is verwijderd.

@@ -118,15 +118,15 @@ export function VeldInline({
   }
 
   const veldKlassen =
-    "w-full rounded-sm border-0 border-b-2 border-gold bg-white/70 px-2 py-1 text-sm " +
+    "w-full rounded-sm border-0 border-b-2 border-sage bg-white/70 px-2 py-1 text-sm " +
     "text-charcoal outline-none focus:bg-white disabled:opacity-60";
 
   return (
     <div className={className}>
       <div className="mb-0.5 flex items-center gap-1.5">
         <span className="text-[11px] font-medium uppercase tracking-wider text-charcoal/75">{label}</span>
-        {bezig && <Loader2 className="h-3 w-3 animate-spin text-gold-dark" />}
-        {gelukt && <Check className="h-3 w-3 text-gold-dark" />}
+        {bezig && <Loader2 className="h-3 w-3 animate-spin text-sage-dark" />}
+        {gelukt && <Check className="h-3 w-3 text-sage-dark" />}
       </div>
 
       {bewerkt ? (
@@ -203,7 +203,7 @@ export function VeldInline({
               `aria-hidden` omdat de knoptekst en de titel het al zeggen. */}
           <Pencil
             aria-hidden
-            className="mt-1 h-3 w-3 shrink-0 text-charcoal/25 transition group-hover:text-gold-dark"
+            className="mt-1 h-3 w-3 shrink-0 text-charcoal/25 transition group-hover:text-sage-dark"
           />
         </button>
       )}

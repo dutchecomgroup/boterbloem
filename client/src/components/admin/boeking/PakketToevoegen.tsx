@@ -72,9 +72,9 @@ export function PakketToevoegen({
 
   if (kiesbaar.length === 0) {
     return (
-      <p className="mb-2.5 rounded-md border-l-2 border-gold/50 bg-cream/70 px-3 py-2 text-xs text-charcoal/75">
+      <p className="mb-2.5 rounded-md border-l-2 border-sage/50 bg-linen/70 px-3 py-2 text-xs text-charcoal/75">
         Er zijn nog geen actieve pakketten. Zet ze aan op{" "}
-        <a href="/admin/pakketten" className="text-gold-dark underline-offset-2 hover:underline">
+        <a href="/admin/pakketten" className="text-sage-dark underline-offset-2 hover:underline">
           Pakketten
         </a>
         .
@@ -83,8 +83,8 @@ export function PakketToevoegen({
   }
 
   return (
-    <div className="mb-2.5 rounded-md border border-gold/30 bg-gold/[0.06] px-3 py-2.5">
-      <p className="mb-2 text-[10px] font-medium uppercase tracking-[0.2em] text-gold-dark">
+    <div className="mb-2.5 rounded-md border border-sage/30 bg-sage/[0.06] px-3 py-2.5">
+      <p className="mb-2 text-[10px] font-medium uppercase tracking-[0.2em] text-sage-dark">
         Voeg pakket toe
       </p>
 
@@ -96,7 +96,7 @@ export function PakketToevoegen({
             setFout(null);
           }}
           aria-label="Pakket"
-          className="min-w-0 flex-1 rounded border border-charcoal/15 bg-white px-2 py-1.5 text-sm outline-none focus:border-gold"
+          className="min-w-0 flex-1 rounded border border-charcoal/15 bg-white px-2 py-1.5 text-sm outline-none focus:border-sage"
         >
           <option value="">Kies een pakket…</option>
           {kiesbaar.map((p) => (
@@ -117,7 +117,7 @@ export function PakketToevoegen({
               value={aantal}
               onChange={(e) => setAantal(e.target.value)}
               aria-label="Aantal"
-              className={`w-16 rounded border bg-white px-2 py-1.5 text-right text-sm tabular-nums outline-none focus:border-gold ${
+              className={`w-16 rounded border bg-white px-2 py-1.5 text-right text-sm tabular-nums outline-none focus:border-sage ${
                 geldigAantal ? "border-charcoal/15" : "border-burgundy"
               }`}
             />
@@ -129,7 +129,7 @@ export function PakketToevoegen({
           type="button"
           onClick={() => void doen()}
           disabled={!pakket || !geldigAantal || bezig}
-          className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-gold px-4 py-1.5 text-xs uppercase tracking-widest text-cream transition hover:bg-gold-dark disabled:opacity-40"
+          className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-sage px-4 py-1.5 text-xs uppercase tracking-widest text-linen transition hover:bg-sage-dark disabled:opacity-40"
         >
           {bezig ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plus className="h-3.5 w-3.5" />}
           Toevoegen
@@ -151,14 +151,14 @@ export function PakketToevoegen({
           {/* Scenario 45: een pakket waarvan de prijs nog niet bekend is. Dat mag, maar het
               moet niet als "gratis" overkomen. */}
           {voorbeeld.totaalCenten === 0 && (
-            <span className="mt-1 flex items-start gap-1 text-xs text-gold-dark">
+            <span className="mt-1 flex items-start gap-1 text-xs text-sage-dark">
               <AlertCircle className="mt-0.5 h-3 w-3 shrink-0" />
               Dit pakket heeft nog geen prijs — de regel komt er op € 0,00 in.
             </span>
           )}
 
           {voorbeeld.perPersoon && personen === null && (
-            <span className="mt-1 flex items-start gap-1 text-xs text-gold-dark">
+            <span className="mt-1 flex items-start gap-1 text-xs text-sage-dark">
               <AlertCircle className="mt-0.5 h-3 w-3 shrink-0" />
               Het aantal personen staat nog niet in de boeking — controleer het aantal hiernaast.
             </span>

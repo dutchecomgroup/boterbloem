@@ -71,17 +71,17 @@ export default function DashboardPage() {
 
       {/*
         De vier tegels hadden alle vier hetzelfde gewicht — vier witte vlakken naast elkaar. Nu
-        volgen ze de kleurtaal: aanvragen vragen aandacht (butter), komende boekingen zijn merk
-        (goud), omzet is geld dat binnen is (groen), en vorige maand is geschiedenis (rustig).
+        volgen ze de kleurtaal: aanvragen vragen aandacht (boterbloem), komende boekingen zijn merk
+        (salie), omzet is geld dat binnen is (groen), en vorige maand is geschiedenis (rustig).
       */}
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
         <Tegel
           href="/admin/aanvragen"
           label="Nieuwe aanvragen"
-          rand="border-l-butter"
+          rand="border-l-boterbloem"
           // Alleen kleuren als er écht iets ligt: een nul die om aandacht vraagt is ruis.
-          accent={data?.openRequests ? "bg-butter/35" : undefined}
-          icoon={<Inbox size={15} className="text-gold-dark" />}
+          accent={data?.openRequests ? "bg-boterbloem/35" : undefined}
+          icoon={<Inbox size={15} className="text-sage-dark" />}
         >
           {data?.openRequests ?? "—"}
         </Tegel>
@@ -89,8 +89,8 @@ export default function DashboardPage() {
         <Tegel
           href="/admin/boekingen"
           label="Komende 30 dagen"
-          rand="border-l-gold"
-          icoon={<CalendarCheck size={15} className="text-gold-dark" />}
+          rand="border-l-sage"
+          icoon={<CalendarCheck size={15} className="text-sage-dark" />}
         >
           {data?.upcomingOrders ?? "—"}
         </Tegel>
@@ -114,12 +114,12 @@ export default function DashboardPage() {
       </div>
 
       <div className="card-accent">
-        <div className="mb-6 flex items-center justify-between border-b border-gold/20 pb-3">
+        <div className="mb-6 flex items-center justify-between border-b border-sage/20 pb-3">
           <div>
             <h2 className="text-xl">Omzet 12 maanden</h2>
             <p className="text-xs text-charcoal/50">Afgeleverde boekingen, geteld op de datum van het feest</p>
           </div>
-          <Link href="/admin/omzet" className="text-xs text-gold-dark hover:underline">
+          <Link href="/admin/omzet" className="text-xs text-sage-dark hover:underline">
             Alle cijfers →
           </Link>
         </div>

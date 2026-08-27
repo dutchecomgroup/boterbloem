@@ -22,7 +22,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-cream flex items-center justify-center p-6">
+    <div className="min-h-screen bg-linen flex items-center justify-center p-6">
       <div className="card w-full max-w-md">
         <div className="text-center mb-8">
           <div className="font-display text-2xl">Atelier</div>
@@ -54,7 +54,7 @@ export default function LoginPage() {
             />
           </div>
           {error && <div className="text-sm text-burgundy">{error}</div>}
-          <button type="submit" disabled={login.isPending} className="btn-gold w-full">
+          <button type="submit" disabled={login.isPending} className="btn-sage w-full">
             {login.isPending ? "Inloggen…" : "Inloggen"}
           </button>
         </form>

@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { BotanicalPattern } from "./ornaments/BotanicalPattern";
-import { GoldDivider } from "./ornaments/GoldDivider";
+import { SierDivider } from "./ornaments/SierDivider";
 
 /**
  * De kop van een publieke pagina over de volle breedte.
@@ -46,7 +46,7 @@ export function PageHeader({
         <div className="tag mb-3">{tag}</div>
         <h1 className="text-4xl sm:text-5xl md:text-6xl">{titel}</h1>
         <div className="mb-4 mt-4 sm:mb-5 sm:mt-6">
-          <GoldDivider className="!max-w-[180px]" />
+          <SierDivider className="!max-w-[180px]" />
         </div>
         {tekst && (
           <p className="mx-auto max-w-2xl text-sm leading-relaxed text-charcoal/75 sm:text-base">

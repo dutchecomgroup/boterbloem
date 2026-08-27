@@ -89,7 +89,7 @@ export function KlantKoppelen({ boekingId }: { boekingId: number }) {
   }
 
   return (
-    <div className="mt-2 rounded-md border border-gold/25 bg-white/60 p-3">
+    <div className="mt-2 rounded-md border border-sage/25 bg-white/60 p-3">
       <label className="label">Naam</label>
       <input
         className="input"
@@ -107,7 +107,7 @@ export function KlantKoppelen({ boekingId }: { boekingId: number }) {
                 type="button"
                 disabled={bezig}
                 onClick={() => koppel.mutate(k.id)}
-                className="w-full rounded px-2.5 py-1.5 text-left text-sm hover:bg-cream"
+                className="w-full rounded px-2.5 py-1.5 text-left text-sm hover:bg-linen"
               >
                 <span className="font-medium">{k.name}</span>
                 {(k.email || k.phone) && (
@@ -122,7 +122,7 @@ export function KlantKoppelen({ boekingId }: { boekingId: number }) {
       {/* De velden voor een nieuwe klant verschijnen pas als er iets getypt is, zodat het
           zoeken vooropstaat: eerst kijken of ze al bestaat, dan pas aanmaken. */}
       {naam.trim().length >= 2 && (
-        <div className="mt-3 border-t border-gold/15 pt-3">
+        <div className="mt-3 border-t border-sage/15 pt-3">
           <p className="mb-2 text-xs text-charcoal/55">
             {treffers.length > 0 ? "Staat ze er niet bij? Maak een nieuwe klant:" : "Nieuwe klant:"}
           </p>
@@ -145,7 +145,7 @@ export function KlantKoppelen({ boekingId }: { boekingId: number }) {
           type="button"
           disabled={bezig || naam.trim().length < 2}
           onClick={() => nieuwEnKoppel.mutate()}
-          className="btn-gold !px-4 !py-2 text-xs"
+          className="btn-sage !px-4 !py-2 text-xs"
         >
           {bezig ? <><Loader2 size={14} className="animate-spin" /> Bezig…</> : "Nieuwe klant koppelen"}
         </button>

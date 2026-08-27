@@ -56,7 +56,7 @@ export default function OrdersPage() {
         icoon={CalendarCheck}
         onderschrift="Klik op een rij om het feest te openen."
         actie={
-          <button type="button" onClick={() => setNieuwOpen(true)} className="btn-gold">
+          <button type="button" onClick={() => setNieuwOpen(true)} className="btn-sage">
             <Plus className="h-4 w-4" /> Nieuwe boeking
           </button>
         }

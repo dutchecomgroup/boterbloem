@@ -48,14 +48,14 @@ export default function CustomersPage() {
         icoon={Users}
         onderschrift="Klantgegevens en historie. Klik een klant aan voor de boekingen."
         actie={
-          <button onClick={() => setShowNew((s) => !s)} className="btn-gold !py-2 !px-4 text-xs">
+          <button onClick={() => setShowNew((s) => !s)} className="btn-sage !py-2 !px-4 text-xs">
             <Plus size={14} /> Nieuwe klant
           </button>
         }
       />
 
       <div className="relative mb-6 max-w-sm">
-        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gold-dark/50" />
+        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-sage-dark/50" />
         <input className="input !pl-9" placeholder="Zoek op naam, e-mail of telefoon"
           value={zoek} onChange={(e) => setZoek(e.target.value)} />
       </div>
@@ -72,7 +72,7 @@ export default function CustomersPage() {
           <div className="sm:col-span-2"><label className="label">Notities</label><textarea className="input min-h-[80px]" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} /></div>
           <div className="sm:col-span-2 flex gap-3 justify-end">
             <button type="button" className="btn-ghost" onClick={() => setShowNew(false)}>Annuleren</button>
-            <button type="submit" className="btn-gold" disabled={create.isPending}>{create.isPending ? "Opslaan…" : "Opslaan"}</button>
+            <button type="submit" className="btn-sage" disabled={create.isPending}>{create.isPending ? "Opslaan…" : "Opslaan"}</button>
           </div>
         </form>
       )}
@@ -86,7 +86,7 @@ export default function CustomersPage() {
             {gefilterd.length ? gefilterd.map((c) => (
               <tr key={c.id} className="rij-hover">
                 <td className="px-4 py-3 font-medium">
-                  <Link href={`/admin/klanten/${c.id}`} className="text-charcoal transition-colors hover:text-gold-dark">{c.name}</Link>
+                  <Link href={`/admin/klanten/${c.id}`} className="text-charcoal transition-colors hover:text-sage-dark">{c.name}</Link>
                 </td>
                 <td className="px-4 py-3 text-charcoal/70">{c.email ?? <span className="text-charcoal/30">—</span>}</td>
                 <td className="px-4 py-3 text-charcoal/70">{c.phone ?? <span className="text-charcoal/30">—</span>}</td>

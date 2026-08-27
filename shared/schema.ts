@@ -334,6 +334,19 @@ export const galleryCategories = pgTable("gallery_categories", {
   slug: varchar("slug", { length: 120 }).notNull(),
   name: varchar("name", { length: 200 }).notNull(),
   description: text("description"),
+  /**
+   * Welke foto de tegel van deze gelegenheid vult.
+   *
+   * Zonder deze kolom kwam de omslag altijd van een event, en viel `nest()` daarna terug op de
+   * eerste losse foto op volgorde. Dat werkte zolang losse foto's restanten waren; sinds de
+   * foto's van de klant rechtstreeks onder een gelegenheid hangen is de omslag anders een
+   * toevalstreffer van de uploadvolgorde.
+   *
+   * Geen foreign key, net als bij `galleryAlbums.coverItemId`: een foto verwijderen mag de
+   * gelegenheid niet meeslepen en ook niet blokkeren. Wijst hij nergens meer heen, dan valt de
+   * omslag terug op de volgorde.
+   */
+  coverItemId: integer("cover_item_id"),
   published: boolean("published").notNull().default(true),
   sortOrder: integer("sort_order").notNull().default(0),
 }, (table) => ({

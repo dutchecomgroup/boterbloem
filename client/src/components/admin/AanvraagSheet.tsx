@@ -126,7 +126,7 @@ export function AanvraagSheet({
           <>
             <a
               href={`mailto:${aanvraag.email}?subject=Re: aanvraag Atelier Boterbloem`}
-              className="inline-flex items-center gap-1.5 rounded-full border border-gold px-4 py-2 text-xs uppercase tracking-widest text-gold-dark transition hover:bg-gold/10"
+              className="inline-flex items-center gap-1.5 rounded-full border border-sage px-4 py-2 text-xs uppercase tracking-widest text-sage-dark transition hover:bg-sage/10"
             >
               <Mail className="h-3.5 w-3.5" /> Mailen
             </a>
@@ -136,7 +136,7 @@ export function AanvraagSheet({
               <button
                 type="button"
                 onClick={() => onBoekingGemaakt(alOmgezet)}
-                className="inline-flex items-center gap-1.5 rounded-full border border-gold/40 px-4 py-2 text-xs uppercase tracking-widest text-charcoal/75 transition hover:border-gold hover:bg-gold/10"
+                className="inline-flex items-center gap-1.5 rounded-full border border-sage/40 px-4 py-2 text-xs uppercase tracking-widest text-charcoal/75 transition hover:border-sage hover:bg-sage/10"
               >
                 <ExternalLink className="h-3.5 w-3.5" /> Open de boeking
               </button>
@@ -145,7 +145,7 @@ export function AanvraagSheet({
                 type="button"
                 onClick={() => omzetten.mutate()}
                 disabled={omzetten.isPending}
-                className="inline-flex items-center gap-1.5 rounded-full bg-gold px-4 py-2 text-xs uppercase tracking-widest text-cream transition hover:bg-gold-dark disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 rounded-full bg-sage px-4 py-2 text-xs uppercase tracking-widest text-linen transition hover:bg-sage-dark disabled:opacity-50"
               >
                 {omzetten.isPending ? (
                   <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -164,13 +164,13 @@ export function AanvraagSheet({
           <div className="mb-6">
             <p className="font-display text-lg text-charcoal">{aanvraag.name}</p>
             <p className="mt-0.5 break-words text-sm text-charcoal/75">
-              <a href={`mailto:${aanvraag.email}`} className="hover:text-gold-dark">
+              <a href={`mailto:${aanvraag.email}`} className="hover:text-sage-dark">
                 {aanvraag.email}
               </a>
               {aanvraag.phone && (
                 <>
                   {" · "}
-                  <a href={`tel:${aanvraag.phone}`} className="inline-flex items-center gap-1 hover:text-gold-dark">
+                  <a href={`tel:${aanvraag.phone}`} className="inline-flex items-center gap-1 hover:text-sage-dark">
                     <Phone className="h-3 w-3" />
                     {aanvraag.phone}
                   </a>
@@ -219,8 +219,8 @@ export function AanvraagSheet({
 
           {/* Wat er gebeurt als je op de knop drukt — vóóraf, niet in een alert erna. */}
           {!alOmgezet && voorbeeld && (
-            <div className="rounded-md border border-gold/30 bg-gold/[0.07] px-3.5 py-3">
-              <p className="mb-1.5 flex items-center gap-1.5 text-[10px] uppercase tracking-[0.2em] text-gold-dark">
+            <div className="rounded-md border border-sage/30 bg-sage/[0.07] px-3.5 py-3">
+              <p className="mb-1.5 flex items-center gap-1.5 text-[10px] uppercase tracking-[0.2em] text-sage-dark">
                 <Info className="h-3 w-3" /> Wat er gaat gebeuren
               </p>
               <ul className="space-y-1 text-sm text-charcoal/80">

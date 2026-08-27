@@ -1,5 +1,5 @@
 /**
- * Vangnet vóór de livegang: zit er nog demo-content in de gebouwde bundel?
+ * Vangnet vóór de livegang: zit er nog demo-content in de bundel of in de database?
  *
  *   npx tsx scripts/check-geen-demo-content.ts
  *
@@ -12,8 +12,12 @@
  * breekt. Met `--strict` faalt het: zo hoort het in de deploy-stap te staan zodra de echte
  * foto's binnen zijn.
  */
+import "dotenv/config";
 import fs from "node:fs/promises";
 import path from "node:path";
+import { sql } from "drizzle-orm";
+import { db } from "../server/db.js";
+import { galleryItems, reviews } from "../shared/schema.js";
 
 const DIST = path.resolve("dist/client");
 const STRICT = process.argv.includes("--strict");
@@ -53,8 +57,46 @@ for (const bestand of await bestanden(DIST)) {
   }
 }
 
-if (treffers.length === 0) {
-  console.log("✓ Geen demo-content in de gebouwde bundel.");
+/**
+ * De bundel is maar de helft van het verhaal.
+ *
+ * `seed-demo-content.ts` zet stockfoto's en verzonnen reviews in de **database**, en daar ziet
+ * een scan over `dist/` niets van: die rijen komen via de API binnen, niet uit de gebouwde
+ * JavaScript. Tot 27-08 controleerde dit script alleen de bundel, en dan kan hij groen zijn
+ * terwijl de site vol stockfoto's staat.
+ */
+async function controleerDatabase(): Promise<{ wat: string; aantal: number }[]> {
+  const uit: { wat: string; aantal: number }[] = [];
+  const [foto] = await db
+    .select({ n: sql<number>`count(*)::int` })
+    .from(galleryItems)
+    .where(sql`${galleryItems.source} = 'demo'`);
+  if (foto.n > 0) uit.push({ wat: `gallery_items met source 'demo'`, aantal: foto.n });
+
+  const [rev] = await db
+    .select({ n: sql<number>`count(*)::int` })
+    .from(reviews)
+    .where(sql`${reviews.source} = 'demo'`);
+  if (rev.n > 0) uit.push({ wat: `reviews met source 'demo'`, aantal: rev.n });
+
+  return uit;
+}
+
+let dbTreffers: { wat: string; aantal: number }[] = [];
+try {
+  dbTreffers = await controleerDatabase();
+} catch (err) {
+  // Geen database bereikbaar is geen "groen": dan is de helft van de controle niet gedaan.
+  const reden = err instanceof Error ? err.message : "onbekende fout";
+  console.log("");
+  console.log(`⚠ Database niet gecontroleerd: ${reden}`);
+  console.log("  Deze controle is pas compleet als hij ook tegen de database kan draaien.");
+  console.log("");
+  if (STRICT) process.exit(1);
+}
+
+if (treffers.length === 0 && dbTreffers.length === 0) {
+  console.log("✓ Geen demo-content in de gebouwde bundel en niet in de database.");
   process.exit(0);
 }
 

@@ -124,11 +124,18 @@ in de SELECT, dus één ontbrekende kolom breekt élke query op die tabel.
 | 2026-08-24 | [`2026-08-25-regel-details.sql`](sql-pending/2026-08-25-regel-details.sql) | `order_items.details` voor subregels; bestaande `· `-regels van € 0,00 samengevoegd tot subregels en verwijderd | ✅ | ⏳ |
 | 2026-08-24 | [`2026-08-25-album-blokken.sql`](sql-pending/2026-08-25-album-blokken.sql) | `gallery_albums.blocks` — tekst en foto's door elkaar per event, met CHECK dat het een array is | ✅ | ⏳ |
 | 2026-08-25 | [`2026-08-25-betalingen.sql`](sql-pending/2026-08-25-betalingen.sql) | Betalingen: nieuwe tabel `order_payments` (bedrag, datum, wijze, notitie) + betaalde aanbetalingen overgezet als betaalregel | ✅ | ⏳ |
+| 2026-08-25 | [`2026-08-25-btw-per-regel.sql`](sql-pending/2026-08-25-btw-per-regel.sql) | Btw per regel: `order_items.vat_rate`, `packages.vat_rate` + `vat_split_low`/`vat_split_high`, `products.vat_rate`, elk met een CHECK op geen/laag/hoog | ✅ | ⏳ |
 | 2026-08-24 | [`2026-08-24-herstel-testdata.sql`](sql-pending/2026-08-24-herstel-testdata.sql) | Herstel: `contact`/`hero` terug naar seed-waarden + 8 testrijen uit `contact_requests` | n.v.t. | ⏳ |
+| 2026-08-27 | [`2026-08-27-categorie-omslagfoto.sql`](sql-pending/2026-08-27-categorie-omslagfoto.sql) | `gallery_categories.cover_item_id` — een gelegenheid wijst zelf haar omslagfoto aan, nu foto's zonder event eronder hangen | ✅ | ⏳ |
 
-> **Volgorde op live:** fase 1 → boekingen → btw → regel-details → album-blokken. `boekingen.sql` legt een
-> foreign key naar `packages`, en die tabel komt uit fase 1; de andere twee raken `orders` en
-> `order_items` die dan al de nieuwe kolommen hebben.
+> **Volgorde op live:** fase 1 → boekingen → btw → regel-details → album-blokken → betalingen →
+> btw-per-regel → categorie-omslagfoto. `boekingen.sql` legt een foreign key naar `packages`, en
+> die tabel komt uit fase 1; de andere raken `orders` en `order_items` die dan al de nieuwe
+> kolommen hebben. `categorie-omslagfoto` staat los van de rest en mag als laatste.
+
+> ⚠️ **`btw-per-regel` stond hier niet in** tot 27-08, terwijl hij wél op dev gedraaid was. Het
+> bestand bestond, de regel ontbrak — precies het gat dat deze tabel hoort te dichten. Alsnog
+> toegevoegd; de volgorde hierboven is bijgewerkt.
 
 ### 2026-08-24 — fase 1
 

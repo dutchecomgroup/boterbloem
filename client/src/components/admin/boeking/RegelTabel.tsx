@@ -64,14 +64,14 @@ export function RegelTabel({
           <button
             type="button"
             onClick={() => setNieuwOpen(true)}
-            className="inline-flex items-center gap-1 rounded-full border border-gold/50 px-3 py-1 text-xs text-gold-dark transition hover:bg-gold/10"
+            className="inline-flex items-center gap-1 rounded-full border border-sage/50 px-3 py-1 text-xs text-sage-dark transition hover:bg-sage/10"
           >
             <Plus className="h-3 w-3" /> Regel
           </button>
         )}
       </div>
 
-      <div className="overflow-hidden rounded-md border border-gold/25 bg-white">
+      <div className="overflow-hidden rounded-md border border-sage/25 bg-white">
         {regels.length === 0 && !nieuwOpen && (
           // Scenario 63: geen regels is een geldige toestand, geen fout.
           <p className="px-3 py-6 text-center text-sm text-charcoal/60">
@@ -103,7 +103,7 @@ export function RegelTabel({
           />
         )}
 
-        <div className="flex items-center justify-between border-t-2 border-charcoal/15 bg-cream/60 px-3 py-2.5">
+        <div className="flex items-center justify-between border-t-2 border-charcoal/15 bg-linen/60 px-3 py-2.5">
           <span className="text-xs font-medium uppercase tracking-wider text-charcoal/75">Totaal</span>
           <span className="font-display text-lg tabular-nums text-charcoal">
             {centenNaarTekst(naarCenten(totalPrice))}
@@ -145,7 +145,7 @@ function RegelRij({
 
   return (
     <div className="border-b border-charcoal/[0.07] last:border-b-0">
-      <div className="group flex items-center gap-2 px-2 py-1.5 hover:bg-cream/50">
+      <div className="group flex items-center gap-2 px-2 py-1.5 hover:bg-linen/50">
         <div className="flex shrink-0 flex-col opacity-0 transition group-hover:opacity-100 focus-within:opacity-100">
           <button
             type="button"
@@ -217,7 +217,7 @@ function RegelRij({
           disabled={bezig}
           aria-label={`Btw voor "${regel.description}"`}
           title="Btw-tarief van deze regel"
-          className={`w-16 shrink-0 rounded border border-transparent bg-transparent px-1 py-0.5 text-xs tabular-nums hover:border-charcoal/15 focus:border-gold focus:outline-none ${
+          className={`w-16 shrink-0 rounded border border-transparent bg-transparent px-1 py-0.5 text-xs tabular-nums hover:border-charcoal/15 focus:border-sage focus:outline-none ${
             regel.vatRate ? "text-charcoal/70" : "text-charcoal/35"
           }`}
         >
@@ -255,10 +255,10 @@ function RegelRij({
       </div>
 
       {open && inbegrepen.length > 0 && (
-        <ul className="bg-cream/40 px-2 pb-2 pl-12 text-xs text-charcoal/75">
+        <ul className="bg-linen/40 px-2 pb-2 pl-12 text-xs text-charcoal/75">
           {inbegrepen.map((r, i) => (
             <li key={i} className="flex gap-2 py-0.5">
-              <span className="text-gold-dark" aria-hidden>
+              <span className="text-sage-dark" aria-hidden>
                 ·
               </span>
               <span className="break-words">{r}</span>
@@ -312,7 +312,7 @@ function CelTekst({
         if (e.key === "Escape") setConcept(null);
         if (e.key === "Enter") e.currentTarget.blur();
       }}
-      className={`rounded border-b-2 border-gold bg-white px-1 py-0.5 outline-none ${className}`}
+      className={`rounded border-b-2 border-sage bg-white px-1 py-0.5 outline-none ${className}`}
     />
   );
 }
@@ -354,7 +354,7 @@ function CelGetal({
         if (e.key === "Escape") setConcept(null);
         if (e.key === "Enter") e.currentTarget.blur();
       }}
-      className={`${breedte} shrink-0 rounded border-b-2 border-gold bg-white px-1 py-0.5 text-right text-sm tabular-nums outline-none`}
+      className={`${breedte} shrink-0 rounded border-b-2 border-sage bg-white px-1 py-0.5 text-right text-sm tabular-nums outline-none`}
     />
   );
 }
@@ -397,7 +397,7 @@ function NieuweRegel({
   }
 
   return (
-    <div className="border-b border-charcoal/[0.07] bg-cream/60 px-3 py-2.5">
+    <div className="border-b border-charcoal/[0.07] bg-linen/60 px-3 py-2.5">
       <div className="flex items-center gap-2">
         <input
           autoFocus
@@ -405,7 +405,7 @@ function NieuweRegel({
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && void bewaren()}
-          className="min-w-0 flex-1 rounded border border-charcoal/15 bg-white px-2 py-1 text-sm outline-none focus:border-gold"
+          className="min-w-0 flex-1 rounded border border-charcoal/15 bg-white px-2 py-1 text-sm outline-none focus:border-sage"
         />
         <input
           inputMode="decimal"
@@ -413,7 +413,7 @@ function NieuweRegel({
           value={quantity}
           onChange={(e) => setQuantity(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && void bewaren()}
-          className="w-14 shrink-0 rounded border border-charcoal/15 bg-white px-2 py-1 text-right text-sm tabular-nums outline-none focus:border-gold"
+          className="w-14 shrink-0 rounded border border-charcoal/15 bg-white px-2 py-1 text-right text-sm tabular-nums outline-none focus:border-sage"
         />
         <input
           inputMode="decimal"
@@ -422,7 +422,7 @@ function NieuweRegel({
           value={unitPrice}
           onChange={(e) => setUnitPrice(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && void bewaren()}
-          className="w-20 shrink-0 rounded border border-charcoal/15 bg-white px-2 py-1 text-right text-sm tabular-nums outline-none focus:border-gold"
+          className="w-20 shrink-0 rounded border border-charcoal/15 bg-white px-2 py-1 text-right text-sm tabular-nums outline-none focus:border-sage"
         />
         <span className="w-24 shrink-0 text-right text-sm tabular-nums text-charcoal/75">
           {centenNaarTekst(voorbeeld)}
@@ -443,7 +443,7 @@ function NieuweRegel({
           type="button"
           onClick={() => void bewaren()}
           disabled={!kanOpslaan}
-          className="shrink-0 rounded-full bg-gold px-4 py-1 text-xs uppercase tracking-widest text-cream transition hover:bg-gold-dark disabled:opacity-40"
+          className="shrink-0 rounded-full bg-sage px-4 py-1 text-xs uppercase tracking-widest text-linen transition hover:bg-sage-dark disabled:opacity-40"
         >
           Toevoegen
         </button>

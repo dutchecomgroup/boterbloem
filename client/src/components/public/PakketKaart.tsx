@@ -15,7 +15,7 @@ export function PakketKaart({ pakket: p }: { pakket: PakketMetCover }) {
   const bereik = personenBereik(p.personsMin, p.personsMax);
 
   return (
-    <article className="flex h-full flex-col overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-gold/10 transition-shadow hover:shadow-xl">
+    <article className="flex h-full flex-col overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-sage/10 transition-shadow hover:shadow-xl">
       {/* Zonder cover een zacht kleurvlak in plaats van een gat: de kaarten blijven dan even
           hoog naast elkaar. */}
       <div className="relative aspect-[16/10] overflow-hidden bg-blush/40">
@@ -46,11 +46,11 @@ export function PakketKaart({ pakket: p }: { pakket: PakketMetCover }) {
         {/* De vanaf-prijs is waar de bezoeker op afkomt, dus het zwaarste element op de kaart.
             Een pakket zonder prijs mag niet als "vanaf € 0,00" op de site staan: dat leest als
             gratis. */}
-        <div className="mt-3 border-y border-gold/20 py-2.5 sm:mt-4 sm:py-3">
+        <div className="mt-3 border-y border-sage/20 py-2.5 sm:mt-4 sm:py-3">
           {Number(p.priceFrom) > 0 ? (
             <div className="flex flex-wrap items-baseline gap-x-2">
               <span className="text-[9px] uppercase tracking-[0.2em] text-charcoal/60 sm:text-[10px]">vanaf</span>
-              <span className="font-display text-2xl leading-none text-gold-dark sm:text-3xl lg:text-4xl">
+              <span className="font-display text-2xl leading-none text-sage-dark sm:text-3xl lg:text-4xl">
                 {formatCurrency(Number(p.priceFrom))}
               </span>
               {p.priceUnit === "per_persoon" && (
@@ -58,7 +58,7 @@ export function PakketKaart({ pakket: p }: { pakket: PakketMetCover }) {
               )}
             </div>
           ) : (
-            <span className="font-display text-xl text-gold-dark sm:text-2xl">Prijs op aanvraag</span>
+            <span className="font-display text-xl text-sage-dark sm:text-2xl">Prijs op aanvraag</span>
           )}
           {bereik && <div className="mt-1 text-[11px] text-charcoal/60 sm:text-xs">{bereik}</div>}
         </div>
@@ -73,7 +73,7 @@ export function PakketKaart({ pakket: p }: { pakket: PakketMetCover }) {
           <ul className="mt-3 space-y-1.5 text-xs text-charcoal/80 sm:mt-5 sm:space-y-2 sm:text-sm">
             {p.includes.map((r, i) => (
               <li key={i} className="flex gap-1.5 sm:gap-2">
-                <Check className="mt-0.5 h-3 w-3 shrink-0 text-gold sm:h-4 sm:w-4" />
+                <Check className="mt-0.5 h-3 w-3 shrink-0 text-sage sm:h-4 sm:w-4" />
                 <span>{r}</span>
               </li>
             ))}
@@ -84,7 +84,7 @@ export function PakketKaart({ pakket: p }: { pakket: PakketMetCover }) {
             dan de andere. */}
         <Link
           href={`/contact?pakket=${p.slug}`}
-          className="btn-gold mt-auto w-full !px-3 pt-3 text-xs sm:!px-6 sm:text-sm"
+          className="btn-sage mt-auto w-full !px-3 pt-3 text-xs sm:!px-6 sm:text-sm"
         >
           Vraag aan
         </Link>

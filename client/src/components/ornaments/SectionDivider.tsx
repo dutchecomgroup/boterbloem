@@ -10,7 +10,7 @@ interface Props {
 }
 
 /** Organic SVG divider between sections. Render at the boundary, the SVG bleeds into the next section. */
-export function SectionDivider({ color = "fill-cream", variant = "wave", flip = false, className }: Props) {
+export function SectionDivider({ color = "fill-linen", variant = "wave", flip = false, className }: Props) {
   return (
     <div className={cn("relative pointer-events-none w-full leading-none -mt-px", className)}>
       <svg

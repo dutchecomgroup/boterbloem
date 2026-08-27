@@ -38,7 +38,7 @@ export default function CustomerDetailPage() {
     return (
       <div className="py-20 text-center">
         <p className="text-charcoal/60 mb-4">Klant niet gevonden.</p>
-        <Link href="/admin/klanten" className="text-gold underline">Terug naar klanten</Link>
+        <Link href="/admin/klanten" className="text-sage underline">Terug naar klanten</Link>
       </div>
     );
   }
@@ -60,19 +60,19 @@ export default function CustomerDetailPage() {
         <div className="card space-y-3 text-sm">
           {klant.email && (
             <div className="flex items-center gap-2">
-              <Mail size={15} className="text-gold shrink-0" />
-              <a href={`mailto:${klant.email}`} className="hover:text-gold-dark break-all">{klant.email}</a>
+              <Mail size={15} className="text-sage shrink-0" />
+              <a href={`mailto:${klant.email}`} className="hover:text-sage-dark break-all">{klant.email}</a>
             </div>
           )}
           {klant.phone && (
             <div className="flex items-center gap-2">
-              <Phone size={15} className="text-gold shrink-0" />
-              <a href={`tel:${klant.phone}`} className="hover:text-gold-dark">{klant.phone}</a>
+              <Phone size={15} className="text-sage shrink-0" />
+              <a href={`tel:${klant.phone}`} className="hover:text-sage-dark">{klant.phone}</a>
             </div>
           )}
           {klant.address && (
             <div className="flex items-start gap-2">
-              <MapPin size={15} className="text-gold shrink-0 mt-0.5" />
+              <MapPin size={15} className="text-sage shrink-0 mt-0.5" />
               <span className="whitespace-pre-wrap">{klant.address}</span>
             </div>
           )}
@@ -104,7 +104,7 @@ export default function CustomerDetailPage() {
         </div>
 
         <div className="card p-0 overflow-hidden">
-          <div className="tag border-b border-gold/25 bg-cream/50 px-4 py-3">Boekingen</div>
+          <div className="tag border-b border-sage/25 bg-linen/50 px-4 py-3">Boekingen</div>
           {klant.orders.length ? (
             <table className="tabel-admin w-full text-sm">
               <thead>
@@ -133,7 +133,7 @@ export default function CustomerDetailPage() {
                       <Link
                         href={boekingHref(o.id)}
                         onClick={(e) => e.stopPropagation()}
-                        className="font-medium text-gold-dark hover:underline"
+                        className="font-medium text-sage-dark hover:underline"
                       >
                         {o.reference ?? `#${o.id}`}
                       </Link>

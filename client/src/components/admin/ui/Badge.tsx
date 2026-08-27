@@ -15,15 +15,15 @@ import type { ReactNode } from "react";
  * de bron voor status, deze component alleen voor de vorm.
  */
 
-export type BadgeToon = "goud" | "groen" | "butter" | "burgundy" | "rustig";
+export type BadgeToon = "salie" | "groen" | "boterbloem" | "burgundy" | "rustig";
 
 const TOON: Record<BadgeToon, string> = {
   /** Merk, herkomst, iets dat opvalt zonder te alarmeren. */
-  goud: "bg-gold/25 text-charcoal",
+  salie: "bg-sage/30 text-charcoal",
   /** Voldaan, afgerond, gelukt. */
   groen: "bg-emerald-100 text-emerald-800",
   /** Vraagt aandacht: nieuw, onvolledig, wacht op jou. */
-  butter: "bg-butter text-charcoal",
+  boterbloem: "bg-boterbloem/55 text-charcoal",
   /** Fout, gevaar, iets dat rechtgezet moet worden. */
   burgundy: "bg-burgundy/10 text-burgundy",
   /** Afgehandeld of uitgeschakeld — aanwezig, maar niet luid. */

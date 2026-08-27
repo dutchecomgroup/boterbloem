@@ -71,7 +71,7 @@ export default function PackagesPage() {
           </>
         }
         actie={
-          <button className="btn-gold !py-2 !px-5 text-xs" onClick={() => setBewerk({ ...LEEG })}>
+          <button className="btn-sage !py-2 !px-5 text-xs" onClick={() => setBewerk({ ...LEEG })}>
             <Plus size={14} /> Pakket toevoegen
           </button>
         }
@@ -110,7 +110,7 @@ export default function PackagesPage() {
               {p.tagline && <p className="text-sm text-charcoal/60 mt-0.5">{p.tagline}</p>}
               <div className="mt-2 text-sm">
                 {Number(p.priceFrom) > 0 ? (
-                  <span className="text-gold-dark font-medium">
+                  <span className="text-sage-dark font-medium">
                     vanaf € {Number(p.priceFrom).toFixed(2).replace(".", ",")}
                     {p.priceUnit === "per_persoon" && " p.p."}
                   </span>
@@ -148,7 +148,7 @@ export default function PackagesPage() {
                       href="/aanbod"
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex items-center gap-1 text-gold-dark underline-offset-2 hover:underline"
+                      className="inline-flex items-center gap-1 text-sage-dark underline-offset-2 hover:underline"
                     >
                       Bekijk op de site <ExternalLink size={11} />
                     </a>
@@ -211,7 +211,7 @@ function Formulier({ pakket, onChange, onOpslaan, onAnnuleer, bezig }: {
   };
 
   return (
-    <div className="card mb-6 border-gold/30">
+    <div className="card mb-6 border-sage/30">
       <h2 className="text-xl mb-4">{pakket.id ? "Pakket bewerken" : "Nieuw pakket"}</h2>
       <div className="grid sm:grid-cols-2 gap-4">
         <div>
@@ -250,7 +250,7 @@ function Formulier({ pakket, onChange, onOpslaan, onAnnuleer, bezig }: {
           <input className="input" type="number" min="1" value={pakket.personsMax ?? ""}
             onChange={(e) => onChange({ ...pakket, personsMax: e.target.value ? Number(e.target.value) : null })} />
         </div>
-        <div className="sm:col-span-2 rounded-lg bg-cream/60 p-4 ring-1 ring-gold/15">
+        <div className="sm:col-span-2 rounded-lg bg-linen/60 p-4 ring-1 ring-sage/15">
           <BtwBlok pakket={pakket} onChange={onChange} />
         </div>
 
@@ -303,7 +303,7 @@ function Formulier({ pakket, onChange, onOpslaan, onAnnuleer, bezig }: {
         {/* Een verdeling die niet optelt tot de pakketprijs zou een ander bedrag op de offerte
             zetten dan de klant op de site zag. Dat mag niet stil gebeuren. */}
         <button
-          className="btn-gold !py-2 !px-5 text-xs"
+          className="btn-sage !py-2 !px-5 text-xs"
           disabled={!pakket.name?.trim() || bezig || verdelingKlopt(pakket) === false}
           title={verdelingKlopt(pakket) === false ? "De btw-verdeling telt niet op tot de vanaf-prijs." : undefined}
           onClick={onOpslaan}
@@ -415,7 +415,7 @@ function BtwBlok({
       </label>
 
       {gesplitst && (
-        <div className="mt-3 space-y-3 border-l-2 border-gold/30 pl-4">
+        <div className="mt-3 space-y-3 border-l-2 border-sage/30 pl-4">
           <div className="grid gap-3 sm:grid-cols-2">
             <div>
               <label className="label">Waarvan eten en drinken (9%)</label>

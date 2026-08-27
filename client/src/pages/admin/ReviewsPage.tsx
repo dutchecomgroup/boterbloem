@@ -67,7 +67,7 @@ export default function ReviewsPage() {
           </>
         }
         actie={
-          <button className="btn-gold !py-2 !px-5 text-xs" onClick={() => setBewerk({ ...LEEG })}>
+          <button className="btn-sage !py-2 !px-5 text-xs" onClick={() => setBewerk({ ...LEEG })}>
             <Plus size={14} /> Review toevoegen
           </button>
         }
@@ -78,7 +78,7 @@ export default function ReviewsPage() {
       </p>
 
       {gepubliceerd === 0 && (reviews?.length ?? 0) > 0 && (
-        <div className="card mb-4 border-l-4 border-l-butter bg-butter/20 text-sm text-charcoal/80">
+        <div className="card mb-4 border-l-4 border-l-boterbloem bg-boterbloem/20 text-sm text-charcoal/80">
           Er is nog niets gepubliceerd, dus het reviewblok staat niet op de site. Dat is
           bewust: een leeg reviewblok is slechter dan geen reviewblok.
         </div>
@@ -91,7 +91,7 @@ export default function ReviewsPage() {
       )}
 
       {bewerk && (
-        <div className="card mb-6 border-gold/30">
+        <div className="card mb-6 border-sage/30">
           <h2 className="text-xl mb-4">{bewerk.id ? "Review bewerken" : "Nieuwe review"}</h2>
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
@@ -126,7 +126,7 @@ export default function ReviewsPage() {
           </div>
           <div className="mt-6 flex justify-end gap-3">
             <button className="btn-ghost !py-2 !px-4 text-xs" onClick={() => setBewerk(null)}>Annuleren</button>
-            <button className="btn-gold !py-2 !px-5 text-xs"
+            <button className="btn-sage !py-2 !px-5 text-xs"
               disabled={!bewerk.authorName?.trim() || (bewerk.body ?? "").trim().length < 10 || opslaan.isPending}
               onClick={() => opslaan.mutate(bewerk)}>
               {opslaan.isPending ? "Opslaan…" : "Opslaan"}
@@ -137,18 +137,18 @@ export default function ReviewsPage() {
 
       <div className="space-y-3">
         {reviews?.map((r) => (
-          <div key={r.id} className={`card flex flex-wrap gap-4 border-l-4 ${r.published ? "border-l-gold" : "border-l-charcoal/15"}`}>
+          <div key={r.id} className={`card flex flex-wrap gap-4 border-l-4 ${r.published ? "border-l-sage" : "border-l-charcoal/15"}`}>
             <div className="flex-1 min-w-[240px]">
               <div className="flex items-baseline gap-2 flex-wrap">
                 <span className="font-medium">{r.authorName}</span>
                 {r.eventType && <span className="text-xs text-charcoal/50">{r.eventType}</span>}
                 {r.rating && (
-                  <span className="inline-flex text-gold">
+                  <span className="inline-flex text-sage">
                     {Array.from({ length: r.rating }, (_, i) => <Star key={i} size={12} fill="currentColor" />)}
                   </span>
                 )}
-                {!r.published && <Badge toon="butter">concept</Badge>}
-                {r.featured && <Badge toon="goud">homepage</Badge>}
+                {!r.published && <Badge toon="boterbloem">concept</Badge>}
+                {r.featured && <Badge toon="salie">homepage</Badge>}
               </div>
               <p className="text-sm text-charcoal/70 mt-2 leading-relaxed">{r.body}</p>
             </div>

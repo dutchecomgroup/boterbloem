@@ -1,5 +1,6 @@
+import { Link } from "wouter";
 import { Reveal } from "./Reveal";
-import { GoldDivider } from "./ornaments/GoldDivider";
+import { SierDivider } from "./ornaments/SierDivider";
 import type { ProcessStep } from "./ProcessStory";
 
 /**
@@ -14,13 +15,13 @@ import type { ProcessStep } from "./ProcessStory";
  */
 export function ProcessStrip({ steps }: { steps: ProcessStep[] }) {
   return (
-    <section className="relative overflow-hidden bg-cream section-y-sm">
+    <section className="relative overflow-hidden bg-linen section-y-sm">
       <div className="container-tight relative">
         <div className="mb-10 text-center">
           <div className="tag mb-3">Het proces</div>
           <h2 className="text-3xl sm:text-4xl">Zo gaat het</h2>
           <div className="mt-5">
-            <GoldDivider className="!max-w-[180px]" />
+            <SierDivider className="!max-w-[180px]" />
           </div>
         </div>
 
@@ -32,12 +33,12 @@ export function ProcessStrip({ steps }: { steps: ProcessStep[] }) {
                     alleen op breed scherm, want daaronder staan de stappen onder elkaar. */}
                 {i < steps.length - 1 && (
                   <span
-                    className="absolute left-[calc(50%+1.75rem)] top-5 hidden h-px w-[calc(100%-3.5rem)] bg-gold/30 lg:left-14 lg:block lg:w-[calc(100%-3.5rem)]"
+                    className="absolute left-[calc(50%+1.75rem)] top-5 hidden h-px w-[calc(100%-3.5rem)] bg-sage/30 lg:left-14 lg:block lg:w-[calc(100%-3.5rem)]"
                     aria-hidden
                   />
                 )}
                 <div className="mb-3 flex justify-center lg:justify-start">
-                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-gold/15 font-display text-lg text-gold-dark ring-1 ring-gold/30">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-sage/15 font-display text-lg text-sage-dark ring-1 ring-sage/30">
                     {s.n}
                   </span>
                 </div>
@@ -47,6 +48,14 @@ export function ProcessStrip({ steps }: { steps: ProcessStep[] }) {
             </Reveal>
           ))}
         </ol>
+
+        {/* Doorverwijzing naar het hele verhaal: deze strip is de samenvatting van dezelfde
+            tekst die op /werkwijze uitgeschreven staat, uit content/werkwijze.ts. */}
+        <div className="mt-10 text-center">
+          <Link href="/werkwijze" className="btn-outline">
+            Lees hoe het werkt
+          </Link>
+        </div>
       </div>
     </section>
   );

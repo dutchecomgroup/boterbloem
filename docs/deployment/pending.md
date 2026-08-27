@@ -26,10 +26,15 @@ hebben die de code nog niet gebruikt.
 6. sql-pending/2026-08-25-album-blokken.sql draaien
 7. sql-pending/2026-08-25-btw-per-regel.sql draaien
 8. sql-pending/2026-08-25-betalingen.sql draaien
-9. db-migraties.md → LIVE ✅
-10. git pull && npm ci && npm run build && pm2 reload
-11. Oude taart-categorieën opruimen in het galerijscherm
-12. testscript-master.md doorlopen
+9. sql-pending/2026-08-27-categorie-omslagfoto.sql draaien
+10. db-migraties.md → LIVE ✅
+11. git pull && npm ci && npm run build && pm2 reload
+12. uploads/gallery/ meenemen — de 20 klantfoto's staan als .webp op schijf, niet in de database
+13. npx tsx scripts/import-klantfotos.ts  (leest uploads/content/fotos/)
+14. npx tsx scripts/seed-klantcontent.ts
+15. npm run seed:demo -- --verwijder      (vangnet; op live heeft nooit democontent gestaan)
+16. Oude taart-categorieën opruimen in het galerijscherm
+17. testscript-master.md doorlopen
 ```
 
 De volgorde is niet vrij: `boekingen.sql` verwijst naar `packages`, en die tabel komt uit fase 1.
@@ -50,11 +55,46 @@ het begin, dus hij mag achteraan.
 | [`2026-08-25-album-blokken.sql`](sql-pending/2026-08-25-album-blokken.sql) | ✅ | ⏳ | 🚨 **Vóór de code.** `gallery_albums.blocks` |
 | [`2026-08-25-btw-per-regel.sql`](sql-pending/2026-08-25-btw-per-regel.sql) | ✅ | ⏳ | 🚨 **Vóór de code.** Btw op regel, pakket en product |
 | [`2026-08-25-betalingen.sql`](sql-pending/2026-08-25-betalingen.sql) | ✅ | ⏳ | 🚨 **Vóór de code.** Tabel `order_payments` + betaalde aanbetalingen overgezet |
+| [`2026-08-27-categorie-omslagfoto.sql`](sql-pending/2026-08-27-categorie-omslagfoto.sql) | ✅ | ⏳ | 🚨 **Vóór de code.** `gallery_categories.cover_item_id`. Mag als laatste — staat los van de rest |
 | [`2026-08-24-herstel-testdata.sql`](sql-pending/2026-08-24-herstel-testdata.sql) | n.v.t. | ✅ | Gedraaid 24-08, datacorrectie |
 
 ---
 
 ## Pending features
+
+### 🖼️ Content van de klant + huisstijl omgezet (27-08)
+
+Het materiaal van de klant is binnen en verwerkt: **20 foto's, 2 PDF's, een logo en een
+huisstijl-moodboard**. Alle democontent is eruit. Wat er nog ontbreekt staat in
+[../klant/content-invulplan.md](../klant/content-invulplan.md).
+
+**Nieuw schema:** `gallery_categories.cover_item_id`. Een gelegenheid wijst zelf haar omslagfoto
+aan. Was er niet nodig zolang de omslag altijd van een event kwam; nu haar foto's rechtstreeks
+onder een gelegenheid hangen, was "de eerste op volgorde" een toevalstreffer van de
+uploadvolgorde.
+
+**Twee bugs die hierbij naar boven kwamen:**
+
+- **Foto's uit een verborgen gelegenheid lekten naar de homepage.** `haalGalerij()` filterde de
+  geneste `categories` wél op `published` maar de platte `items`-lijst niet — en dát is de lijst
+  die de hero-carrousel en het uitgelicht-blok voedt. Een portret dat via de fotokiezer onder de
+  bewust verborgen gelegenheid *Sitefoto's* was gezet, kon dus gewoon op de voorpagina staan.
+- **`btw-per-regel.sql` stond niet in het migratielog**, terwijl hij wel op dev gedraaid was. Het
+  bestand bestond, de regel ontbrak. Alsnog toegevoegd.
+
+**Nieuw op de site:** de pagina `/werkwijze`, gevuld met het artikel dat zij aanleverde. Dat
+geeft meteen een thuis aan `ProcessStory` — een component dat al in de codebase stond maar
+nergens gerenderd werd.
+
+**Huisstijl:** het palet is omgezet naar haar moodboard (salie, off-white, blush, Playfair
+Display, Montserrat). De tokennamen zijn meeveranderd — `gold` → `sage`, `cream` → `linen`,
+`butter` → `boterbloem` — zodat een token niet iets anders heet dan het is. Het beheerpaneel
+kwam gratis mee: dezelfde tokens, dezelfde zeven kleurrollen. Zie
+[../architecture/design-system.md](../architecture/design-system.md).
+
+> ⚠️ **Bij het deployen:** de foto's staan als `.webp` in `uploads/gallery/` en de bronbestanden
+> in `uploads/content/`. Die map is gitignored, dus hij moet apart mee — of de twee scripts
+> draaien op de server nadat `uploads/content/fotos/` erop staat.
 
 ### 💶 Omzet zichtbaar maken — betalingen, omzetpagina, hub gerepareerd
 

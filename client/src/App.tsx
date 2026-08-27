@@ -5,6 +5,7 @@ import { AdminLayout } from "./components/layout/AdminLayout";
 import HomePage from "./pages/public/HomePage";
 import GalleryPage from "./pages/public/GalleryPage";
 import AanbodPage from "./pages/public/AanbodPage";
+import WerkwijzePage from "./pages/public/WerkwijzePage";
 import AboutPage from "./pages/public/AboutPage";
 import ContactPage from "./pages/public/ContactPage";
 import LoginPage from "./pages/admin/LoginPage";
@@ -112,12 +113,13 @@ export default function App() {
               <Route path="/galerij/:slug/:albumSlug" component={GalleryPage} />
               <Route path="/galerij/:slug" component={GalleryPage} />
               <Route path="/aanbod" component={AanbodPage} />
+              <Route path="/werkwijze" component={WerkwijzePage} />
               <Route path="/over" component={AboutPage} />
               <Route path="/contact" component={ContactPage} />
               <Route>
                 <div className="container-tight py-32 text-center">
                   <h1 className="text-4xl mb-4">Pagina niet gevonden</h1>
-                  <a href="/" className="text-gold underline">Terug naar home</a>
+                  <a href="/" className="text-sage underline">Terug naar home</a>
                 </div>
               </Route>
             </Switch>

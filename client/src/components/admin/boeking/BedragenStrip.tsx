@@ -29,13 +29,13 @@ export function BedragenStrip({
 }) {
   const b = bedragen(totalPrice, ontvangen, depositAmount);
 
-  // Openstaand is het getal dat je moet zien: goud als er nog wat komt, groen als het rond is,
+  // Openstaand is het getal dat je moet zien: salie als er nog wat komt, groen als het rond is,
   // burgundy als er te veel binnen is — dat laatste is een fout die iemand moet rechtzetten.
   const openRol = b.teVeelBetaald ? "negatief" : b.voldaan ? "voldaan" : "openstaand";
   const totaalC = b.openCenten + b.ontvangenCenten;
 
   return (
-    <div className="mb-7 rounded-lg border border-gold/30 bg-gradient-to-br from-butter/25 to-white px-4 py-3.5">
+    <div className="mb-7 rounded-lg border border-sage/30 bg-gradient-to-br from-boterbloem/25 to-white px-4 py-3.5">
       <div className="grid grid-cols-3 gap-3">
         <Getal label="Totaal">
           <Bedrag waarde={totaalC / 100} />
@@ -54,7 +54,7 @@ export function BedragenStrip({
       </div>
 
       {b.wachtOpAanbetaling && (
-        <p className="mt-2.5 border-t border-gold/25 pt-2.5 text-xs text-charcoal/70">
+        <p className="mt-2.5 border-t border-sage/25 pt-2.5 text-xs text-charcoal/70">
           Aanbetaling van <strong className="text-charcoal">{b.aanbetaling}</strong> afgesproken,
           nog niet volledig binnen. Leg hem hieronder vast onder <em>Betaling</em>.
         </p>

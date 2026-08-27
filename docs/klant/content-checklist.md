@@ -1,14 +1,11 @@
 # Content-checklist — wat we van de klant nodig hebben
 
-> **Laatst bijgewerkt:** 2026-08-25
+> **Laatst bijgewerkt:** 2026-08-27
 > **Komt voort uit:** [2026-08-24-meeting-wensen.md](2026-08-24-meeting-wensen.md)
 
-Deze lijst loopt mee met
-[../komende-plannen/werkblok-huidig.md](../komende-plannen/werkblok-huidig.md).
-
-**Sinds 25-08 blokkeert het materiaal het bouwen niet meer** — we werken door op
-demo-content en vullen het echte materiaal in zodra het er is. Wat de lijst nu bepaalt is
-niet wanneer we kunnen bouwen, maar **wanneer de site live kan**.
+> 📥 **Op 27-08 kwam er materiaal binnen.** Wat er precies is aangeleverd, wat ermee gedaan is en
+> welke gaten er nog zitten staat in **[content-invulplan.md](content-invulplan.md)** — dat is
+> vanaf nu het werkdocument. Deze lijst houdt alleen nog de statuskolom bij.
 
 Werk de statuskolom bij zodra iets binnenkomt: ⏳ open · 📥 ontvangen · ✅ verwerkt.
 
@@ -18,29 +15,34 @@ Werk de statuskolom bij zodra iets binnenkomt: ⏳ open · 📥 ontvangen · ✅
 
 | Wat | Nodig voor | Status | Opmerking |
 |---|---|---|---|
-| Foto's, gegroepeerd per event | **livegang** | ⏳ open | Bouwen kan door op demo — zie de eisen hieronder |
-| ~~Definitieve lijst gelegenheden~~ | — | ✅ **vervalt** | Startset wordt geseed, zij past het zelf aan in het beheerpaneel |
-| Vanaf-prijzen per pakket | fase 3 | ⏳ open | **Vier** pakketten sinds Grazing Table erbij kwam. Er staan nu demo-prijzen |
-| "Wat zit er in het pakket"-regels | fase 3 | ⏳ open | 4–8 regels per pakket |
-| Basis-prijslijst taarten | fase 3 | ⏳ open | Naam + vanaf-prijs + eenheid |
-| Reviews | **livegang** | ⏳ open | Minimaal 3, liefst 6. Er staan nu **vijf verzonnen** demo-reviews die weg moeten |
-| Over-tekst | **livegang** | ⏳ open | 150–250 woorden |
-| Contactgegevens | **livegang** | ⏳ open | Zelf in te vullen in het beheerscherm. WhatsApp-nummer is nieuw en levert een knop op |
-| ~~Openingstijden~~ | — | ✅ **vervalt** | Veld is 25-08 verwijderd: een atelier op afspraak heeft ze niet |
-| **Btw-verdeling per pakket** | **livegang** | ⏳ open | Welk deel van de prijs is eten (9%) en welk deel styling en opbouw (21%). Met haar boekhouder afstemmen |
-| **Btw-tarief per taart** | **livegang** | ⏳ open | Meestal 9%; in te stellen op `/admin/producten` |
-| ~~Beslissing mail-hosting~~ | — | ✅ **beslist 25-08** | Buiten scope — blijft Gmail op haar telefoon |
-| E-mailadres voor op de contactpagina | **livegang** | ⏳ open | Dit is wat de `mailto:`-link opent |
-| Toegang mijndomein (DNS) | fase 0 | ⏳ open | Inloggegevens of iemand die de records zet |
-| Logo in vectorformaat | **livegang** | ⏳ open | Voor favicon + voorbeeldweergave bij delen |
+| Foto's | **livegang** | ✅ **verwerkt** | 20 stuks, verdeeld over 5 gelegenheden. Niet per event gegroepeerd, dus ze hangen los onder hun gelegenheid |
+| **Foto's van een grazing table** | **livegang** | ⏳ **open** | 🔴 Bij de twintig zit er **geen enkele** — alles is zoet. Drie van de zes pakketten hebben dus geen beeld |
+| Foto's voor Communie en Geboorte | livegang | ⏳ open | Nul foto's; beide gelegenheden staan daarom op verborgen |
+| ~~Definitieve lijst gelegenheden~~ | — | ✅ **vervalt** | Zij past het zelf aan in het beheerpaneel |
+| Intro-tekst per gelegenheid | livegang | ✅ **verwerkt** | Zes van haar; "Overig" is door ons geschreven en mag ze aanpassen |
+| Pakketnamen en gastenaantallen | fase 3 | ✅ **verwerkt** | Zes uit haar PDF: Petite/Signature/Grande Table en The little/classic/grand graze |
+| **Vanaf-prijs per pakket** | **livegang** | ⏳ **open** | 🔴 Stond niet in de PDF. Alle zes staan daarom op niet-zichtbaar |
+| "Wat zit er in het pakket"-regels | fase 3 | 📥 **concept** | Door ons geschreven, moet zij nakijken |
+| Basis-prijslijst taarten | fase 3 | ✅ **verwerkt** | € 65 / € 75 / € 95, plus vier smaken op /aanbod |
+| Reviews | **livegang** | ⏳ open | Nul aangeleverd. De zes verzonnen exemplaren zijn verwijderd; het blok is leeg |
+| Over-tekst | **livegang** | ⏳ open | 150–250 woorden. De huidige tekst is van ons |
+| Portretfoto voor /over | livegang | ⏳ open | Geen aangeleverd; de pagina toont nu alleen tekst |
+| Contactgegevens | **livegang** | ⏳ open | E-mailadres in de database is onbevestigd; telefoon, WhatsApp en adres zijn leeg |
+| ~~Openingstijden~~ | — | ✅ **vervalt** | Veld is 25-08 verwijderd |
+| **Btw-verdeling per pakket** | **livegang** | ⏳ open | Met haar boekhouder |
+| **Btw-tarief per taart** | **livegang** | ⏳ open | Vermoedelijk 9%, in te stellen op /admin/producten |
+| ~~Beslissing mail-hosting~~ | — | ✅ **beslist 25-08** | Buiten scope |
+| Toegang mijndomein (DNS) | fase 0 | ⏳ open | |
+| Logo | livegang | 📥 **deels** | Bitmaps met linnen ondergrond ontvangen. **Vector ontbreekt** — de favicon is nu een zelfgetekende boterbloem |
+| Huisstijl | — | ✅ **verwerkt** | Moodboard ontvangen en doorgevoerd: salie, off-white, Playfair Display, Montserrat |
+| Geschreven tekst | — | ✅ **verwerkt** | Eén artikel, geworden tot de pagina /werkwijze plus de stappen op de homepage |
 | Gewenste live-datum | planning | ⏳ open | |
 
-**Wat er nog écht blokkeert vóór livegang:** foto's, prijzen, de btw-verdeling, reviews,
-over-tekst en contactgegevens. Alles wat daar niet in staat, kunnen we voorbouwen.
+**Wat er nu nog écht blokkeert:** pakketprijzen, foto's van een grazing table, reviews,
+de over-tekst, de btw-verdeling en de contactgegevens.
 
-> 🔴 **Sinds 25-08 staat er democontent in de dev-database**: 36 stockfoto's en vijf verzonnen
-> reviews. Die zijn er om te laten zien hoe de site eruit gaat zien, en ze moeten er vóór de
-> livegang uit met `npm run seed:demo -- --verwijder`.
+> ✅ **De democontent is weg** (27-08): 36 stockfoto's, 9 verzonnen events en 6 verzonnen
+> reviews. De site draait volledig op haar eigen materiaal.
 
 ---
 

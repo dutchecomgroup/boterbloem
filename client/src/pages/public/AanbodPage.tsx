@@ -6,18 +6,34 @@ import type { Package, Product, Review, GalleryItem } from "@shared/schema";
 
 import { formatCurrency, personenBereik } from "../../lib/utils";
 import { imageSrc } from "../../lib/images";
-import { DEMO_NESTED, heeftEchteContent } from "../../lib/demoGallery";
+import type { GalerijAntwoord } from "../../lib/galerij";
 import { usePublicSettings } from "../../hooks/usePublicSettings";
 import { BotanicalPattern } from "../../components/ornaments/BotanicalPattern";
 import { FloralFrame } from "../../components/ornaments/FloralFrame";
-import { GoldDivider } from "../../components/ornaments/GoldDivider";
+import { SierDivider } from "../../components/ornaments/SierDivider";
 import { BotanicalCorner } from "../../components/ornaments/BotanicalCorner";
 import { Reveal } from "../../components/Reveal";
 import { PageHeader } from "../../components/PageHeader";
 import { PakketKaart, type PakketMetCover } from "../../components/public/PakketKaart";
 import { GelegenheidCarrousel } from "../../components/public/GelegenheidCarrousel";
 
-interface GalleryResponse { categories: typeof DEMO_NESTED; items: GalleryItem[] }
+/**
+ * De vier vaste taartsmaken uit `uploads/content/teksten/pakketten-en-taartprijzen.pdf`.
+ *
+ * Bewust hier en niet in `products`: een smaak is een keuze bij elke maat, geen artikel met een
+ * eigen prijs. Ze als product opnemen zou betekenen dat er twaalf regels in de prijslijst
+ * komen (vier smaken × drie maten) waarvan er elf hetzelfde bedrag hebben.
+ *
+ * ⚠️ Haar blogtekst noemt een ándere rij smaken ("Vanille, chocolade, Citroen & Witte chocola,
+ * Aarbei"). Deze lijst uit de PDF is aangehouden omdat hij namen en combinaties geeft; de
+ * tegenstrijdigheid staat als vraag in docs/klant/content-invulplan.md.
+ */
+const SMAKEN = [
+  { naam: "Lemon Bliss", omschrijving: "Citroen & vanille" },
+  { naam: "Strawberry Blush", omschrijving: "Witte chocolade & aardbei" },
+  { naam: "Caramel Cocoa", omschrijving: "Chocolade & karamel" },
+  { naam: "Coco Blanc", omschrijving: "Kokos, witte chocolade & hazelnoot" },
+];
 
 export default function AanbodPage() {
   const { data: settings } = usePublicSettings();
@@ -36,11 +52,10 @@ export default function AanbodPage() {
   });
   const { data: gallery } = useQuery({
     queryKey: ["public", "gallery"],
-    queryFn: () => api.get<GalleryResponse>("/api/public/gallery"),
+    queryFn: () => api.get<GalerijAntwoord>("/api/public/gallery"),
   });
 
-  const cats = heeftEchteContent(gallery?.items) ? (gallery?.categories ?? []) : DEMO_NESTED;
-  const gelegenheden = cats.filter((c) => c.itemCount > 0);
+  const gelegenheden = (gallery?.categories ?? []).filter((c) => c.itemCount > 0);
   const levertijden = (settings as { levertijden?: { tekst?: string } } | undefined)?.levertijden;
 
 
@@ -69,20 +84,20 @@ export default function AanbodPage() {
               <GelegenheidCarrousel gelegenheden={gelegenheden} />
               <Link
                 href="/galerij"
-                className="mt-3 inline-flex items-center gap-2 text-xs uppercase tracking-widest text-gold-dark hover:underline"
+                className="mt-3 inline-flex items-center gap-2 text-xs uppercase tracking-widest text-sage-dark hover:underline"
               >
-                Bekijk alle events <ArrowRight size={14} />
+                Bekijk de hele galerij <ArrowRight size={14} />
               </Link>
             </div>
           ) : undefined
         }
       >
-        <FloralFrame className="absolute -top-8 -right-8 md:-top-12 md:-right-12 w-32 sm:w-56 md:w-80 h-32 sm:h-56 md:h-80" color="text-gold/20" />
+        <FloralFrame className="absolute -top-8 -right-8 md:-top-12 md:-right-12 w-32 sm:w-56 md:w-80 h-32 sm:h-56 md:h-80" color="text-sage/20" />
         <FloralFrame className="absolute -bottom-8 -left-8 md:-bottom-12 md:-left-12 rotate-180 w-24 sm:w-40 md:w-64 h-24 sm:h-40 md:h-64" color="text-blush" />
       </PageHeader>
 
       {/* ---------- Pakketten ---------- */}
-      <section className="relative bg-cream section-y overflow-hidden">
+      <section className="relative bg-linen section-y overflow-hidden">
         <BotanicalPattern opacity={0.04} />
         <div className="container-tight relative">
           {pakketten && pakketten.length > 0 ? (
@@ -123,7 +138,7 @@ export default function AanbodPage() {
                 We zetten de pakketten en prijzen op dit moment op een rij. Wil je nu al weten
                 wat er mogelijk is voor jouw feest? Stuur gerust een bericht.
               </p>
-              <Link href="/contact" className="btn-gold mt-6">Vraag een offerte aan</Link>
+              <Link href="/contact" className="btn-sage mt-6">Vraag een offerte aan</Link>
             </div>
           )}
         </div>
@@ -131,7 +146,7 @@ export default function AanbodPage() {
 
       {/* ---------- Goed om te weten ----------
            Deze vier vragen komen op bij het zien van een prijs, dus ze staan er direct onder. */}
-      <section className="relative bg-section-butter section-y-sm overflow-hidden">
+      <section className="relative bg-section-sand section-y-sm overflow-hidden">
         <BotanicalPattern opacity={0.05} />
         <div className="container-tight relative">
           <div className="card mx-auto max-w-3xl">
@@ -159,7 +174,7 @@ export default function AanbodPage() {
       </section>
 
       {/* ---------- Taarten ---------- */}
-      <section className="relative bg-cream section-y-sm overflow-hidden">
+      <section className="relative bg-linen section-y-sm overflow-hidden">
         <BotanicalPattern opacity={0.04} />
         <div className="container-narrow relative">
           <div className="text-center mb-8">
@@ -179,7 +194,7 @@ export default function AanbodPage() {
                     <div className="font-medium">{p.name}</div>
                     {p.description && <div className="mt-0.5 text-xs text-charcoal/70">{p.description}</div>}
                   </div>
-                  <div className="text-sm text-gold-dark whitespace-nowrap">
+                  <div className="text-sm text-sage-dark whitespace-nowrap">
                     vanaf {formatCurrency(Number(p.basePrice))}
                     <span className="text-charcoal/65"> / {p.unit}</span>
                   </div>
@@ -193,12 +208,32 @@ export default function AanbodPage() {
               </p>
             </div>
           )}
+
+          {/* De vier vaste smaken. Geen producten in de database: een smaak is een keuze bij
+              elke maat, geen apart artikel met een eigen prijs. Bron: haar eigen PDF. */}
+          <div className="mt-10">
+            <div className="mb-5 text-center">
+              <div className="tag mb-2">Smaken</div>
+              <h3 className="text-2xl sm:text-3xl">Waar kun je uit kiezen</h3>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {SMAKEN.map((smaak) => (
+                <div key={smaak.naam} className="hairline-sage rounded-lg bg-white/70 px-5 py-4">
+                  <div className="font-display text-lg text-charcoal">{smaak.naam}</div>
+                  <div className="mt-0.5 text-sm text-charcoal/70">{smaak.omschrijving}</div>
+                </div>
+              ))}
+            </div>
+            <p className="mt-4 text-center text-xs text-charcoal/65">
+              Iets anders in gedachten? Vraag het gerust, er kan vaak meer.
+            </p>
+          </div>
         </div>
       </section>
 
       {/* ---------- Reviews ---------- */}
       {reviews && reviews.length > 0 && (
-        <section className="relative bg-cream section-y overflow-hidden">
+        <section className="relative bg-linen section-y overflow-hidden">
           <BotanicalPattern opacity={0.04} />
           <div className="container-tight relative">
             <div className="text-center mb-10">
@@ -231,18 +266,18 @@ export default function AanbodPage() {
       {/* ---------- Slot ---------- */}
       <section className="relative bg-section-blush section-y overflow-hidden">
         <BotanicalPattern opacity={0.05} />
-        <BotanicalCorner position="tl" color="text-gold/30" />
-        <BotanicalCorner position="br" color="text-gold/30" />
+        <BotanicalCorner position="tl" color="text-sage/30" />
+        <BotanicalCorner position="br" color="text-sage/30" />
         <div className="container-narrow relative text-center">
           <div className="script-accent text-4xl sm:text-5xl mb-4 leading-none">Klaar om te plannen?</div>
           <p className="text-charcoal/70 mb-8 leading-relaxed text-sm sm:text-base">
             Vertel ons over je feest: de datum, het aantal gasten en wat je voor je ziet.
             We denken graag mee.
           </p>
-          <Link href="/contact" className="btn-gold">
+          <Link href="/contact" className="btn-sage">
             Vraag een offerte aan <ArrowRight size={16} />
           </Link>
-          <div className="mt-8 sm:mt-10"><GoldDivider /></div>
+          <div className="mt-8 sm:mt-10"><SierDivider /></div>
         </div>
       </section>
     </>

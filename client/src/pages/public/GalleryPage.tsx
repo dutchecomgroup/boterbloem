@@ -5,19 +5,14 @@ import { ArrowLeft, ArrowRight, X } from "lucide-react";
 import { api } from "../../lib/api";
 import type { GalleryItem } from "@shared/schema";
 import { imageSrc } from "../../lib/images";
-import { DEMO_NESTED, heeftEchteContent, type DemoCategory } from "../../lib/demoGallery";
+import type { GalerijAntwoord, PubliekeGelegenheid } from "../../lib/galerij";
 import { BotanicalPattern } from "../../components/ornaments/BotanicalPattern";
 import { BotanicalCorner } from "../../components/ornaments/BotanicalCorner";
-import { GoldDivider } from "../../components/ornaments/GoldDivider";
+import { SierDivider } from "../../components/ornaments/SierDivider";
 import { Reveal } from "../../components/Reveal";
 import { PageHeader } from "../../components/PageHeader";
 import { FotoScrim, FOTO_TEKST_SCHADUW } from "../../components/FotoScrim";
 import { FotoCyclus } from "../../components/FotoCyclus";
-
-interface GalleryResponse {
-  categories: DemoCategory[];
-  items: GalleryItem[];
-}
 
 /**
  * Drie niveaus, gelijk aan het beheerpaneel en aan hoe je erover praat:
@@ -42,7 +37,7 @@ export default function GalleryPage() {
  * Begrensd op twaalf: elke foto in de tegel wordt ingeladen zodra hij aan de beurt is, en een
  * gelegenheid met honderd foto's hoort geen honderd verzoeken op te leveren voor één vlak.
  */
-function tegelFotos(c: DemoCategory): GalleryItem[] {
+function tegelFotos(c: PubliekeGelegenheid): GalleryItem[] {
   const uitEvents = c.albums.flatMap((a) => a.items);
   const alles = c.cover ? [c.cover, ...uitEvents] : uitEvents;
   const gezien = new Set<number>();
@@ -53,12 +48,10 @@ function tegelFotos(c: DemoCategory): GalleryItem[] {
 function useGelegenheid(slug: string) {
   const { data, isLoading } = useQuery({
     queryKey: ["public", "gallery", slug],
-    queryFn: () => api.get<{ category: DemoCategory }>(`/api/public/gallery/${slug}`),
+    queryFn: () => api.get<{ category: PubliekeGelegenheid }>(`/api/public/gallery/${slug}`),
     retry: false,
   });
-  const demo = DEMO_NESTED.find((c) => c.slug === slug) ?? null;
-  const echt = data?.category && data.category.itemCount > 0;
-  return { cat: echt ? data!.category : demo, isLoading };
+  return { cat: data?.category ?? null, isLoading };
 }
 
 function NietGevonden() {
@@ -68,7 +61,7 @@ function NietGevonden() {
       <p className="mb-6 text-sm text-charcoal/75">
         Deze pagina bestaat niet (meer). Misschien is hij hernoemd of verwijderd.
       </p>
-      <Link href="/galerij" className="text-gold underline">Terug naar de galerij</Link>
+      <Link href="/galerij" className="text-sage underline">Terug naar de galerij</Link>
     </div>
   );
 }
@@ -80,22 +73,20 @@ function NietGevonden() {
 function OverzichtPagina() {
   const { data, isLoading } = useQuery({
     queryKey: ["public", "gallery"],
-    queryFn: () => api.get<GalleryResponse>("/api/public/gallery"),
+    queryFn: () => api.get<GalerijAntwoord>("/api/public/gallery"),
   });
 
-  const echt = heeftEchteContent(data?.items);
-  const categories = echt ? (data?.categories ?? []) : DEMO_NESTED;
-  const zichtbaar = categories.filter((c) => c.itemCount > 0);
+  const zichtbaar = (data?.categories ?? []).filter((c) => c.itemCount > 0);
 
   return (
     <>
       <Kop
         tag="Galerij"
         titel="Ons werk"
-        tekst="Kies een gelegenheid en bekijk wat we eerder maakten. Per gelegenheid zie je meerdere feesten, zodat je een idee krijgt van wat er mogelijk is."
+        tekst="Kies een gelegenheid en bekijk wat we eerder maakten. Zo krijg je een idee van wat er mogelijk is, en van de sfeer die erbij past."
       />
 
-      <section className="relative bg-cream section-y overflow-hidden">
+      <section className="relative bg-linen section-y overflow-hidden">
         <BotanicalPattern opacity={0.04} />
         <div className="container-tight relative">
           {isLoading ? (
@@ -108,7 +99,7 @@ function OverzichtPagina() {
                 <Reveal key={c.id} delay={i * 0.05}>
                   <Link
                     href={`/galerij/${c.slug}`}
-                    className="group block rounded-2xl overflow-hidden bg-white shadow-sm hover:shadow-xl transition-all ring-1 ring-gold/10"
+                    className="group block rounded-2xl overflow-hidden bg-white shadow-sm hover:shadow-xl transition-all ring-1 ring-sage/10"
                   >
                     <div className="relative aspect-[4/3] overflow-hidden bg-blush/30">
                       {/*
@@ -126,7 +117,7 @@ function OverzichtPagina() {
                       />
                       <FotoScrim />
                       <div
-                        className={`absolute bottom-4 left-5 right-5 z-30 font-display text-2xl leading-tight text-cream sm:text-3xl ${FOTO_TEKST_SCHADUW}`}
+                        className={`absolute bottom-4 left-5 right-5 z-30 font-display text-2xl leading-tight text-linen sm:text-3xl ${FOTO_TEKST_SCHADUW}`}
                       >
                         {c.name}
                       </div>
@@ -165,7 +156,7 @@ function GelegenheidPagina({ slug }: { slug: string }) {
     <>
       <Kop tag="Galerij" titel={cat.name} tekst={cat.description ?? undefined} terug />
 
-      <section className="relative bg-cream section-y-sm overflow-hidden">
+      <section className="relative bg-linen section-y-sm overflow-hidden">
         <BotanicalPattern opacity={0.04} />
         <div className="container-tight relative space-y-16">
           {albums.length === 0 && los.length === 0 && (
@@ -183,7 +174,7 @@ function GelegenheidPagina({ slug }: { slug: string }) {
                 <Reveal key={album.id} delay={i * 0.05}>
                   <Link
                     href={`/galerij/${cat.slug}/${album.slug}`}
-                    className="group block overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-gold/10 transition-all hover:shadow-xl"
+                    className="group block overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-sage/10 transition-all hover:shadow-xl"
                   >
                     <div className="relative aspect-[4/3] overflow-hidden bg-blush/30">
                       {/* Ook hier wisselen, nu door de foto's van dít feest. */}
@@ -195,12 +186,12 @@ function GelegenheidPagina({ slug }: { slug: string }) {
                         className="transition-transform duration-700 group-hover:scale-105"
                       />
                       <FotoScrim />
-                      <div className="absolute bottom-4 left-5 right-5 z-30 text-cream">
+                      <div className="absolute bottom-4 left-5 right-5 z-30 text-linen">
                         <div className={`font-display text-2xl sm:text-3xl leading-tight ${FOTO_TEKST_SCHADUW}`}>
                           {album.title}
                         </div>
                         {album.eventDate && (
-                          <div className={`mt-1 text-xs uppercase tracking-[0.15em] text-cream/85 ${FOTO_TEKST_SCHADUW}`}>
+                          <div className={`mt-1 text-xs uppercase tracking-[0.15em] text-linen/85 ${FOTO_TEKST_SCHADUW}`}>
                             {maandJaar(album.eventDate)}
                           </div>
                         )}
@@ -218,18 +209,23 @@ function GelegenheidPagina({ slug }: { slug: string }) {
           {los.length > 0 && (
             <Reveal>
               <article>
-                <h2 className="mb-5 text-center text-2xl sm:text-3xl">Meer werk</h2>
+                {/* "Meer werk" alleen als er óók events staan. Zonder events is dit niet méér
+                    dan iets anders — het ís het werk, en dan leest een kop die het als
+                    aanvulling aankondigt als een pagina waar het echte deel ontbreekt. */}
+                {albums.length > 0 && (
+                  <h2 className="mb-5 text-center text-2xl sm:text-3xl">Meer werk</h2>
+                )}
                 <FotoRaster items={los} onOpen={(index) => setLightbox({ items: los, index })} />
               </article>
             </Reveal>
           )}
 
           <div className="text-center pt-4">
-            <GoldDivider />
+            <SierDivider />
             <p className="mt-8 text-charcoal/70 text-sm sm:text-base">
               Iets gezien dat past bij jouw feest?
             </p>
-            <Link href="/contact" className="btn-gold mt-5">Vraag een offerte aan</Link>
+            <Link href="/contact" className="btn-sage mt-5">Vraag een offerte aan</Link>
           </div>
         </div>
       </section>
@@ -271,17 +267,17 @@ function EventPagina({ slug, albumSlug }: { slug: string; albumSlug: string }) {
         terug={{ href: `/galerij/${cat.slug}`, label: cat.name }}
       />
 
-      <section className="relative overflow-hidden bg-cream section-y-sm">
+      <section className="relative overflow-hidden bg-linen section-y-sm">
         <BotanicalPattern opacity={0.04} />
         <div className="container-tight relative">
           <AlbumInhoud album={album} onOpen={(items, index) => setLightbox({ items, index })} />
 
           <div className="pt-14 text-center">
-            <GoldDivider />
+            <SierDivider />
             <p className="mt-8 text-sm text-charcoal/75 sm:text-base">
               Iets gezien dat past bij jouw feest?
             </p>
-            <Link href="/contact" className="btn-gold mt-5">Vraag een offerte aan</Link>
+            <Link href="/contact" className="btn-sage mt-5">Vraag een offerte aan</Link>
           </div>
         </div>
       </section>
@@ -322,15 +318,15 @@ function Kop({
         doel && (
           <Link
             href={doel.href}
-            className="mb-4 inline-flex items-center gap-2 text-xs uppercase tracking-widest text-gold-dark transition-all hover:gap-3"
+            className="mb-4 inline-flex items-center gap-2 text-xs uppercase tracking-widest text-sage-dark transition-all hover:gap-3"
           >
             <ArrowLeft size={14} /> {doel.label}
           </Link>
         )
       }
     >
-      <BotanicalCorner position="tl" color="text-gold/30" />
-      <BotanicalCorner position="tr" color="text-gold/30" />
+      <BotanicalCorner position="tl" color="text-sage/30" />
+      <BotanicalCorner position="tr" color="text-sage/30" />
     </PageHeader>
   );
 }
@@ -347,7 +343,7 @@ function AlbumInhoud({
   album,
   onOpen,
 }: {
-  album: DemoCategory["albums"][number];
+  album: PubliekeGelegenheid["albums"][number];
   onOpen: (items: GalleryItem[], index: number) => void;
 }) {
   const blokken = album.blocks ?? [];
@@ -401,7 +397,7 @@ function FotoRaster({ items, onOpen }: { items: GalleryItem[]; onOpen: (index: n
         <button
           key={item.id}
           onClick={() => onOpen(i)}
-          className="mb-4 md:mb-6 block w-full break-inside-avoid overflow-hidden rounded-lg bg-white shadow-sm ring-1 ring-gold/10 group"
+          className="mb-4 md:mb-6 block w-full break-inside-avoid overflow-hidden rounded-lg bg-white shadow-sm ring-1 ring-sage/10 group"
         >
           <img
             src={imageSrc(item)}
@@ -430,20 +426,20 @@ function Lightbox({ items, index, onIndex, onClose }: {
       role="dialog"
       aria-modal="true"
     >
-      <BotanicalCorner position="tl" color="text-gold/40" />
-      <BotanicalCorner position="br" color="text-gold/40" />
+      <BotanicalCorner position="tl" color="text-sage/40" />
+      <BotanicalCorner position="br" color="text-sage/40" />
 
       <button onClick={onClose} aria-label="Sluiten"
-        className="absolute top-4 right-4 text-cream/80 hover:text-cream p-2 z-10"><X size={28} /></button>
+        className="absolute top-4 right-4 text-linen/80 hover:text-linen p-2 z-10"><X size={28} /></button>
 
       {meer && (
         <>
           <button onClick={(e) => { e.stopPropagation(); ga(-1); }} aria-label="Vorige"
-            className="absolute left-2 md:left-6 top-1/2 -translate-y-1/2 h-11 w-11 rounded-full bg-cream/15 hover:bg-cream/30 text-cream flex items-center justify-center z-10">
+            className="absolute left-2 md:left-6 top-1/2 -translate-y-1/2 h-11 w-11 rounded-full bg-linen/15 hover:bg-linen/30 text-linen flex items-center justify-center z-10">
             <ArrowLeft size={20} />
           </button>
           <button onClick={(e) => { e.stopPropagation(); ga(1); }} aria-label="Volgende"
-            className="absolute right-2 md:right-6 top-1/2 -translate-y-1/2 h-11 w-11 rounded-full bg-cream/15 hover:bg-cream/30 text-cream flex items-center justify-center z-10">
+            className="absolute right-2 md:right-6 top-1/2 -translate-y-1/2 h-11 w-11 rounded-full bg-linen/15 hover:bg-linen/30 text-linen flex items-center justify-center z-10">
             <ArrowRight size={20} />
           </button>
         </>
@@ -451,10 +447,10 @@ function Lightbox({ items, index, onIndex, onClose }: {
 
       <div className="relative max-h-full max-w-full" onClick={(e) => e.stopPropagation()}>
         <img src={imageSrc(item)} alt={item.altText ?? ""}
-          className="max-h-[80vh] max-w-full object-contain rounded-md ring-1 ring-gold/30" />
-        <div className="mt-4 text-center text-cream/80 text-sm">
+          className="max-h-[80vh] max-w-full object-contain rounded-md ring-1 ring-sage/30" />
+        <div className="mt-4 text-center text-linen/80 text-sm">
           {item.caption}
-          {meer && <span className="ml-3 text-cream/40">{index + 1} / {items.length}</span>}
+          {meer && <span className="ml-3 text-linen/40">{index + 1} / {items.length}</span>}
         </div>
       </div>
     </div>

@@ -47,7 +47,7 @@
     -moz-osx-font-smoothing: grayscale;
   }
   body {
-    @apply bg-cream text-charcoal font-body;
+    @apply bg-linen text-charcoal font-body;
   }
   h1, h2, h3, h4 {
     @apply font-display tracking-tight text-charcoal;
@@ -67,17 +67,17 @@
   .btn {
     @apply inline-flex items-center justify-center gap-2 rounded-full px-5 sm:px-6 py-3 text-xs sm:text-sm font-medium uppercase tracking-widest transition-all disabled:cursor-not-allowed disabled:opacity-50 min-h-[44px];
   }
-  .btn-gold {
-    @apply btn bg-gold text-cream hover:bg-gold-dark shadow-sm hover:shadow-md;
+  .btn-sage {
+    @apply btn bg-sage-deep text-linen hover:bg-sage-dark shadow-sm hover:shadow-md;
   }
   .btn-outline {
-    @apply btn border border-gold text-gold-dark hover:bg-gold/10;
+    @apply btn border border-sage-dark text-sage-deep hover:bg-sage/15;
   }
   .btn-ghost {
     @apply btn text-charcoal hover:bg-charcoal/5;
   }
   .input {
-    @apply w-full rounded-md border border-charcoal/15 bg-white px-4 py-2.5 text-sm shadow-sm focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/30 transition;
+    @apply w-full rounded-md border border-charcoal/15 bg-white px-4 py-2.5 text-sm shadow-sm focus:border-sage focus:outline-none focus:ring-2 focus:ring-sage/30 transition;
   }
   .label {
     @apply block text-xs font-medium uppercase tracking-wider text-charcoal/70 mb-1.5;
@@ -85,12 +85,14 @@
   .card {
     @apply rounded-lg border border-charcoal/10 bg-white p-6 shadow-sm;
   }
+  /* Het accent uit het moodboard: cursieve serif, geen schrijfletter. `sage-deep` en niet
+     `sage`, want dit is tekst die gelezen wordt — zie de contrastregel hieronder. */
   .script-accent {
-    @apply font-script text-gold;
+    @apply font-script italic text-sage-deep;
   }
-  /* Section labels — gold uppercase tag */
+  /* Sectielabel: kleine hoofdletters in salie die AA haalt. */
   .tag {
-    @apply text-[10px] sm:text-xs uppercase tracking-[0.25em] sm:tracking-[0.3em] text-gold-dark font-medium;
+    @apply text-[10px] sm:text-xs uppercase tracking-[0.25em] sm:tracking-[0.3em] text-sage-dark font-medium;
   }
   /* Section padding scale */
   .section-y {
@@ -99,72 +101,82 @@
   .section-y-sm {
     @apply py-10 sm:py-16;
   }
-  /* Soft section gradients */
-  .bg-section-cream {
-    background: radial-gradient(ellipse at top, #FFF9EF 0%, #FBF6EE 60%);
+  /* Zachte sectie-verlopen. De kleuren komen uit het moodboard: linen #F7F5F0, sand #EDE7DE,
+     blush #F5D9DE, salie #A7B49A. Bewust ver uit elkaar gehouden in verzadiging, zodat twee
+     secties naast elkaar nog van elkaar te onderscheiden zijn. */
+  .bg-section-linen {
+    background: radial-gradient(ellipse at top, #FFFFFF 0%, #F7F5F0 60%);
   }
   .bg-section-blush {
-    background: linear-gradient(180deg, #FBF6EE 0%, #F4D9D0 60%, #FBF6EE 100%);
+    background: linear-gradient(180deg, #F7F5F0 0%, #FAECEF 60%, #F7F5F0 100%);
   }
-  .bg-section-butter {
-    background: linear-gradient(180deg, #FBF6EE 0%, #FDF1C7 50%, #FBF6EE 100%);
+  .bg-section-sand {
+    background: linear-gradient(180deg, #F7F5F0 0%, #EDE7DE 50%, #F7F5F0 100%);
   }
+  /* Blush op 45% gaf een vlak dat als rózé leest, en het moodboard is neutraal met salie- en
+     blush-accenten. Deze versie houdt de warmte en laat de foto's het werk doen. */
   .bg-section-warm {
-    background: linear-gradient(135deg, #FBF6EE 0%, #F4D9D0 50%, #FDF1C7 100%);
+    background: linear-gradient(135deg, #F7F5F0 0%, #F9EDEA 40%, #EDE7DE 100%);
+  }
+  /* Salie-wassing, voor een sectie die eruit moet springen zonder een harde kleurvlek te zijn. */
+  .bg-section-sage {
+    background: linear-gradient(180deg, #F7F5F0 0%, #DDE4D6 55%, #F7F5F0 100%);
   }
   /* Filter pills */
   .pill {
     @apply px-3 sm:px-4 py-2 rounded-full text-[10px] sm:text-xs uppercase tracking-widest transition border min-h-[36px] inline-flex items-center;
   }
   .pill-active {
-    @apply bg-gold text-cream border-gold shadow-sm;
+    @apply bg-sage text-linen border-sage shadow-sm;
   }
   .pill-inactive {
-    @apply bg-white text-charcoal/60 border-gold/30 hover:text-charcoal hover:border-gold;
+    @apply bg-white text-charcoal/60 border-sage/30 hover:text-charcoal hover:border-sage;
   }
-  /* Hairline gold border */
-  .hairline-gold {
-    @apply border border-gold/30;
+  /* Fijne salie-rand */
+  .hairline-sage {
+    @apply border border-sage/45;
   }
 
   /* ------------------------------------------------------------------------
    * Beheerpaneel — de kleurtaal
    *
    * Kleur heeft hier een betekenis en is geen versiering. Zeven rollen, en alles kiest
-   * daaruit: goud = merk en navigatie · goud-rand = bewerkbaar · groen = voldaan ·
-   * goud-donker = openstaand · burgundy = fout of gevaar · butter = vraagt aandacht ·
+   * daaruit: salie = merk en navigatie · salie-rand = bewerkbaar · groen = voldaan ·
+   * sage-deep = openstaand · burgundy = fout of gevaar · boterbloem = vraagt aandacht ·
    * charcoal/40 = afgehandeld. Past een accent in geen enkele rol, dan blijft het charcoal.
    *
-   * 🔴 Contrast. `gold` haalt op wit 2,3:1 en `gold-dark` 3,7:1 — allebei onder de AA-eis van
-   * 4,5:1 voor gewone tekst. `gold-dark` mag op koppen vanaf 24 px (of 19 px vet), op randen,
-   * iconen en streepjes. Lopende tekst, tabelinhoud en labels blijven charcoal. Op `butter` en
-   * `blush` staat tekst altijd in charcoal, nooit in goud.
+   * 🔴 Contrast. `sage` haalt op wit 2,18:1 en `sage-dark` 3,00:1 — allebei onder de AA-eis
+   * van 4,5:1 voor gewone tekst. `sage-dark` mag op koppen vanaf 24 px (of 19 px vet), op
+   * randen, iconen en streepjes. Lopende tekst, tabelinhoud en labels blijven charcoal, of
+   * `sage-deep` (5,49:1) als de kleur de betekenis draagt. Op `boterbloem` en `blush` staat
+   * tekst altijd in charcoal, nooit in salie.
    * --------------------------------------------------------------------- */
 
-  /* Kaart met een goudkleurige streep links: het blok dat er op dit scherm toe doet. */
+  /* Kaart met een saliestreep links: het blok dat er op dit scherm toe doet. */
   .card-accent {
-    @apply card border-l-4 border-l-gold;
+    @apply card border-l-4 border-l-sage-dark;
   }
 
-  /* Tabelkop met een butter-wassing. Verving `bg-charcoal/5 text-charcoal/60`, dat op elke
-     lijst hetzelfde grijs-op-grijs gaf. Letters in charcoal — zie de contrastregel. */
+  /* Tabelkop met een zandwassing. Verving `bg-charcoal/5 text-charcoal/60`, dat op elke
+     lijst hetzelfde grijs-op-grijs gaf. Sand en niet boterbloem: dat geel is een signaalkleur
+     ("vraagt aandacht") en elke tabelkop geel maken maakt dat signaal waardeloos. */
   .tabel-admin thead {
-    @apply bg-butter/45 text-charcoal/80 text-xs uppercase tracking-widest;
+    @apply bg-sand text-charcoal/80 text-xs uppercase tracking-widest;
   }
   .tabel-admin thead th {
-    @apply border-b border-gold/25 font-medium;
+    @apply border-b border-sage/40 font-medium;
   }
 
-  /* Rij-hover in cream in plaats van grijs: warm, en het onderscheidt zich van de kop. */
+  /* Rij-hover in linen in plaats van grijs: warm, en het onderscheidt zich van de kop. */
   .rij-hover {
-    @apply border-t border-charcoal/5 transition-colors hover:bg-cream/70;
+    @apply border-t border-charcoal/5 transition-colors hover:bg-linen/70;
   }
 
   /* De rusttoestand van een inline bewerkbaar veld. Uit `VeldInline` gelicht zodat elk ander
      klikbaar veld dezelfde belofte kan doen: hier kun je iets wijzigen. */
   .veld-pil {
     @apply rounded-md border border-charcoal/10 bg-white/55 transition
-      hover:border-gold/60 hover:bg-white focus:border-gold focus:outline-none
-      focus-visible:ring-2 focus-visible:ring-gold/30;
+      hover:border-sage/60 hover:bg-white focus:border-sage focus:outline-none
+      focus-visible:ring-2 focus-visible:ring-sage/30;
   }
 }

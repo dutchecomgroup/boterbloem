@@ -13,7 +13,7 @@ export function BotanicalPattern({ className, opacity = 0.05 }: Props) {
   return (
     <svg
       aria-hidden="true"
-      className={cn("absolute inset-0 w-full h-full pointer-events-none text-gold", className)}
+      className={cn("absolute inset-0 w-full h-full pointer-events-none text-sage", className)}
       style={{ opacity }}
     >
       <defs>

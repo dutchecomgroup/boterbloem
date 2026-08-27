@@ -26,8 +26,8 @@ export type Gebeurtenis = {
 const OPVALLEND = new Set(["aangemaakt", "betaling", "status"]);
 
 const KIND_KLEUR: Record<string, string> = {
-  aangemaakt: "bg-gold",
-  status: "bg-gold-dark",
+  aangemaakt: "bg-sage",
+  status: "bg-sage-dark",
   betaling: "bg-emerald-600",
   regel: "bg-charcoal/25",
   offerte: "bg-charcoal/25",
@@ -41,7 +41,7 @@ export function Tijdlijn({ gebeurtenissen }: { gebeurtenissen: Gebeurtenis[] }) 
 
   if (gebeurtenissen.length === 0) {
     return (
-      <p className="rounded-md border border-dashed border-gold/25 bg-cream/60 px-3 py-4 text-sm text-charcoal/70">
+      <p className="rounded-md border border-dashed border-sage/25 bg-linen/60 px-3 py-4 text-sm text-charcoal/70">
         Nog geen gebeurtenissen. De tijdlijn vult zich vanaf nu — wijzigingen van vóór deze
         versie zijn niet vastgelegd.
       </p>
@@ -60,7 +60,7 @@ export function Tijdlijn({ gebeurtenissen }: { gebeurtenissen: Gebeurtenis[] }) 
             {i < zichtbaar.length - 1 && (
               // `bg-charcoal/12` stond hier, en 12 zit niet in Tailwinds opacity-schaal — de
               // klasse werd nooit gegenereerd, dus de verbindingslijn was er simpelweg niet.
-              <span className="absolute left-[3px] top-2 h-full w-px bg-gold/30" aria-hidden />
+              <span className="absolute left-[3px] top-2 h-full w-px bg-sage/30" aria-hidden />
             )}
             <span
               className={`relative z-10 mt-1.5 h-[7px] w-[7px] shrink-0 rounded-full ${
@@ -89,7 +89,7 @@ export function Tijdlijn({ gebeurtenissen }: { gebeurtenissen: Gebeurtenis[] }) 
         <button
           type="button"
           onClick={() => setAllesTonen(true)}
-          className="mt-2 text-xs text-gold-dark underline-offset-2 hover:underline"
+          className="mt-2 text-xs text-sage-dark underline-offset-2 hover:underline"
         >
           Nog {rest} {rest === 1 ? "gebeurtenis" : "gebeurtenissen"} tonen
         </button>

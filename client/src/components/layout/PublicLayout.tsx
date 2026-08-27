@@ -4,12 +4,13 @@ import { Menu, X, Instagram } from "lucide-react";
 import { usePublicSettings } from "../../hooks/usePublicSettings";
 import { cn, whatsappLink } from "../../lib/utils";
 import { BotanicalPattern } from "../ornaments/BotanicalPattern";
-import { GoldDivider } from "../ornaments/GoldDivider";
+import { SierDivider } from "../ornaments/SierDivider";
 
 const NAV = [
   { href: "/", label: "Home" },
   { href: "/galerij", label: "Galerij" },
   { href: "/aanbod", label: "Aanbod" },
+  { href: "/werkwijze", label: "Werkwijze" },
   { href: "/over", label: "Over" },
   { href: "/contact", label: "Contact" },
 ];
@@ -21,8 +22,8 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
   const contact = settings?.contact;
 
   return (
-    <div className="min-h-screen flex flex-col bg-cream">
-      <header className="sticky top-0 z-40 bg-cream/90 backdrop-blur-md border-b border-charcoal/5">
+    <div className="min-h-screen flex flex-col bg-linen">
+      <header className="sticky top-0 z-40 bg-linen/90 backdrop-blur-md border-b border-charcoal/5">
         <div className="container-tight flex items-center justify-between h-16 sm:h-20">
           <Link href="/" className="flex items-baseline gap-1 sm:gap-2 group">
             <span className="font-display text-xl sm:text-2xl tracking-tight">Atelier</span>
@@ -37,27 +38,27 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
                   href={item.href}
                   className={cn(
                     "relative text-sm uppercase tracking-widest transition-colors group/nav",
-                    active ? "text-gold-dark" : "text-charcoal/70 hover:text-charcoal",
+                    active ? "text-sage-dark" : "text-charcoal/70 hover:text-charcoal",
                   )}
                 >
                   {item.label}
                   <span
                     className={cn(
-                      "absolute -bottom-2 left-1/2 -translate-x-1/2 h-px bg-gold transition-all duration-300",
+                      "absolute -bottom-2 left-1/2 -translate-x-1/2 h-px bg-sage transition-all duration-300",
                       active ? "w-8 opacity-100" : "w-0 opacity-0 group-hover/nav:w-6 group-hover/nav:opacity-70",
                     )}
                   />
                 </Link>
               );
             })}
-            <Link href="/contact" className="btn-gold !py-2 !px-5 text-xs">Offerte aanvragen</Link>
+            <Link href="/contact" className="btn-sage !py-2 !px-5 text-xs">Offerte aanvragen</Link>
           </nav>
           <button className="md:hidden p-2 -mr-2 min-h-[44px] min-w-[44px] flex items-center justify-center" onClick={() => setOpen(true)} aria-label="Menu openen">
             <Menu size={24} />
           </button>
         </div>
         {open && (
-          <div className="md:hidden fixed inset-0 bg-cream z-50 overflow-y-auto">
+          <div className="md:hidden fixed inset-0 bg-linen z-50 overflow-y-auto">
             <div className="container-tight flex items-center justify-between h-16 sm:h-20 border-b border-charcoal/5">
               <span className="font-display text-xl">Atelier <span className="script-accent text-2xl">Boterbloem</span></span>
               <button className="p-2 -mr-2 min-h-[44px] min-w-[44px] flex items-center justify-center" onClick={() => setOpen(false)} aria-label="Menu sluiten">
@@ -75,7 +76,7 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
                   {item.label}
                 </Link>
               ))}
-              <Link href="/contact" onClick={() => setOpen(false)} className="btn-gold mt-8 w-fit">
+              <Link href="/contact" onClick={() => setOpen(false)} className="btn-sage mt-8 w-fit">
                 Offerte aanvragen
               </Link>
             </nav>
@@ -85,33 +86,33 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
 
       <main className="flex-1">{children}</main>
 
-      <footer className="relative bg-charcoal text-cream mt-16 sm:mt-24 overflow-hidden">
-        <BotanicalPattern opacity={0.06} className="text-cream" />
+      <footer className="relative bg-charcoal text-linen mt-16 sm:mt-24 overflow-hidden">
+        <BotanicalPattern opacity={0.06} className="text-linen" />
         <div className="container-tight relative py-10 sm:py-16 grid gap-8 sm:gap-12 md:grid-cols-3">
           <div>
             <div className="font-display text-2xl">Atelier <span className="script-accent text-3xl">Boterbloem</span></div>
-            <p className="mt-4 text-cream/70 text-sm leading-relaxed max-w-xs">
+            <p className="mt-4 text-linen/70 text-sm leading-relaxed max-w-xs">
               Handgemaakte sweet tables, grazing tables en taarten voor jouw mooiste momenten.
             </p>
           </div>
           <div>
-            <h4 className="text-xs uppercase tracking-widest text-gold mb-4">Contact</h4>
-            <ul className="space-y-2 text-sm text-cream/80">
-              {contact?.email && <li><a href={`mailto:${contact.email}`} className="hover:text-gold">{contact.email}</a></li>}
-              {contact?.phone && <li><a href={`tel:${contact.phone}`} className="hover:text-gold">{contact.phone}</a></li>}
+            <h4 className="text-xs uppercase tracking-widest text-sage mb-4">Contact</h4>
+            <ul className="space-y-2 text-sm text-linen/80">
+              {contact?.email && <li><a href={`mailto:${contact.email}`} className="hover:text-sage">{contact.email}</a></li>}
+              {contact?.phone && <li><a href={`tel:${contact.phone}`} className="hover:text-sage">{contact.phone}</a></li>}
               {whatsappLink(contact?.whatsapp) && (
-                <li><a href={whatsappLink(contact?.whatsapp)!} target="_blank" rel="noreferrer" className="hover:text-gold">WhatsApp</a></li>
+                <li><a href={whatsappLink(contact?.whatsapp)!} target="_blank" rel="noreferrer" className="hover:text-sage">WhatsApp</a></li>
               )}
               {contact?.address && <li>{contact.address}{contact.city ? `, ${contact.city}` : ""}</li>}
             </ul>
           </div>
           <div>
-            <h4 className="text-xs uppercase tracking-widest text-gold mb-4">Volg ons</h4>
+            <h4 className="text-xs uppercase tracking-widest text-sage mb-4">Volg ons</h4>
             <a
               href={contact?.instagram ?? "https://instagram.com/atelierboterbloem"}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-2 text-sm hover:text-gold"
+              className="inline-flex items-center gap-2 text-sm hover:text-sage"
             >
               <Instagram size={18} /> @atelierboterbloem
             </a>
@@ -119,9 +120,9 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
         </div>
         <div className="relative">
           <div className="container-tight">
-            <GoldDivider className="!text-gold/40 py-4" />
+            <SierDivider className="!text-sage/40 py-4" />
           </div>
-          <div className="py-6 text-center text-xs text-cream/40 relative">
+          <div className="py-6 text-center text-xs text-linen/40 relative">
             © {new Date().getFullYear()} Atelier Boterbloem. Alle rechten voorbehouden.
           </div>
         </div>

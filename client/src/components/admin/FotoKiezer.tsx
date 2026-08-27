@@ -100,7 +100,7 @@ export function FotoKiezer({
   return (
     <div>
       <div className="flex flex-wrap items-center gap-4">
-        <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-lg bg-blush/30 ring-1 ring-gold/15">
+        <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-lg bg-blush/30 ring-1 ring-sage/15">
           {waarde ? (
             <img src={imageSrc({ filename: waarde })} alt="" className="h-full w-full object-cover" />
           ) : (
@@ -147,7 +147,7 @@ export function FotoKiezer({
       <Dialog.Root open={open} onOpenChange={setOpen}>
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 z-40 bg-charcoal/40 backdrop-blur-sm data-[state=open]:animate-sheet-fade" />
-          <Dialog.Content className="fixed left-1/2 top-1/2 z-50 flex max-h-[85vh] w-[calc(100%-2rem)] max-w-3xl -translate-x-1/2 -translate-y-1/2 flex-col rounded-lg bg-cream p-6 shadow-2xl outline-none">
+          <Dialog.Content className="fixed left-1/2 top-1/2 z-50 flex max-h-[85vh] w-[calc(100%-2rem)] max-w-3xl -translate-x-1/2 -translate-y-1/2 flex-col rounded-lg bg-linen p-6 shadow-2xl outline-none">
             <div className="mb-4 flex items-start justify-between gap-3">
               <div>
                 <Dialog.Title className="font-display text-xl text-charcoal">Kies een foto</Dialog.Title>
@@ -180,8 +180,8 @@ export function FotoKiezer({
                       title={f.altText ?? naamPerCategorie.get(f.categoryId ?? -1) ?? ""}
                       className={`group relative aspect-square overflow-hidden rounded-lg ring-1 transition ${
                         f.filename === waarde
-                          ? "ring-2 ring-gold"
-                          : "ring-gold/15 hover:ring-gold/50"
+                          ? "ring-2 ring-sage"
+                          : "ring-sage/15 hover:ring-sage/50"
                       }`}
                     >
                       <img
@@ -191,13 +191,13 @@ export function FotoKiezer({
                         className="h-full w-full object-cover"
                       />
                       {f.filename === waarde && (
-                        <span className="absolute right-1.5 top-1.5 rounded-full bg-gold p-1 text-cream">
+                        <span className="absolute right-1.5 top-1.5 rounded-full bg-sage p-1 text-linen">
                           <Check size={12} />
                         </span>
                       )}
                       {/* Waar de foto vandaan komt, zodat je een portret niet verwart met een
                           feestfoto die er toevallig op lijkt. */}
-                      <span className="absolute inset-x-0 bottom-0 truncate bg-charcoal/70 px-1.5 py-1 text-left text-[10px] text-cream opacity-0 transition-opacity group-hover:opacity-100">
+                      <span className="absolute inset-x-0 bottom-0 truncate bg-charcoal/70 px-1.5 py-1 text-left text-[10px] text-linen opacity-0 transition-opacity group-hover:opacity-100">
                         {naamPerCategorie.get(f.categoryId ?? -1) ?? "Losse foto"}
                       </span>
                     </button>

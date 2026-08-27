@@ -196,7 +196,7 @@ export default function OmzetPage() {
               : <>vorige periode: {formatCurrency(data.vorige.omzet)}</>
           )}
         />
-        <Tegel label="Boekingen" rand="border-l-gold" waarde={data ? String(data.aantalBoekingen) : "—"}
+        <Tegel label="Boekingen" rand="border-l-sage" waarde={data ? String(data.aantalBoekingen) : "—"}
           onder={data ? <>gemiddeld {formatCurrency(data.gemiddeld)}</> : undefined} />
         <Tegel label="Ontvangen in periode" rand="border-l-emerald-600"
           waarde={data ? formatCurrency(data.kas.ontvangen) : "—"} onder="op betaaldatum" />
@@ -264,7 +264,7 @@ export default function OmzetPage() {
             </table>
           ) : (
             <div className="text-sm text-charcoal/50 flex gap-2">
-              <TriangleAlert size={16} className="shrink-0 mt-0.5 text-gold" />
+              <TriangleAlert size={16} className="shrink-0 mt-0.5 text-sage" />
               <span>
                 Geen btw te berekenen. De regels van deze boekingen hebben nog geen tarief — dat
                 komt van het pakket of het product waaruit ze ontstaan. Zet het daar, en het
@@ -317,7 +317,7 @@ export default function OmzetPage() {
                 {data.openstaand.posten.map((p) => (
                   <tr key={p.id} className="rij-hover">
                     <td className="py-2">
-                      <Link href={`/admin/boekingen?boeking=${p.id}`} className="text-gold-dark hover:underline">
+                      <Link href={`/admin/boekingen?boeking=${p.id}`} className="text-sage-dark hover:underline">
                         {p.reference ?? `#${p.id}`}
                       </Link>
                     </td>

@@ -11,8 +11,8 @@ import { cn } from "../../lib/utils";
  * waaróm iets bij elkaar hoort: waar je de dag mee doorkomt, waar het geld zit, en wat er op de
  * site staat.
  *
- * Het actieve item krijgt een goudkleurig streepje links en een butter-wassing. Zie de
- * kleurtaal in `index.css`: goud is merk en navigatie.
+ * Het actieve item krijgt een saliestreepje links en een zachte saliewassing. Zie de
+ * kleurtaal in `index.css`: salie is merk en navigatie.
  */
 
 type NavItem = { href: string; label: string; icon: typeof LayoutDashboard; exact?: boolean };
@@ -51,9 +51,9 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuth();
 
   return (
-    <div className="min-h-screen bg-cream/60 flex">
+    <div className="min-h-screen bg-linen/60 flex">
       <aside className="hidden md:flex flex-col w-64 border-r border-charcoal/10 bg-white">
-        <div className="border-b border-gold/20 bg-cream/50 p-6">
+        <div className="border-b border-sage/20 bg-linen/50 p-6">
           <Link href="/" className="block">
             <div className="font-display text-xl">Atelier</div>
             <div className="script-accent text-2xl leading-none -mt-1">Boterbloem</div>
@@ -80,17 +80,17 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
                       className={cn(
                         "relative flex items-center gap-3 rounded-md py-2.5 pl-4 pr-3 text-sm transition-colors",
                         active
-                          ? "bg-butter/50 font-medium text-charcoal"
-                          : "text-charcoal/70 hover:bg-cream hover:text-charcoal",
+                          ? "bg-sage/25 font-medium text-charcoal"
+                          : "text-charcoal/70 hover:bg-linen hover:text-charcoal",
                       )}
                     >
                       {active && (
                         <span
                           aria-hidden
-                          className="absolute inset-y-1.5 left-0 w-1 rounded-full bg-gold"
+                          className="absolute inset-y-1.5 left-0 w-1 rounded-full bg-sage-deep"
                         />
                       )}
-                      <Icon size={18} className={active ? "text-gold-dark" : "text-charcoal/45"} />
+                      <Icon size={18} className={active ? "text-sage-dark" : "text-charcoal/45"} />
                       {item.label}
                     </Link>
                   );
@@ -100,7 +100,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
           ))}
         </nav>
 
-        <div className="border-t border-charcoal/10 bg-cream/40 p-4">
+        <div className="border-t border-charcoal/10 bg-linen/40 p-4">
           <div className="text-xs text-charcoal/50 mb-2">Ingelogd als</div>
           <div className="text-sm font-medium truncate">{user?.name || user?.username}</div>
           <button
@@ -113,7 +113,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
       </aside>
 
       <div className="flex-1 flex flex-col">
-        <header className="md:hidden flex items-center justify-between border-b border-gold/20 bg-white px-4 py-3">
+        <header className="md:hidden flex items-center justify-between border-b border-sage/20 bg-white px-4 py-3">
           <div className="font-display text-lg">
             Boterbloem <span className="tag">Admin</span>
           </div>

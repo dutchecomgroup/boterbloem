@@ -202,7 +202,7 @@ export function BoekingSheet({
               href={`/api/admin/orders/${boeking.id}/offerte`}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-1.5 rounded-full border border-gold px-4 py-2 text-xs uppercase tracking-widest text-gold-dark transition hover:bg-gold/10"
+              className="inline-flex items-center gap-1.5 rounded-full border border-sage px-4 py-2 text-xs uppercase tracking-widest text-sage-dark transition hover:bg-sage/10"
             >
               <FileText className="h-3.5 w-3.5" /> Offerte
             </a>
@@ -244,7 +244,7 @@ export function BoekingSheet({
               boeking.customer && (
                 <Link
                   href={`/admin/klanten/${boeking.customer.id}`}
-                  className="inline-flex items-center gap-1 text-xs text-gold-dark hover:underline"
+                  className="inline-flex items-center gap-1 text-xs text-sage-dark hover:underline"
                 >
                   Klantpagina <ExternalLink className="h-3 w-3" />
                 </Link>
@@ -258,13 +258,13 @@ export function BoekingSheet({
                   {boeking.customer.email && (
                     // Een mailadres opent haar eigen mailprogramma; mail zit verder niet in
                     // het systeem, dat doet ze op haar telefoon.
-                    <a href={`mailto:${boeking.customer.email}`} className="hover:text-gold-dark">
+                    <a href={`mailto:${boeking.customer.email}`} className="hover:text-sage-dark">
                       {boeking.customer.email}
                     </a>
                   )}
                   {boeking.customer.email && boeking.customer.phone && " · "}
                   {boeking.customer.phone && (
-                    <a href={`tel:${boeking.customer.phone}`} className="hover:text-gold-dark">
+                    <a href={`tel:${boeking.customer.phone}`} className="hover:text-sage-dark">
                       {boeking.customer.phone}
                     </a>
                   )}
@@ -275,7 +275,7 @@ export function BoekingSheet({
               // voor zondag?" zonder naam, of de klant is verwijderd. Maar zodra de naam er wél
               // is, moet je hem kwijt kunnen; hier stond alleen een mededeling.
               <>
-                <p className="rounded-md border border-dashed border-gold/25 bg-cream/60 px-3 py-2.5 text-sm text-charcoal/70">
+                <p className="rounded-md border border-dashed border-sage/25 bg-linen/60 px-3 py-2.5 text-sm text-charcoal/70">
                   Nog geen klant gekoppeld.
                 </p>
                 <KlantKoppelen boekingId={boeking.id} />

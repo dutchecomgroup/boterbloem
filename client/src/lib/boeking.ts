@@ -3,7 +3,7 @@
  *
  * Stond hiervoor in tweevoud in `AgendaPage` en `OrdersPage`. Met de sheet erbij zouden het er
  * drie worden, en dan gaan ze onvermijdelijk uit de pas lopen — precies waar een gebruiker over
- * struikelt ("waarom is bevestigd hier goud en daar grijs?").
+ * struikelt ("waarom is bevestigd hier salie en daar grijs?").
  */
 
 export const STATUSSEN = [
@@ -28,8 +28,8 @@ export const STATUS_LABEL: Record<string, string> = {
 
 export const STATUS_KLEUR: Record<string, string> = {
   aanvraag: "bg-charcoal/10 text-charcoal/70",
-  bevestigd: "bg-gold/25 text-gold-dark",
-  in_productie: "bg-butter text-charcoal",
+  bevestigd: "bg-sage/25 text-sage-dark",
+  in_productie: "bg-boterbloem/55 text-charcoal",
   klaar: "bg-emerald-100 text-emerald-800",
   afgeleverd: "bg-charcoal/5 text-charcoal/40",
   geannuleerd: "bg-burgundy/10 text-burgundy line-through",

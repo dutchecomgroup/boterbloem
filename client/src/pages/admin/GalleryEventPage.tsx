@@ -125,7 +125,7 @@ export default function GalleryEventPage() {
 
   return (
     <div>
-      <Link href={terug} className="mb-4 inline-flex items-center gap-2 text-xs uppercase tracking-widest text-gold-dark hover:gap-3 transition-all">
+      <Link href={terug} className="mb-4 inline-flex items-center gap-2 text-xs uppercase tracking-widest text-sage-dark hover:gap-3 transition-all">
         <ArrowLeft size={14} /> {categorie?.name ?? "Galerij"}
       </Link>
 
@@ -235,7 +235,7 @@ export default function GalleryEventPage() {
                 type="checkbox"
                 checked={album.published}
                 onChange={(e) => bijwerken.mutate({ published: e.target.checked })}
-                className="h-4 w-4 rounded border-charcoal/25 text-gold focus:ring-gold/40"
+                className="h-4 w-4 rounded border-charcoal/25 text-sage focus:ring-sage/40"
               />
               Zichtbaar op de site
             </label>
@@ -258,7 +258,7 @@ export default function GalleryEventPage() {
           {/* Verschijnt zodra er iets veranderd is — anders staat er een knop die niets doet. */}
           {vuil && (
             <div className="mt-4 flex flex-wrap items-center justify-end gap-3 border-t border-charcoal/10 pt-4">
-              <span className="mr-auto text-xs text-gold-dark">Niet opgeslagen wijzigingen</span>
+              <span className="mr-auto text-xs text-sage-dark">Niet opgeslagen wijzigingen</span>
               <button
                 type="button"
                 onClick={() => setConcept(null)}
@@ -271,7 +271,7 @@ export default function GalleryEventPage() {
                 type="button"
                 onClick={() => blokkenOpslaan.mutate(blokken)}
                 disabled={blokkenOpslaan.isPending}
-                className="btn-gold !px-5 !py-2 text-xs"
+                className="btn-sage !px-5 !py-2 text-xs"
               >
                 {blokkenOpslaan.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
                 Verhaal opslaan

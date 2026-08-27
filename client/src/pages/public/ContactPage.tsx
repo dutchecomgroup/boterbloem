@@ -11,9 +11,10 @@ import { whatsappLink } from "../../lib/utils";
 import type { Package } from "@shared/schema";
 import { BotanicalPattern } from "../../components/ornaments/BotanicalPattern";
 import { BotanicalCorner } from "../../components/ornaments/BotanicalCorner";
-import { GoldDivider } from "../../components/ornaments/GoldDivider";
+import { SierDivider } from "../../components/ornaments/SierDivider";
 import { FloralFrame } from "../../components/ornaments/FloralFrame";
-import { demoImageForSlug, DEMO_NESTED, heeftEchteContent } from "../../lib/demoGallery";
+import { imageSrc } from "../../lib/images";
+import type { GalerijAntwoord } from "../../lib/galerij";
 
 const schema = z.object({
   name: z.string().min(2, "Vul je naam in"),
@@ -33,7 +34,7 @@ const schema = z.object({
 
 type FormValues = z.infer<typeof schema>;
 
-interface GalleryResponse { categories: typeof DEMO_NESTED; items: unknown[] }
+
 
 const STEPS = [
   { n: "01", title: "Aanvraag", body: "Vertel ons over jouw moment en idee via het formulier." },
@@ -48,7 +49,6 @@ export default function ContactPage() {
   const levertijden = (settings as { levertijden?: { standaardDagen?: number; tekst?: string } } | undefined)?.levertijden;
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const heroImg = demoImageForSlug("bedrijfsevent");
 
   const { data: pakketten } = useQuery({
     queryKey: ["public", "packages"],
@@ -56,9 +56,18 @@ export default function ContactPage() {
   });
   const { data: gallery } = useQuery({
     queryKey: ["public", "gallery"],
-    queryFn: () => api.get<GalleryResponse>("/api/public/gallery"),
+    queryFn: () => api.get<GalerijAntwoord>("/api/public/gallery"),
   });
-  const gelegenheden = heeftEchteContent(gallery?.items) ? (gallery?.categories ?? []) : DEMO_NESTED;
+  const gelegenheden = gallery?.categories ?? [];
+
+  // Een uitgelichte foto naast het formulier, of de eerste die er is. Hier stond tot 27-08 een
+  // vaste stockfoto; nu komt hij uit haar eigen galerij, en is er geen galerij dan staat er
+  // niets in plaats van andermans werk.
+  const heroImg = useMemo(() => {
+    const items = gallery?.items ?? [];
+    const keuze = items.find((i) => i.featured) ?? items[0];
+    return keuze ? imageSrc(keuze) : null;
+  }, [gallery]);
 
   // ?pakket=<slug> vanaf een pakketkaart op /aanbod. Zo komt de aanvraag binnen met de
   // context waar de bezoeker net naar keek. Onbekende slug = gewoon niets voorselecteren.
@@ -96,56 +105,56 @@ export default function ContactPage() {
     <>
       <section className="relative bg-section-blush overflow-hidden section-y">
         <BotanicalPattern opacity={0.06} />
-        <FloralFrame className="absolute -top-8 -right-8 md:-top-12 md:-right-12 w-32 sm:w-56 md:w-80 h-32 sm:h-56 md:h-80" color="text-gold/20" />
+        <FloralFrame className="absolute -top-8 -right-8 md:-top-12 md:-right-12 w-32 sm:w-56 md:w-80 h-32 sm:h-56 md:h-80" color="text-sage/20" />
         <FloralFrame className="absolute -bottom-8 -left-8 md:-bottom-12 md:-left-12 rotate-180 w-24 sm:w-40 md:w-64 h-24 sm:h-40 md:h-64" color="text-blush" />
 
         <div className="container-tight relative grid lg:grid-cols-[1fr_1.2fr] gap-8 sm:gap-12 lg:gap-16">
           <div>
             <div className="tag mb-3">Contact</div>
             <h1 className="text-4xl sm:text-5xl md:text-6xl">Vertel ons jouw idee</h1>
-            <div className="mt-4 mb-4 sm:mt-6 sm:mb-6"><GoldDivider className="!mx-0 !max-w-[180px]" /></div>
+            <div className="mt-4 mb-4 sm:mt-6 sm:mb-6"><SierDivider className="!mx-0 !max-w-[180px]" /></div>
             <p className="text-charcoal/70 leading-relaxed mb-8 sm:mb-10 text-sm sm:text-base">
               Vul het formulier in met zoveel mogelijk details: datum, gelegenheid en aantal personen. Dan komen we zo snel mogelijk bij je terug met een voorstel.
             </p>
 
             <ul className="space-y-4 text-sm mb-8 sm:mb-10">
               {contact?.email && (
-                <li className="flex items-start gap-3"><Mail size={18} className="text-gold mt-0.5" /><a href={`mailto:${contact.email}`} className="hover:text-gold-dark">{contact.email}</a></li>
+                <li className="flex items-start gap-3"><Mail size={18} className="text-sage mt-0.5" /><a href={`mailto:${contact.email}`} className="hover:text-sage-dark">{contact.email}</a></li>
               )}
               {contact?.phone && (
-                <li className="flex items-start gap-3"><Phone size={18} className="text-gold mt-0.5" /><a href={`tel:${contact.phone}`} className="hover:text-gold-dark">{contact.phone}</a></li>
+                <li className="flex items-start gap-3"><Phone size={18} className="text-sage mt-0.5" /><a href={`tel:${contact.phone}`} className="hover:text-sage-dark">{contact.phone}</a></li>
               )}
               {/* Het WhatsApp-nummer stond wel in de instellingen maar werd nergens getoond,
                   terwijl dat juist het kanaal is waar dit soort aanvragen binnenkomt. */}
               {whatsappLink(contact?.whatsapp) && (
                 <li className="flex items-start gap-3">
-                  <MessageCircle size={18} className="text-gold mt-0.5" />
-                  <a href={whatsappLink(contact?.whatsapp)!} target="_blank" rel="noreferrer" className="hover:text-gold-dark">
+                  <MessageCircle size={18} className="text-sage mt-0.5" />
+                  <a href={whatsappLink(contact?.whatsapp)!} target="_blank" rel="noreferrer" className="hover:text-sage-dark">
                     Stuur een WhatsApp
                   </a>
                 </li>
               )}
               {(contact?.address || contact?.city) && (
-                <li className="flex items-start gap-3"><MapPin size={18} className="text-gold mt-0.5" /><span>{[contact.address, contact.postcode, contact.city].filter(Boolean).join(", ")}</span></li>
+                <li className="flex items-start gap-3"><MapPin size={18} className="text-sage mt-0.5" /><span>{[contact.address, contact.postcode, contact.city].filter(Boolean).join(", ")}</span></li>
               )}
               {contact?.instagram && (
-                <li className="flex items-start gap-3"><Instagram size={18} className="text-gold mt-0.5" /><a href={contact.instagram} target="_blank" rel="noreferrer" className="hover:text-gold-dark">@atelierboterbloem</a></li>
+                <li className="flex items-start gap-3"><Instagram size={18} className="text-sage mt-0.5" /><a href={contact.instagram} target="_blank" rel="noreferrer" className="hover:text-sage-dark">@atelierboterbloem</a></li>
               )}
             </ul>
 
             {heroImg && (
-              <div className="relative aspect-[5/4] rounded-2xl overflow-hidden shadow-xl ring-1 ring-gold/20 hidden lg:block">
+              <div className="relative aspect-[5/4] rounded-2xl overflow-hidden shadow-xl ring-1 ring-sage/20 hidden lg:block">
                 <img src={heroImg} alt="" className="absolute inset-0 w-full h-full object-cover" />
-                <div className="pointer-events-none absolute inset-3 border border-cream/30 rounded-xl" />
+                <div className="pointer-events-none absolute inset-3 border border-linen/30 rounded-xl" />
               </div>
             )}
           </div>
 
           <div>
             {sent ? (
-              <div className="card hairline-gold bg-cream relative">
-                <BotanicalCorner position="tl" className="w-16 h-16 sm:w-20 sm:h-20" color="text-gold/40" />
-                <BotanicalCorner position="br" className="w-16 h-16 sm:w-20 sm:h-20" color="text-gold/40" />
+              <div className="card hairline-sage bg-linen relative">
+                <BotanicalCorner position="tl" className="w-16 h-16 sm:w-20 sm:h-20" color="text-sage/40" />
+                <BotanicalCorner position="br" className="w-16 h-16 sm:w-20 sm:h-20" color="text-sage/40" />
                 <div className="text-center py-10">
                   <div className="script-accent text-5xl mb-4">Bedankt!</div>
                   <p className="text-charcoal/70 max-w-md mx-auto">
@@ -157,7 +166,7 @@ export default function ContactPage() {
                 </div>
               </div>
             ) : (
-              <form onSubmit={form.handleSubmit(onSubmit)} className="card hairline-gold space-y-5">
+              <form onSubmit={form.handleSubmit(onSubmit)} className="card hairline-sage space-y-5">
                 {/*
                   Honeypot: onzichtbaar voor bezoekers, wél in de HTML. Bots vullen elk veld
                   in dat ze vinden; is dit ingevuld, dan negeert de server de aanvraag.
@@ -192,8 +201,8 @@ export default function ContactPage() {
                     <label className="label">Datum gelegenheid</label>
                     <input className="input" type="date" {...form.register("eventDate")} />
                     {teKrap && (
-                      <p className="mt-1.5 flex items-start gap-1.5 text-xs text-charcoal/70 bg-butter/50 rounded px-2 py-1.5">
-                        <Info size={14} className="text-gold-dark shrink-0 mt-px" />
+                      <p className="mt-1.5 flex items-start gap-1.5 text-xs text-charcoal/70 bg-boterbloem/30 rounded px-2 py-1.5">
+                        <Info size={14} className="text-sage-dark shrink-0 mt-px" />
                         <span>
                           Dat is korter dan {drempel} dagen vooraf. Stuur je aanvraag gerust,
                           we laten weten of het lukt.
@@ -233,7 +242,7 @@ export default function ContactPage() {
                   {form.formState.errors.message && <p className="text-xs text-burgundy mt-1">{form.formState.errors.message.message}</p>}
                 </div>
                 {error && <div className="text-sm text-burgundy">{error}</div>}
-                <button type="submit" disabled={form.formState.isSubmitting} className="btn-gold w-full">
+                <button type="submit" disabled={form.formState.isSubmitting} className="btn-sage w-full">
                   {form.formState.isSubmitting ? "Versturen…" : "Bericht versturen"}
                 </button>
               </form>
@@ -243,17 +252,17 @@ export default function ContactPage() {
       </section>
 
       {/* Steps section */}
-      <section className="relative bg-section-butter section-y overflow-hidden">
+      <section className="relative bg-section-sand section-y overflow-hidden">
         <BotanicalPattern opacity={0.05} />
         <div className="container-tight relative">
           <div className="text-center mb-10 sm:mb-14">
             <div className="tag mb-3">Hoe het werkt</div>
             <h2 className="text-3xl sm:text-4xl md:text-5xl">Van idee tot tafel</h2>
-            <div className="mt-6"><GoldDivider /></div>
+            <div className="mt-6"><SierDivider /></div>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {STEPS.map((s) => (
-              <div key={s.n} className="card hairline-gold bg-cream relative">
+              <div key={s.n} className="card hairline-sage bg-linen relative">
                 <div className="script-accent text-5xl leading-none mb-3">{s.n}</div>
                 <h3 className="text-xl mb-2">{s.title}</h3>
                 <p className="text-sm text-charcoal/70 leading-relaxed">{s.body}</p>

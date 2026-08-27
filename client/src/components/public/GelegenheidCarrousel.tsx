@@ -65,7 +65,7 @@ export function GelegenheidCarrousel({
               tabIndex={kopie ? -1 : undefined}
               // Vaste breedtes, geen percentages: de baan is `max-content` breed, en een
               // percentage daarvan is een cirkelredenering die de tegels laat inklappen.
-              className="group/tegel relative aspect-[3/4] w-[10.5rem] shrink-0 overflow-hidden rounded-xl bg-blush/30 ring-1 ring-gold/10 sm:w-[13rem] lg:w-[16rem]"
+              className="group/tegel relative aspect-[3/4] w-[10.5rem] shrink-0 overflow-hidden rounded-xl bg-blush/30 ring-1 ring-sage/10 sm:w-[13rem] lg:w-[16rem]"
             >
               <FotoCyclus
                 fotos={tegelFotos(c)}
@@ -77,7 +77,7 @@ export function GelegenheidCarrousel({
               />
               <FotoScrim />
               <div
-                className={`absolute bottom-3 left-3 right-3 z-30 font-display text-base leading-tight text-cream sm:bottom-4 sm:left-4 sm:right-4 sm:text-xl lg:text-2xl ${FOTO_TEKST_SCHADUW}`}
+                className={`absolute bottom-3 left-3 right-3 z-30 font-display text-base leading-tight text-linen sm:bottom-4 sm:left-4 sm:right-4 sm:text-xl lg:text-2xl ${FOTO_TEKST_SCHADUW}`}
               >
                 {c.name}
               </div>

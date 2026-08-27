@@ -8,6 +8,7 @@ Mini-bedrijfssysteem voor je schoonzus: publieke showcase + admin (boekingen, kl
 |---|---|
 | **Waar staan we / wat gaan we bouwen** | [`docs/komende-plannen/werkblok-huidig.md`](docs/komende-plannen/werkblok-huidig.md) |
 | **Wat wilde de klant** | [`docs/klant/2026-08-24-meeting-wensen.md`](docs/klant/2026-08-24-meeting-wensen.md) |
+| **Welke content er is en wat mist** | [`docs/klant/content-invulplan.md`](docs/klant/content-invulplan.md) |
 | **Documentatie-index** | [`docs/README.md`](docs/README.md) |
 
 **Sinds de meeting van 24-08:** Sweet Tables & Grazing Tables zijn de hoofdfocus, taarten zijn een klein neven-aanbod. Portfolio gaat per **gelegenheid** (met een album-laag per event), er komen **pakketten met vanaf-prijzen**, een **agenda met ICS-feed**, en **reviews**. Werk je aan een van die onderdelen: lees eerst het bijbehorende plan-document in [`docs/komende-plannen/3-onaangeraakt/`](docs/komende-plannen/3-onaangeraakt/).
@@ -49,8 +50,26 @@ hernoeming gooit het je data weg. Er is één database en die is live. Volledige
 - `shared/schema.ts` — alles wat Drizzle + Zod beide nodig hebben
 - `uploads/` — gegenereerde WebP files (gitignored). In productie serveert Express deze als static of via Apache `Alias`.
 - `scripts/seed-admin.ts` — eenmalig: admin user + galerij-categorieën + default site_settings
-- `scripts/seed-demo-content.ts` — democontent (stockfoto's, verzonnen reviews). 🔴 **Weg vóór de
-  livegang**: `npm run seed:demo -- --verwijder`
+- `scripts/import-klantfotos.ts` — de foto's van de klant uit `uploads/content/fotos/`. Idempotent
+  op `altText`; zet ook de omslag per gelegenheid en verbergt gelegenheden zonder foto's
+- `scripts/seed-klantcontent.ts` — haar teksten, de zes pakketten en de taartprijzen. Idempotent,
+  en raakt prijzen en btw die zij zelf invulde niet aan
+- `scripts/seed-demo-content.ts` — democontent. ✅ **Al verwijderd op 27-08**; het script blijft
+  staan als vangnet (`npm run seed:demo -- --verwijder`)
+
+## Content
+
+De site draait sinds 27-08 op het echte materiaal van de klant. Twee dingen die daarbij horen:
+
+- **Foto's hangen rechtstreeks onder een gelegenheid**, zonder event ertussen — haar aanlevering
+  is niet per feest gegroepeerd. `gallery_items.album_id` mag leeg zijn en dat is hier de normale
+  situatie, niet de uitzondering. Een event voegt een eigen titel, datum, webadres en tekst
+  tussen de foto's toe; dat komt eronder zodra er materiaal per feest is.
+- **Een gelegenheid zonder foto's staat op verborgen.** Communie en Geboorte zijn dat nu.
+
+🔴 **HEIC kan de server niet omzetten.** De meegeleverde Sharp-binaries bevatten libheif zonder
+HEVC-decoder, dus de uploadroute weigert HEIC met uitleg. Twaalf van de twintig aangeleverde
+foto's waren HEIC en zijn vooraf met `ffmpeg` omgezet.
 
 ## Belangrijke regels
 
@@ -77,7 +96,9 @@ hernoeming gooit het je data weg. Er is één database en die is live. Volledige
 
 Public (geen auth):
 - `GET /api/public/settings`
-- `GET /api/public/gallery` + `GET /api/public/gallery/:slug`
+- `GET /api/public/gallery` + `GET /api/public/gallery/:slug` — alleen gepubliceerde
+  gelegenheden, **ook in de platte `items`-lijst** (die filterde tot 27-08 niet mee, waardoor
+  foto's uit een verborgen gelegenheid op de homepage konden staan)
 - `POST /api/public/contact` (Zod-validated insert in `contact_requests`)
 
 Admin (sessie vereist):
@@ -102,5 +123,11 @@ Zie [`docs/deployment/`](docs/deployment/) — procedure, pending, rollback, mig
 
 ## Stijl
 
-Design tokens in `tailwind.config.ts` — cream/gold/butter/blush/burgundy/charcoal palet.
-Fonts: Cormorant Garamond (display), Allura (script accent), Inter (body).
+Design tokens in `tailwind.config.ts` — **linen/sand/mist/sage/olive/blush/boterbloem/burgundy/
+charcoal**, uit het huisstijl-moodboard dat de klant zelf aanleverde (27-08). Daarvóór was het
+cream/goud; dat paste niet bij haar logo.
+Fonts: Playfair Display (display én het cursieve accent), Montserrat (body).
+
+**Contrast is een regel, geen smaak.** `sage` haalt op wit 2,18:1 en `sage-dark` 3,00:1 — die
+mogen dus niet als lopende tekst. `sage-deep` (5,49:1) mag dat wel. Volledige tabel en de zeven
+kleurrollen van het beheerpaneel: [`docs/architecture/design-system.md`](docs/architecture/design-system.md).

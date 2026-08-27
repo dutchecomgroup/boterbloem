@@ -59,7 +59,7 @@ function Blok({
             href={bekijk}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex shrink-0 items-center gap-1.5 text-xs uppercase tracking-widest text-gold-dark hover:underline"
+            className="inline-flex shrink-0 items-center gap-1.5 text-xs uppercase tracking-widest text-sage-dark hover:underline"
           >
             Bekijk <ExternalLink size={13} />
           </a>
@@ -314,7 +314,7 @@ export default function SettingsPage() {
         </Blok>
 
         <div className="sticky bottom-6 flex justify-end gap-3">
-          <button onClick={() => save.mutate()} disabled={save.isPending} className="btn-gold">
+          <button onClick={() => save.mutate()} disabled={save.isPending} className="btn-sage">
             {save.isPending ? "Opslaan…" : "Alles opslaan"}
           </button>
         </div>

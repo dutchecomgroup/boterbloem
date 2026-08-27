@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect } from "react";
 import { motion, useScroll, useTransform, useMotionValueEvent, type MotionValue } from "motion/react";
 import { Reveal } from "./Reveal";
-import { GoldDivider } from "./ornaments/GoldDivider";
+import { SierDivider } from "./ornaments/SierDivider";
 import { cn } from "../lib/utils";
 
 export interface ProcessStep {
@@ -13,10 +13,16 @@ export interface ProcessStep {
 
 interface Props {
   steps: ProcessStep[];
+  /**
+   * De eigen sectiekop tonen. Uit als de pagina er al een heeft: op `/werkwijze` stonden
+   * anders twee koppen boven elkaar ("Werkwijze · Zo werkt het" gevolgd door "Het proces · Van
+   * eerste schets tot levering"), en dan lijkt de tweede een nieuwe sectie aan te kondigen.
+   */
+  metKop?: boolean;
 }
 
 /** Sticky-scroll storytelling. Desktop: image sticks while steps scroll. Mobile: simple stack. */
-export function ProcessStory({ steps }: Props) {
+export function ProcessStory({ steps, metKop = true }: Props) {
   const sectionRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: sectionRef,
@@ -32,19 +38,20 @@ export function ProcessStory({ steps }: Props) {
   });
 
   return (
-    <section className="relative bg-cream">
-      {/* Section header */}
-      <div className="container-tight pt-16 sm:pt-24 pb-8 sm:pb-12 text-center relative">
-        <div className="tag mb-3">Het proces</div>
-        <h2 className="text-3xl sm:text-4xl md:text-5xl">Van eerste schets tot levering</h2>
-        <div className="mt-6"><GoldDivider /></div>
-      </div>
+    <section className="relative bg-linen">
+      {metKop && (
+        <div className="container-tight pt-16 sm:pt-24 pb-8 sm:pb-12 text-center relative">
+          <div className="tag mb-3">Het proces</div>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl">Van eerste schets tot levering</h2>
+          <div className="mt-6"><SierDivider /></div>
+        </div>
+      )}
 
       {/* Mobile: simple stack with Reveals */}
       <div className="lg:hidden container-tight pb-16 space-y-6">
         {steps.map((s, i) => (
-          <Reveal key={i} delay={i * 80} className="card hairline-gold bg-cream/80 backdrop-blur p-5 sm:p-6">
-            <div className="aspect-[16/10] rounded-lg overflow-hidden mb-4 ring-1 ring-gold/10">
+          <Reveal key={i} delay={i * 80} className="card hairline-sage bg-linen/80 backdrop-blur p-5 sm:p-6">
+            <div className="aspect-[16/10] rounded-lg overflow-hidden mb-4 ring-1 ring-sage/10">
               <img src={s.imageSrc} alt={s.title} className="w-full h-full object-cover" loading="lazy" />
             </div>
             <div className="script-accent text-4xl leading-none mb-2">{s.n}</div>
@@ -63,7 +70,7 @@ export function ProcessStory({ steps }: Props) {
         <div className="grid grid-cols-2 gap-12 relative">
           {/* Sticky image column */}
           <div className="sticky top-24 h-[calc(100vh-8rem)] flex items-center self-start">
-            <div className="relative aspect-[4/5] w-full max-w-md mx-auto rounded-2xl overflow-hidden shadow-2xl ring-1 ring-gold/20">
+            <div className="relative aspect-[4/5] w-full max-w-md mx-auto rounded-2xl overflow-hidden shadow-2xl ring-1 ring-sage/20">
               {steps.map((s, i) => (
                 <ProcessImage
                   key={i}
@@ -74,8 +81,8 @@ export function ProcessStory({ steps }: Props) {
                   alt={s.title}
                 />
               ))}
-              <div className="pointer-events-none absolute inset-3 border border-cream/30 rounded-xl" />
-              <div className="absolute top-4 left-4 bg-cream/90 backdrop-blur px-3 py-1 rounded-full">
+              <div className="pointer-events-none absolute inset-3 border border-linen/30 rounded-xl" />
+              <div className="absolute top-4 left-4 bg-linen/90 backdrop-blur px-3 py-1 rounded-full">
                 <span className="tag !text-[10px]">{steps[activeIdx]?.n} · {steps[activeIdx]?.title}</span>
               </div>
             </div>
@@ -161,7 +168,7 @@ function ProcessStepBlock({
         scale: isActive ? 1 : 0.97,
       }}
       transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-      className={cn("relative pl-8 border-l-2", isActive ? "border-gold" : "border-gold/30")}
+      className={cn("relative pl-8 border-l-2", isActive ? "border-sage" : "border-sage/30")}
     >
       <div className="script-accent text-5xl leading-none mb-3">{step.n}</div>
       <h3 className="text-3xl mb-3">{step.title}</h3>

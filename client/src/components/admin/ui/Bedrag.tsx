@@ -4,7 +4,7 @@ import { formatCurrency } from "../../../lib/utils";
  * Een geldbedrag met de kleur van zijn betekenis.
  *
  * De kleurtaal kent drie geldrollen en die zijn hier de enige keuzes: **voldaan** is groen,
- * **openstaand** goud-donker, **negatief** burgundy. Dat laatste is te veel betaald of een
+ * **openstaand** sage-deep, **negatief** burgundy. Dat laatste is te veel betaald of een
  * terugbetaling, en dat hoort op te vallen — het is een fout die iemand rechtzet, geen detail.
  *
  * `tabular-nums` staat er niet voor de sier: zonder dat springen bedragen in een kolom heen en
@@ -21,7 +21,7 @@ const ROL: Record<BedragRol, string> = {
   voldaan: "text-emerald-700",
   // `gold-deep` en niet `gold-dark`: dit is een bedrag dat gelezen wordt, en
   // `gold-dark` haalt de contrasteis voor gewone tekst niet. Zie tailwind.config.ts.
-  openstaand: "text-gold-deep",
+  openstaand: "text-sage-deep",
   negatief: "text-burgundy",
 };
 

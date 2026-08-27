@@ -96,7 +96,7 @@ export function BetalingenBlok({
   return (
     <div>
       {betalingen.length > 0 && (
-        <ul className="mb-3 divide-y divide-gold/15 rounded-lg border border-gold/25 bg-white/70">
+        <ul className="mb-3 divide-y divide-sage/15 rounded-lg border border-sage/25 bg-white/70">
           {betalingen.map((b) => (
             <li key={b.id} className="flex items-center gap-3 px-3 py-2 text-sm">
               <span className="font-medium tabular-nums text-emerald-700">{formatCurrency(b.amount)}</span>
@@ -121,11 +121,11 @@ export function BetalingenBlok({
 
       {!open ? (
         <button type="button" onClick={openen} disabled={bezig}
-          className="flex items-center gap-1.5 text-sm text-gold-dark transition hover:underline disabled:opacity-40">
+          className="flex items-center gap-1.5 text-sm text-sage-dark transition hover:underline disabled:opacity-40">
           <Plus size={15} /> Betaling toevoegen
         </button>
       ) : (
-        <div className="rounded-lg border border-gold/30 bg-white/70 p-3">
+        <div className="rounded-lg border border-sage/30 bg-white/70 p-3">
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             <label className="block">
               <span className="mb-0.5 block text-[11px] font-medium uppercase tracking-wider text-charcoal/75">Bedrag</span>
@@ -155,7 +155,7 @@ export function BetalingenBlok({
 
           <div className="mt-3 flex items-center gap-2">
             <button type="button" onClick={() => void opslaan()} disabled={bezig}
-              className="btn-gold !px-4 !py-1.5 text-xs disabled:opacity-50">
+              className="btn-sage !px-4 !py-1.5 text-xs disabled:opacity-50">
               {bezig ? <Loader2 size={14} className="animate-spin" /> : "Opslaan"}
             </button>
             <button type="button" onClick={() => setOpen(false)}
