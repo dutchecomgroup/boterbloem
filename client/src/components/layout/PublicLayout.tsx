@@ -1,5 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { useState } from "react";
+import * as Dialog from "@radix-ui/react-dialog";
 import { Menu, X, Instagram } from "lucide-react";
 import { usePublicSettings } from "../../hooks/usePublicSettings";
 import { cn, whatsappLink } from "../../lib/utils";
@@ -53,35 +54,91 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
             })}
             <Link href="/contact" className="btn-sage !py-2 !px-5 text-xs">Offerte aanvragen</Link>
           </nav>
-          <button className="md:hidden p-2 -mr-2 min-h-[44px] min-w-[44px] flex items-center justify-center" onClick={() => setOpen(true)} aria-label="Menu openen">
-            <Menu size={24} />
-          </button>
+          <Dialog.Root open={open} onOpenChange={setOpen}>
+            <Dialog.Trigger
+              className="md:hidden p-2 -mr-2 min-h-[44px] min-w-[44px] flex items-center justify-center"
+              aria-label="Menu openen"
+            >
+              <Menu size={24} />
+            </Dialog.Trigger>
+
+            {/*
+              Via een portal, en niet als `fixed` kind van deze header.
+
+              De header heeft `backdrop-blur-md`, en een backdrop-filter maakt van een element
+              een containing block voor `position: fixed`. Het paneel stond eerder ín de header
+              en `inset-0` viel daardoor terug op de 64 px hoge headerbalk: het menu werd
+              bovenaan afgeknipt en klapte nergens naartoe uit. Radix rendert in `document.body`
+              en heeft dat probleem niet -- plus focus-trap, Escape en scroll-lock, die je bij
+              een handgemaakte `div` alle drie zelf moet bouwen.
+            */}
+            <Dialog.Portal>
+              {/* De achtergrond blijft zichtbaar, maar wazig: je ziet waar je vandaan komt. */}
+              <Dialog.Overlay className="md:hidden fixed inset-0 z-50 bg-charcoal/20 backdrop-blur-[3px] data-[state=open]:animate-sheet-fade" />
+
+              {/*
+                Halve breedte, met een ondergrens van 16rem. Op een telefoon van 375 px is de
+                letterlijke helft 187 px, en daar breekt "Offerte aanvragen" over drie regels.
+                De ondergrens houdt het menu leesbaar; op alles vanaf ~512 px is het precies de
+                helft, zoals bedoeld.
+              */}
+              <Dialog.Content
+                className="md:hidden fixed inset-y-0 right-0 z-50 flex w-1/2 min-w-[16rem] flex-col
+                  border-l border-charcoal/10 bg-linen/70 shadow-2xl outline-none backdrop-blur-2xl
+                  data-[state=open]:animate-sheet-in"
+              >
+                <Dialog.Title className="sr-only">Menu</Dialog.Title>
+
+                {/* De naam blijft staan waar hij ook in de balk stond, zodat het paneel niet
+                    voelt als een los venster maar als een verlengstuk van de kop. Hij is
+                    tevens de weg terug naar home. */}
+                <div className="flex h-16 shrink-0 items-center justify-between gap-2 border-b border-charcoal/10 px-4 sm:h-20">
+                  <Link
+                    href="/"
+                    onClick={() => setOpen(false)}
+                    className="flex min-w-0 flex-col leading-none"
+                  >
+                    <span className="font-display text-base tracking-tight">Atelier</span>
+                    <span className="script-accent -mt-0.5 text-xl leading-tight">Boterbloem</span>
+                  </Link>
+                  <Dialog.Close
+                    className="-mr-2 flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center p-2"
+                    aria-label="Menu sluiten"
+                  >
+                    <X size={24} />
+                  </Dialog.Close>
+                </div>
+
+                <nav className="flex flex-1 flex-col gap-1 overflow-y-auto overscroll-contain px-4 py-6">
+                  {NAV.map((item) => {
+                    const active =
+                      location === item.href || (item.href !== "/" && location.startsWith(item.href));
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        onClick={() => setOpen(false)}
+                        className={cn(
+                          "border-b border-charcoal/5 py-3.5 font-display text-xl tracking-tight transition-colors",
+                          active ? "text-sage-deep" : "text-charcoal hover:text-sage-deep",
+                        )}
+                      >
+                        {item.label}
+                      </Link>
+                    );
+                  })}
+                  <Link
+                    href="/contact"
+                    onClick={() => setOpen(false)}
+                    className="btn-sage mt-6 w-full !px-3 text-[11px]"
+                  >
+                    Offerte aanvragen
+                  </Link>
+                </nav>
+              </Dialog.Content>
+            </Dialog.Portal>
+          </Dialog.Root>
         </div>
-        {open && (
-          <div className="md:hidden fixed inset-0 bg-linen z-50 overflow-y-auto">
-            <div className="container-tight flex items-center justify-between h-16 sm:h-20 border-b border-charcoal/5">
-              <span className="font-display text-xl">Atelier <span className="script-accent text-2xl">Boterbloem</span></span>
-              <button className="p-2 -mr-2 min-h-[44px] min-w-[44px] flex items-center justify-center" onClick={() => setOpen(false)} aria-label="Menu sluiten">
-                <X size={24} />
-              </button>
-            </div>
-            <nav className="container-tight flex flex-col gap-1 mt-8">
-              {NAV.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setOpen(false)}
-                  className="text-2xl font-display tracking-tight py-4 border-b border-charcoal/5"
-                >
-                  {item.label}
-                </Link>
-              ))}
-              <Link href="/contact" onClick={() => setOpen(false)} className="btn-sage mt-8 w-fit">
-                Offerte aanvragen
-              </Link>
-            </nav>
-          </div>
-        )}
       </header>
 
       <main className="flex-1">{children}</main>

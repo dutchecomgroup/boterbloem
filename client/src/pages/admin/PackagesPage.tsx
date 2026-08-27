@@ -1,27 +1,61 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { api } from "../../lib/api";
-import { BTW_LABEL, type BtwTarief, type Package } from "@shared/schema";
-import { Plus, Trash2, GripVertical, X, ChevronUp, ChevronDown, ExternalLink, Layers } from "lucide-react";
+import { BTW_LABEL, type BtwTarief, type GalleryItem, type Package } from "@shared/schema";
+import { Plus, Trash2, GripVertical, X, ChevronUp, ChevronDown, ExternalLink, Layers, ImageOff } from "lucide-react";
 import { PageKop } from "../../components/admin/ui/PageKop";
 import { LegeStaat } from "../../components/admin/ui/LegeStaat";
+import { Sheet, SheetSectie } from "../../components/ui/Sheet";
+import { FotoKiezer } from "../../components/admin/FotoKiezer";
+import { useSheetParam } from "../../hooks/useSheetParam";
+import { imageSrc } from "../../lib/images";
 import { personenBereik } from "../../lib/utils";
 
-const LEEG: Partial<Package> = {
+/** Wat `GET /api/admin/packages` teruggeeft: het pakket plus zijn coverfoto. */
+type PakketMetCover = Package & { cover: GalleryItem | null };
+
+const LEEG: Partial<PakketMetCover> = {
   name: "", slug: "", tagline: "", description: "",
   priceFrom: "0", priceUnit: "totaal", includes: [], active: false, featured: false,
-  vatRate: null, vatSplitLow: null, vatSplitHigh: null,
+  vatRate: null, vatSplitLow: null, vatSplitHigh: null, coverItemId: null, cover: null,
 };
 
 export default function PackagesPage() {
   const qc = useQueryClient();
-  const [bewerk, setBewerk] = useState<Partial<Package> | null>(null);
+  const [bewerk, setBewerk] = useState<Partial<PakketMetCover> | null>(null);
   const [fout, setFout] = useState<string | null>(null);
+
+  /**
+   * Welk pakket open staat, in het webadres — net als bij boekingen en aanvragen. Zo sluit de
+   * terugknop de sheet in plaats van je van de pagina te gooien, en is
+   * `/admin/pakketten?pakket=19` een link die je kunt delen.
+   */
+  const sheet = useSheetParam("pakket");
 
   const { data: pakketten } = useQuery({
     queryKey: ["admin", "packages"],
-    queryFn: () => api.get<Package[]>("/api/admin/packages"),
+    queryFn: () => api.get<PakketMetCover[]>("/api/admin/packages"),
   });
+
+  /**
+   * Het webadres is de bron; `bewerk` is de werkkopie waarin je typt.
+   *
+   * Bewust een kopie en geen directe binding aan de query-data: half getypte velden horen niet
+   * in de lijst achter de sheet te verschijnen, en annuleren moet echt annuleren.
+   */
+  useEffect(() => {
+    if (sheet.isNieuw) {
+      setBewerk((h) => h ?? { ...LEEG, sortOrder: pakketten?.length ?? 0 });
+      return;
+    }
+    if (sheet.id == null) {
+      setBewerk(null);
+      return;
+    }
+    const gevonden = pakketten?.find((p) => p.id === sheet.id);
+    // Pas invullen als de lijst binnen is; een onbekend id laat de sheet dicht.
+    if (gevonden) setBewerk((h) => (h?.id === gevonden.id ? h : { ...gevonden }));
+  }, [sheet.id, sheet.isNieuw, pakketten]);
 
   const ververs = () => {
     qc.invalidateQueries({ queryKey: ["admin", "packages"] });
@@ -39,11 +73,14 @@ export default function PackagesPage() {
         vatRate: p.vatRate ?? null,
         vatSplitLow: p.vatSplitLow ? String(p.vatSplitLow).replace(",", ".") : null,
         vatSplitHigh: p.vatSplitHigh ? String(p.vatSplitHigh).replace(",", ".") : null,
+        // De coverfoto: het id, niet de bestandsnaam. `insertPackageSchema` accepteert hem al,
+        // dus de route hoefde er niet voor aangepast te worden.
+        coverItemId: p.coverItemId ?? null,
         sortOrder: p.sortOrder ?? (pakketten?.length ?? 0),
       };
       return p.id ? api.patch(`/api/admin/packages/${p.id}`, body) : api.post("/api/admin/packages", body);
     },
-    onSuccess: () => { ververs(); setBewerk(null); },
+    onSuccess: () => { ververs(); setBewerk(null); sheet.sluiten(); },
     onError: (e: Error) => setFout(e.message),
   });
 
@@ -71,7 +108,7 @@ export default function PackagesPage() {
           </>
         }
         actie={
-          <button className="btn-sage !py-2 !px-5 text-xs" onClick={() => setBewerk({ ...LEEG })}>
+          <button className="btn-sage !py-2 !px-5 text-xs" onClick={sheet.openenNieuw}>
             <Plus size={14} /> Pakket toevoegen
           </button>
         }
@@ -83,20 +120,45 @@ export default function PackagesPage() {
         </div>
       )}
 
-      {bewerk && (
-        <Formulier
-          pakket={bewerk}
-          onChange={setBewerk}
-          onOpslaan={() => opslaan.mutate(bewerk)}
-          onAnnuleer={() => setBewerk(null)}
-          bezig={opslaan.isPending}
-        />
-      )}
+      <PakketSheet
+        pakket={bewerk}
+        open={bewerk !== null}
+        onOpenChange={(v) => {
+          if (!v) {
+            setBewerk(null);
+            sheet.sluiten();
+          }
+        }}
+        onChange={setBewerk}
+        onOpslaan={() => bewerk && opslaan.mutate(bewerk)}
+        bezig={opslaan.isPending}
+      />
 
       <div className="space-y-3">
         {pakketten?.map((p) => (
           <div key={p.id} className="card flex flex-wrap items-start gap-4">
             <GripVertical size={16} className="text-charcoal/20 mt-1 shrink-0" />
+
+            {/* De coverfoto stond nergens in beeld, en was ook nergens in te stellen. Nu zie je
+                hier meteen of een pakket er een heeft — en zo niet, waar je moet zijn. */}
+            <div className="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-blush/30 ring-1 ring-sage/15">
+              {p.cover ? (
+                <img
+                  src={imageSrc(p.cover)}
+                  alt=""
+                  loading="lazy"
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <div
+                  className="flex h-full w-full items-center justify-center text-charcoal/30"
+                  title="Nog geen coverfoto"
+                >
+                  <ImageOff size={18} />
+                </div>
+              )}
+            </div>
+
             <div className="flex-1 min-w-[220px]">
               <div className="flex items-baseline gap-2 flex-wrap">
                 <h2 className="text-xl">{p.name}</h2>
@@ -128,6 +190,7 @@ export default function PackagesPage() {
                   stil op "geen btw" blijven staan zodra je btw-plichtig wordt.
                 */}
                 <span className="ml-2 text-charcoal/50">· btw {btwOmschrijving(p)}</span>
+                {!p.cover && <span className="ml-2 text-burgundy">· geen coverfoto</span>}
               </div>
               {p.includes.length > 0 && (
                 <ul className="mt-2 text-xs text-charcoal/60 space-y-0.5">
@@ -173,7 +236,7 @@ export default function PackagesPage() {
                 Uitgelicht op home
               </label>
               <div className="flex gap-2 mt-1">
-                <button className="btn-outline !py-1.5 !px-3 text-xs" onClick={() => setBewerk(p)}>Bewerken</button>
+                <button className="btn-outline !py-1.5 !px-3 text-xs" onClick={() => sheet.openen(p.id)}>Bewerken</button>
                 <button className="p-1.5 text-charcoal/40 hover:text-burgundy"
                   onClick={() => confirm(`"${p.name}" verwijderen?`) && verwijderen.mutate(p.id)}>
                   <Trash2 size={15} />
@@ -190,13 +253,22 @@ export default function PackagesPage() {
   );
 }
 
-function Formulier({ pakket, onChange, onOpslaan, onAnnuleer, bezig }: {
-  pakket: Partial<Package>;
-  onChange: (p: Partial<Package>) => void;
+/**
+ * Bewerken in een sheet die van rechts inschuift, net als een boeking of een aanvraag.
+ *
+ * Stond eerder als kaart bóven de lijst: bij het openen schoof alles naar beneden, en de
+ * opslaan-knop verdween onder de vouw zodra een pakket meer dan een paar `includes`-regels had.
+ * `Sheet` lost dat op en brengt focus-trap, Escape en scroll-lock mee.
+ */
+function PakketSheet({ pakket, open, onOpenChange, onChange, onOpslaan, bezig }: {
+  pakket: Partial<PakketMetCover> | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onChange: (p: Partial<PakketMetCover>) => void;
   onOpslaan: () => void;
-  onAnnuleer: () => void;
   bezig: boolean;
 }) {
+  if (!pakket) return null;
   const regels = pakket.includes ?? [];
   const zetRegel = (i: number, v: string) =>
     onChange({ ...pakket, includes: regels.map((r, j) => (j === i ? v : r)) });
@@ -210,9 +282,33 @@ function Formulier({ pakket, onChange, onOpslaan, onAnnuleer, bezig }: {
     onChange({ ...pakket, includes: nieuw });
   };
 
+  const verdelingFout = verdelingKlopt(pakket) === false;
+
   return (
-    <div className="card mb-6 border-sage/30">
-      <h2 className="text-xl mb-4">{pakket.id ? "Pakket bewerken" : "Nieuw pakket"}</h2>
+    <Sheet
+      open={open}
+      onOpenChange={onOpenChange}
+      title={pakket.name?.trim() || (pakket.id ? "Pakket bewerken" : "Nieuw pakket")}
+      subtitle={pakket.id ? `/${pakket.slug}` : "Nog niet opgeslagen"}
+      footer={
+        <div className="flex w-full justify-end gap-3">
+          <button className="btn-ghost !py-2 !px-4 text-xs" onClick={() => onOpenChange(false)}>
+            Annuleren
+          </button>
+          {/* Een verdeling die niet optelt tot de pakketprijs zou een ander bedrag op de offerte
+              zetten dan de klant op de site zag. Dat mag niet stil gebeuren. */}
+          <button
+            className="btn-sage !py-2 !px-5 text-xs"
+            disabled={!pakket.name?.trim() || bezig || verdelingFout}
+            title={verdelingFout ? "De btw-verdeling telt niet op tot de vanaf-prijs." : undefined}
+            onClick={onOpslaan}
+          >
+            {bezig ? "Opslaan…" : "Opslaan"}
+          </button>
+        </div>
+      }
+    >
+      <SheetSectie titel="Naam en prijs">
       <div className="grid sm:grid-cols-2 gap-4">
         <div>
           <label className="label">Naam *</label>
@@ -250,19 +346,37 @@ function Formulier({ pakket, onChange, onOpslaan, onAnnuleer, bezig }: {
           <input className="input" type="number" min="1" value={pakket.personsMax ?? ""}
             onChange={(e) => onChange({ ...pakket, personsMax: e.target.value ? Number(e.target.value) : null })} />
         </div>
-        <div className="sm:col-span-2 rounded-lg bg-linen/60 p-4 ring-1 ring-sage/15">
-          <BtwBlok pakket={pakket} onChange={onChange} />
-        </div>
-
         <div className="sm:col-span-2">
           <label className="label">Beschrijving</label>
           <textarea className="input min-h-[80px]" value={pakket.description ?? ""}
             onChange={(e) => onChange({ ...pakket, description: e.target.value })} />
         </div>
       </div>
+      </SheetSectie>
 
-      <div className="mt-4">
-        <label className="label">Wat zit erin</label>
+      {/*
+        De coverfoto vult de kaart op /aanbod en de tegel op de homepage. Dit veld ontbrak
+        volledig: `cover_item_id` bestond in het schema en werd publiek uitgelezen, maar was
+        nergens in te stellen -- de covers die er stonden kwamen uit een seed-script.
+
+        `FotoKiezer` uploadt naar de niet-gepubliceerde gelegenheid "Sitefoto's", en dat is hier
+        precies goed: een pakket-cover hoeft niet in het portfolio te staan.
+      */}
+      <SheetSectie titel="Coverfoto">
+        <FotoKiezer
+          waarde={pakket.cover?.filename}
+          leegTekst="Nog geen coverfoto"
+          onKies={(_bestandsnaam, item) =>
+            onChange({ ...pakket, coverItemId: item?.id ?? null, cover: item })
+          }
+        />
+        <p className="mt-2 text-xs text-charcoal/70">
+          Verschijnt boven de pakketkaart op <strong>/aanbod</strong>, en op de homepage als het
+          pakket uitgelicht staat. Zonder foto toont de kaart een zacht kleurvlak.
+        </p>
+      </SheetSectie>
+
+      <SheetSectie titel="Wat zit erin">
         <div className="space-y-2">
           {regels.map((r, i) => (
             <div key={i} className="flex gap-1 items-center">
@@ -296,22 +410,46 @@ function Formulier({ pakket, onChange, onOpslaan, onAnnuleer, bezig }: {
             <Plus size={14} /> Regel toevoegen
           </button>
         </div>
-      </div>
+      </SheetSectie>
 
-      <div className="mt-6 flex justify-end gap-3">
-        <button className="btn-ghost !py-2 !px-4 text-xs" onClick={onAnnuleer}>Annuleren</button>
-        {/* Een verdeling die niet optelt tot de pakketprijs zou een ander bedrag op de offerte
-            zetten dan de klant op de site zag. Dat mag niet stil gebeuren. */}
-        <button
-          className="btn-sage !py-2 !px-5 text-xs"
-          disabled={!pakket.name?.trim() || bezig || verdelingKlopt(pakket) === false}
-          title={verdelingKlopt(pakket) === false ? "De btw-verdeling telt niet op tot de vanaf-prijs." : undefined}
-          onClick={onOpslaan}
-        >
-          {bezig ? "Opslaan…" : "Opslaan"}
-        </button>
-      </div>
-    </div>
+      <SheetSectie titel="Btw">
+        <BtwBlok pakket={pakket} onChange={onChange} />
+      </SheetSectie>
+
+      {/* Stond los in de lijst, waar je hem per ongeluk aantikte terwijl je aan het lezen was.
+          Hier hoort hij: het is een eigenschap van het pakket, geen actie op de lijst. */}
+      <SheetSectie titel="Zichtbaarheid">
+        <label className="flex items-start gap-2.5 text-sm">
+          <input
+            type="checkbox"
+            className="mt-1"
+            checked={pakket.active ?? false}
+            onChange={(e) => onChange({ ...pakket, active: e.target.checked })}
+          />
+          <span>
+            Zichtbaar op <strong>/aanbod</strong>
+            <span className="mt-0.5 block text-xs text-charcoal/70">
+              Zonder vanaf-prijs staat er &ldquo;Prijs op aanvraag&rdquo; op de kaart.
+            </span>
+          </span>
+        </label>
+
+        <label className="mt-3 flex items-start gap-2.5 text-sm">
+          <input
+            type="checkbox"
+            className="mt-1"
+            checked={pakket.featured ?? false}
+            onChange={(e) => onChange({ ...pakket, featured: e.target.checked })}
+          />
+          <span>
+            Uitgelicht op de <strong>homepage</strong>
+            <span className="mt-0.5 block text-xs text-charcoal/70">
+              Telt pas mee als het pakket hierboven zichtbaar staat.
+            </span>
+          </span>
+        </label>
+      </SheetSectie>
+    </Sheet>
   );
 }
 

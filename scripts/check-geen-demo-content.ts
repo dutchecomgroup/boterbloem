@@ -100,17 +100,35 @@ if (treffers.length === 0 && dbTreffers.length === 0) {
   process.exit(0);
 }
 
-const kop = STRICT ? "✗ DEMO-CONTENT IN DE BUNDEL" : "⚠ Demo-content in de bundel";
-console.log(`\n${kop}\n`);
+const kop = STRICT ? "✗ DEMO-CONTENT GEVONDEN" : "⚠ Demo-content gevonden";
+console.log("");
+console.log(kop);
+console.log("");
+
 for (const t of treffers) {
   console.log(`  ${t.bestand}`);
   console.log(`    ${t.aantal}× ${t.wat}`);
 }
 
-console.log(
-  "\n  Dit is stockmateriaal, geen werk van het atelier. Het mag niet mee naar de\n" +
-    "  publieke live site — zie docs/deployment/testscript-master.md §8.8.\n" +
-    "  Weghalen: client/src/lib/demoGallery.ts en de aanroepen ervan.\n",
-);
+// De databasetreffers stonden hier eerst niet bij: de controle sloeg dan wél aan, maar het
+// scherm bleef leeg onder de kop. Een melding die niet zegt wát hij vond, kost je meer tijd
+// dan geen melding.
+if (dbTreffers.length > 0) {
+  console.log("  database");
+  for (const t of dbTreffers) {
+    console.log(`    ${t.aantal}× ${t.wat}`);
+  }
+}
+
+console.log("");
+console.log("  Dit is stockmateriaal, geen werk van het atelier. Het mag niet mee naar de");
+console.log("  publieke live site — zie docs/deployment/testscript-master.md §8.8.");
+console.log("");
+console.log("  Weghalen uit de database:");
+console.log("    npx tsx scripts/seed-demo-grazefotos.ts --verwijder   voorbeeldfoto's bij de pakketten");
+console.log("    npm run seed:demo -- --verwijder                      de oude democontent");
+console.log("");
+console.log("  De frontend-demolaag (client/src/lib/demoGallery.ts) is op 27-08 verwijderd.");
+console.log("");
 
 process.exit(STRICT ? 1 : 0);

@@ -1,4 +1,5 @@
 import { Link } from "wouter";
+import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, Check } from "lucide-react";
 import { api } from "../../lib/api";
@@ -56,6 +57,24 @@ export default function AanbodPage() {
   });
 
   const gelegenheden = (gallery?.categories ?? []).filter((c) => c.itemCount > 0);
+
+  /**
+   * De foto naast de taart-menukaart.
+   *
+   * Zoeken op een fragment uit de `altText` en niet op een id: id's verschillen per database, en
+   * een import die opnieuw draait geeft nieuwe. Dezelfde aanpak als `stapFotos()` in
+   * `content/werkwijze.ts`.
+   *
+   * Eerste keus is de boterbloem-gele taart -- letterlijk de kleur van de bloem in het logo, dus
+   * de meest merk-eigen taart die ze heeft. Staat die er niet, dan de eerste de beste taartfoto,
+   * en anders geen foto: dan valt de tweede kolom weg in plaats van leeg te blijven.
+   */
+  const taartFoto = useMemo(() => {
+    const items = gallery?.items ?? [];
+    const zoek = (term: string) =>
+      items.find((i) => (i.altText ?? "").toLowerCase().includes(term));
+    return zoek("frangipani") ?? zoek("taart") ?? null;
+  }, [gallery]);
   const levertijden = (settings as { levertijden?: { tekst?: string } } | undefined)?.levertijden;
 
 
@@ -174,59 +193,110 @@ export default function AanbodPage() {
       </section>
 
       {/* ---------- Taarten ---------- */}
-      <section className="relative bg-linen section-y-sm overflow-hidden">
-        <BotanicalPattern opacity={0.04} />
-        <div className="container-narrow relative">
-          <div className="text-center mb-8">
+      {/* ---------- Taarten ---------- */}
+      {/*
+        Als menukaart, met een foto ernaast.
+
+        Dit was drie prijsregels en een raster smaken op een vlakke `bg-linen`, direct gevolgd
+        door nóg een `bg-linen`-sectie: een lange witte strook zonder beeld waarin de pagina
+        stilviel. De menukaart-vorm is niet willekeurig gekozen -- hij staat op het
+        huisstijl-moodboard dat de klant zelf aanleverde, en haar vier smaken (Lemon Bliss,
+        Strawberry Blush, ...) lezen al als een menu.
+      */}
+      <section className="relative overflow-hidden bg-section-sage section-y">
+        <BotanicalPattern opacity={0.05} />
+        <BotanicalCorner position="tl" color="text-sage/25" />
+        <BotanicalCorner position="br" color="text-sage/25" />
+
+        <div className="container-tight relative">
+          <div className="mb-10 text-center">
             <div className="tag mb-3">Ook mogelijk</div>
             <h2 className="text-3xl sm:text-4xl">Taarten</h2>
-            <p className="mt-3 text-sm leading-relaxed text-charcoal/75 sm:text-base">
+            <div className="mt-5"><SierDivider className="!max-w-[180px]" /></div>
+            <p className="mx-auto mt-5 max-w-xl text-sm leading-relaxed text-charcoal/75 sm:text-base">
               Een taart zonder tafel eromheen kan natuurlijk ook: voor een verjaardag, een
               bruiloft of gewoon omdat het kan.
             </p>
           </div>
 
-          {producten && producten.length > 0 ? (
-            <div className="card divide-y divide-charcoal/5 p-0">
-              {producten.map((p) => (
-                <div key={p.id} className="flex items-baseline justify-between gap-4 px-5 py-3.5">
-                  <div>
-                    <div className="font-medium">{p.name}</div>
-                    {p.description && <div className="mt-0.5 text-xs text-charcoal/70">{p.description}</div>}
-                  </div>
-                  <div className="text-sm text-sage-dark whitespace-nowrap">
-                    vanaf {formatCurrency(Number(p.basePrice))}
-                    <span className="text-charcoal/65"> / {p.unit}</span>
-                  </div>
+          {/* Zonder foto geen tweede kolom: dan zou de kaart op halve breedte staan met een
+              leeg vlak ernaast. */}
+          {/* `items-center` en geen `items-start`: de menukaart is korter dan de staande foto,
+              en bovenaan uitgelijnd hangt hij scheef in het blok. */}
+          <div className={`grid items-center gap-8 lg:gap-12 ${taartFoto ? "lg:grid-cols-[0.8fr_1fr]" : "mx-auto max-w-2xl"}`}>
+            {taartFoto && (
+              <Reveal>
+                <div className="relative aspect-[16/10] overflow-hidden rounded-2xl shadow-xl ring-1 ring-sage/20 lg:aspect-[3/4]">
+                  <img
+                    src={imageSrc(taartFoto)}
+                    alt={taartFoto.altText ?? "Taart van Atelier Boterbloem"}
+                    loading="lazy"
+                    className="absolute inset-0 h-full w-full object-cover"
+                  />
+                  <div className="pointer-events-none absolute inset-3 rounded-xl border border-linen/30" />
                 </div>
-              ))}
-            </div>
-          ) : (
-            <div className="card text-center">
-              <p className="text-sm text-charcoal/75">
-                De taartprijzen staan nog niet online. Vraag gerust naar de mogelijkheden.
-              </p>
-            </div>
-          )}
+              </Reveal>
+            )}
 
-          {/* De vier vaste smaken. Geen producten in de database: een smaak is een keuze bij
-              elke maat, geen apart artikel met een eigen prijs. Bron: haar eigen PDF. */}
-          <div className="mt-10">
-            <div className="mb-5 text-center">
-              <div className="tag mb-2">Smaken</div>
-              <h3 className="text-2xl sm:text-3xl">Waar kun je uit kiezen</h3>
-            </div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              {SMAKEN.map((smaak) => (
-                <div key={smaak.naam} className="hairline-sage rounded-lg bg-white/70 px-5 py-4">
-                  <div className="font-display text-lg text-charcoal">{smaak.naam}</div>
-                  <div className="mt-0.5 text-sm text-charcoal/70">{smaak.omschrijving}</div>
+            <Reveal delay={0.08}>
+              {/* Eén paneel in plaats van twee losse kaarten: maten en smaken horen bij elkaar,
+                  je kiest ze in één adem. */}
+              <div className="rounded-2xl bg-linen/80 p-6 shadow-sm ring-1 ring-sage/20 backdrop-blur-sm sm:p-8">
+                {producten && producten.length > 0 ? (
+                  <ul className="space-y-4">
+                    {producten.map((p) => (
+                      <li key={p.id} className="flex items-baseline gap-3">
+                        <div className="shrink-0">
+                          <div className="font-display text-lg leading-tight text-charcoal sm:text-xl">
+                            {p.name}
+                          </div>
+                          {p.description && (
+                            <div className="mt-0.5 text-xs text-charcoal/70">{p.description}</div>
+                          )}
+                        </div>
+                        {/* De stippellijn van een menukaart: hij vult de ruimte en laat het oog
+                            van de naam naar het bedrag lopen. `aria-hidden`, want een
+                            schermlezer heeft aan de leesvolgorde genoeg. */}
+                        <span
+                          aria-hidden
+                          className="mx-1 min-w-[1.5rem] flex-1 translate-y-[-0.2em] border-b border-dotted border-charcoal/25"
+                        />
+                        <div className="shrink-0 whitespace-nowrap font-display text-lg text-sage-deep sm:text-xl">
+                          {formatCurrency(Number(p.basePrice))}
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-sm text-charcoal/75">
+                    De taartprijzen staan nog niet online. Vraag gerust naar de mogelijkheden.
+                  </p>
+                )}
+
+                {producten && producten.length > 0 && (
+                  <p className="mt-3 text-xs text-charcoal/60">
+                    Vanaf-prijzen per taart. De uiteindelijke prijs hangt af van het ontwerp.
+                  </p>
+                )}
+
+                {/* De vier vaste smaken. Geen producten in de database: een smaak is een keuze
+                    bij elke maat, geen apart artikel met een eigen prijs. Bron: haar eigen PDF. */}
+                <div className="mt-7 border-t border-sage/25 pt-6">
+                  <div className="tag mb-4">Smaken</div>
+                  <dl className="grid gap-x-6 gap-y-3 sm:grid-cols-2">
+                    {SMAKEN.map((smaak) => (
+                      <div key={smaak.naam}>
+                        <dt className="font-display text-base text-charcoal sm:text-lg">{smaak.naam}</dt>
+                        <dd className="text-xs text-charcoal/70 sm:text-sm">{smaak.omschrijving}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                  <p className="mt-5 text-xs text-charcoal/65">
+                    Iets anders in gedachten? Vraag het gerust, er kan vaak meer.
+                  </p>
                 </div>
-              ))}
-            </div>
-            <p className="mt-4 text-center text-xs text-charcoal/65">
-              Iets anders in gedachten? Vraag het gerust, er kan vaak meer.
-            </p>
+              </div>
+            </Reveal>
           </div>
         </div>
       </section>

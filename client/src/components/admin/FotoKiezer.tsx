@@ -45,7 +45,15 @@ export function FotoKiezer({
 }: {
   /** De opgeslagen bestandsnaam, of leeg. */
   waarde: string | undefined;
-  onKies: (bestandsnaam: string) => void;
+  /**
+   * De gekozen foto. `item` is `null` bij weghalen.
+   *
+   * Twee argumenten omdat de twee aanroepers verschillende dingen bewaren: de instellingen
+   * slaan de **bestandsnaam** op (die staat in een jsonb-veld en hoeft geen rij te kennen), een
+   * pakket bewaart het **id** in `cover_item_id`. Eén van beide teruggeven zou de ander dwingen
+   * de hele galerij op te halen om het andere op te zoeken.
+   */
+  onKies: (bestandsnaam: string, item: GalleryItem | null) => void;
   leegTekst?: string;
 }) {
   const qc = useQueryClient();
@@ -84,7 +92,7 @@ export function FotoKiezer({
       form.append("categoryId", String(site.id));
       const [nieuw] = await api.upload<GalleryItem[]>("/api/admin/gallery", form);
       qc.invalidateQueries({ queryKey: ["admin", "gallery"] });
-      onKies(nieuw.filename);
+      onKies(nieuw.filename, nieuw);
       setOpen(false);
     } catch (e) {
       // De server schrijft zijn meldingen voor een mens ("groter dan 10 MB", de HEIC-uitleg).
@@ -125,7 +133,7 @@ export function FotoKiezer({
           {waarde && (
             <button
               type="button"
-              onClick={() => onKies("")}
+              onClick={() => onKies("", null)}
               className="btn-ghost !px-4 !py-2 text-xs text-burgundy"
             >
               <Trash2 size={14} /> Weghalen
@@ -174,7 +182,7 @@ export function FotoKiezer({
                       key={f.id}
                       type="button"
                       onClick={() => {
-                        onKies(f.filename);
+                        onKies(f.filename, f);
                         setOpen(false);
                       }}
                       title={f.altText ?? naamPerCategorie.get(f.categoryId ?? -1) ?? ""}

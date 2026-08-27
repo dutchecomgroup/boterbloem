@@ -13,12 +13,21 @@ import { useLocation, useSearch } from "wouter";
  * `replace` bij het sluiten: openen-en-sluiten hoort geen twee stappen in de geschiedenis
  * achter te laten, anders moet je drie keer terug om echt weg te zijn.
  */
-export function useSheetParam(naam: "boeking" | "aanvraag") {
+export function useSheetParam(naam: "boeking" | "aanvraag" | "pakket") {
   const zoek = useSearch();
   const [pad, navigeer] = useLocation();
 
   const ruw = new URLSearchParams(zoek).get(naam);
   const id = ruw !== null && /^\d+$/.test(ruw) ? Number(ruw) : null;
+  /**
+   * `?pakket=nieuw` — iets aanmaken dat nog geen id heeft.
+   *
+   * Een boeking en een aanvraag ontstaan elders en hebben altijd al een id; een pakket maak je
+   * hier aan. Zonder deze waarde zou "nieuw pakket" als enige scherm terugvallen op `useState`,
+   * en dan gedraagt de terugknop zich anders dan bij bewerken -- precies het verschil waar je
+   * over struikelt.
+   */
+  const isNieuw = ruw === "nieuw";
 
   const openen = useCallback(
     (nieuwId: number) => {
@@ -36,5 +45,11 @@ export function useSheetParam(naam: "boeking" | "aanvraag") {
     navigeer(query ? `${pad}?${query}` : pad, { replace: true });
   }, [zoek, pad, naam, navigeer]);
 
-  return { id, openen, sluiten };
+  const openenNieuw = useCallback(() => {
+    const p = new URLSearchParams(zoek);
+    p.set(naam, "nieuw");
+    navigeer(`${pad}?${p}`);
+  }, [zoek, pad, naam, navigeer]);
+
+  return { id, isNieuw, openen, openenNieuw, sluiten };
 }

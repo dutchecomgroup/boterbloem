@@ -118,9 +118,11 @@
   .bg-section-warm {
     background: linear-gradient(135deg, #F7F5F0 0%, #F9EDEA 40%, #EDE7DE 100%);
   }
-  /* Salie-wassing, voor een sectie die eruit moet springen zonder een harde kleurvlek te zijn. */
+  /* Salie-wassing, voor een sectie die eruit moet springen zonder een harde kleurvlek te zijn.
+     De middenstop staat breed: bij een hoge sectie loopt een smalle stop zo ver uit elkaar dat
+     er alleen linen overblijft. */
   .bg-section-sage {
-    background: linear-gradient(180deg, #F7F5F0 0%, #DDE4D6 55%, #F7F5F0 100%);
+    background: linear-gradient(180deg, #F7F5F0 0%, #DCE3D4 35%, #DCE3D4 65%, #F7F5F0 100%);
   }
   /* Filter pills */
   .pill {

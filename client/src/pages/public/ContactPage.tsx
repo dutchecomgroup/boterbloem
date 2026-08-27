@@ -117,6 +117,16 @@ export default function ContactPage() {
               Vul het formulier in met zoveel mogelijk details: datum, gelegenheid en aantal personen. Dan komen we zo snel mogelijk bij je terug met een voorstel.
             </p>
 
+            {/* Op mobiel staat de foto hier, boven de contactgegevens: hij stond alleen in de
+                `lg`-variant onderaan de kolom, en daardoor opende de pagina op een telefoon met
+                een kop, een lap tekst en een formulier — zonder één beeld. */}
+            {heroImg && (
+              <div className="relative mb-8 aspect-[16/10] overflow-hidden rounded-2xl shadow-xl ring-1 ring-sage/20 lg:hidden">
+                <img src={heroImg} alt="" className="absolute inset-0 h-full w-full object-cover" />
+                <div className="pointer-events-none absolute inset-3 rounded-xl border border-linen/30" />
+              </div>
+            )}
+
             <ul className="space-y-4 text-sm mb-8 sm:mb-10">
               {contact?.email && (
                 <li className="flex items-start gap-3"><Mail size={18} className="text-sage mt-0.5" /><a href={`mailto:${contact.email}`} className="hover:text-sage-dark">{contact.email}</a></li>

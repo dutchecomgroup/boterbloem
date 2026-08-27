@@ -203,7 +203,11 @@ export default function HomePage() {
         <div className="container-tight relative py-10 sm:py-16 md:py-24">
           <div className="grid lg:grid-cols-[1.05fr_1fr] gap-8 sm:gap-12 lg:gap-20 items-center">
             <div className="relative text-center lg:text-left">
-              <div className="tag mb-4 sm:mb-6">Patisserie · Op maat</div>
+              {/* "Patisserie · Op maat" stond hier nog uit de tijd dat taarten de hoofdmoot
+                  waren. Sinds de meeting van 24-08 zijn sweet en grazing tables dat, en een
+                  grazing table is hartig — dus geen patisserie. Dit is de regel die de klant
+                  zelf onder haar woordmerk zette op het huisstijl-moodboard. */}
+              <div className="tag mb-4 sm:mb-6">Sweet tables · Grazing tables · Taarten</div>
               <h1 className="text-4xl sm:text-5xl md:text-6xl leading-[1.05]">
                 <SplitText
                   text="Atelier"
