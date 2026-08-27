@@ -1,102 +1,23 @@
 import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { api } from "../../lib/api";
 import { usePublicSettings } from "../../hooks/usePublicSettings";
-import type { GalleryItem, GalleryCategory, Review, Package } from "@shared/schema";
-import { ArrowRight, ChevronLeft, ChevronRight, Quote } from "lucide-react";
+import type { GalleryItem, Review, Package } from "@shared/schema";
+import { ArrowRight, Quote } from "lucide-react";
 import { imageSrc } from "../../lib/images";
 import { BotanicalPattern } from "../../components/ornaments/BotanicalPattern";
-import { FloralFrame } from "../../components/ornaments/FloralFrame";
 import { SierDivider } from "../../components/ornaments/SierDivider";
 import { BotanicalCorner } from "../../components/ornaments/BotanicalCorner";
 import { SectionDivider } from "../../components/ornaments/SectionDivider";
 import { Reveal } from "../../components/Reveal";
-import { SplitText } from "../../components/SplitText";
 import { Marquee } from "../../components/Marquee";
 import { MagneticLink } from "../../components/MagneticLink";
-import { MouseSpotlight } from "../../components/MouseSpotlight";
 import { type ProcessStep } from "../../components/ProcessStory";
 import { KORTE_STAPPEN, stapFotos } from "../../content/werkwijze";
 import type { GalerijAntwoord } from "../../lib/galerij";
 import { ProcessStrip } from "../../components/ProcessStrip";
-
-function HeroCarousel({ items }: { items: GalleryItem[] }) {
-  const [idx, setIdx] = useState(0);
-  const count = items.length;
-
-  useEffect(() => {
-    if (count < 2) return;
-    const t = setInterval(() => setIdx((i) => (i + 1) % count), 4500);
-    return () => clearInterval(t);
-  }, [count]);
-
-  if (count === 0) {
-    return (
-      <div className="relative aspect-[4/3] sm:aspect-[4/5] rounded-2xl bg-gradient-to-br from-blush/40 via-linen to-boterbloem/50 shadow-xl border border-sage/10 flex items-center justify-center">
-        <div className="text-center px-6">
-          <div className="script-accent text-4xl mb-3">Atelier</div>
-          <div className="tag">Foto's verschijnen hier zodra ze geüpload zijn</div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="relative aspect-[4/3] sm:aspect-[4/5] rounded-2xl overflow-hidden shadow-2xl ring-1 ring-sage/20 group">
-      {items.map((item, i) => (
-        <img
-          key={item.id}
-          src={imageSrc(item)}
-          alt={item.altText ?? ""}
-          className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-[1500ms] ease-in-out ${
-            i === idx ? "opacity-100" : "opacity-0"
-          }`}
-          loading={i === 0 ? "eager" : "lazy"}
-        />
-      ))}
-      <div className="pointer-events-none absolute inset-3 border border-linen/30 rounded-xl" />
-      <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-charcoal/60 to-transparent" />
-      {items[idx]?.caption && (
-        <div className="absolute bottom-6 left-6 right-20 text-linen text-sm font-medium drop-shadow">
-          {items[idx].caption}
-        </div>
-      )}
-      {count > 1 && (
-        <div className="absolute bottom-5 right-5 flex items-center gap-1.5">
-          {items.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => setIdx(i)}
-              aria-label={`Foto ${i + 1}`}
-              className={`h-2 rounded-full transition-all ${
-                i === idx ? "w-6 bg-linen" : "w-2 bg-linen/40 hover:bg-linen/70"
-              }`}
-            />
-          ))}
-        </div>
-      )}
-      {count > 1 && (
-        <>
-          <button
-            onClick={() => setIdx((i) => (i - 1 + count) % count)}
-            className="hidden md:flex absolute left-3 top-1/2 -translate-y-1/2 h-10 w-10 items-center justify-center rounded-full bg-linen/80 backdrop-blur text-charcoal hover:bg-linen transition opacity-0 group-hover:opacity-100"
-            aria-label="Vorige"
-          >
-            <ChevronLeft size={20} />
-          </button>
-          <button
-            onClick={() => setIdx((i) => (i + 1) % count)}
-            className="hidden md:flex absolute right-3 top-1/2 -translate-y-1/2 h-10 w-10 items-center justify-center rounded-full bg-linen/80 backdrop-blur text-charcoal hover:bg-linen transition opacity-0 group-hover:opacity-100"
-            aria-label="Volgende"
-          >
-            <ChevronRight size={20} />
-          </button>
-        </>
-      )}
-    </div>
-  );
-}
+import { HeroCollage } from "../../components/public/HeroCollage";
 
 // Volgorde is niet willekeurig: sweet en grazing tables zijn de hoofdfocus, taarten horen
 // erbij maar zijn niet waar de site over gaat. Zie de meeting van 24-08.
@@ -141,8 +62,39 @@ export default function HomePage() {
   });
 
   const items: GalleryItem[] = gallery?.items ?? [];
+  /**
+   * De foto achter de afsluitende CTA: de ivoor-en-bordeaux met kaarsen, de sfeervolste en
+   * donkerste uit haar set -- die verdraagt de charcoal-overlay zonder te verdrinken. Zoeken
+   * op `altText`-fragment, zelfde aanpak als `stapFotos()`. Geen treffer = het vlak van nu.
+   */
+  const ctaFoto = useMemo(
+    () => items.find((i) => (i.altText ?? "").toLowerCase().includes("bordeaux taart naast")) ?? null,
+    [items],
+  );
+
+  /** Gelegenheid-slug per foto, zodat een werktegel naar zíjn gelegenheid linkt. */
+  const slugPerCategorie = useMemo(
+    () => new Map((gallery?.categories ?? []).map((c) => [c.id, c.slug])),
+    [gallery],
+  );
   const featured = items.filter((i) => i.featured);
-  const carouselItems = (featured.length ? featured : items).slice(0, 6);
+  /**
+   * De drie foto's van de hero-collage.
+   *
+   * Eerst wat ze in de instellingen koos (`hero.fotoIds`, op volgorde), aangevuld met
+   * uitgelicht werk tot er drie staan. Een id dat nergens meer heen wijst -- de foto is
+   * verwijderd -- valt er stil uit: `site_settings` is jsonb, dus de database kan die
+   * verwijzing niet voor ons opruimen, en een gat in de collage is erger dan een andere foto.
+   */
+  const heroFotos = useMemo(() => {
+    const gekozen = (hero?.fotoIds ?? [])
+      .map((id) => items.find((i) => i.id === id))
+      .filter((f): f is GalleryItem => Boolean(f));
+    const rest = (featured.length ? featured : items).filter(
+      (f) => !gekozen.some((g) => g.id === f.id),
+    );
+    return [...gekozen, ...rest].slice(0, 3);
+  }, [hero, items, featured]);
   const gridFeatured = (featured.length ? featured : items).slice(0, 6);
 
   // Pakketten eerst; zonder actieve pakketten de gelegenheden uit de galerij.
@@ -194,63 +146,12 @@ export default function HomePage() {
   return (
     <>
       {/* ========== HERO ========== */}
-      <section className="relative overflow-hidden bg-section-warm">
-        <MouseSpotlight />
-        <BotanicalPattern opacity={0.05} />
-        <FloralFrame className="absolute -top-8 -right-8 md:-top-12 md:-right-12 w-32 sm:w-56 md:w-80 h-32 sm:h-56 md:h-80" color="text-sage/20" />
-        <FloralFrame className="absolute -bottom-8 -left-8 md:-bottom-12 md:-left-12 rotate-180 w-24 sm:w-40 md:w-64 h-24 sm:h-40 md:h-64" color="text-blush" />
-
-        <div className="container-tight relative py-10 sm:py-16 md:py-24">
-          <div className="grid lg:grid-cols-[1.05fr_1fr] gap-8 sm:gap-12 lg:gap-20 items-center">
-            <div className="relative text-center lg:text-left">
-              {/* "Patisserie · Op maat" stond hier nog uit de tijd dat taarten de hoofdmoot
-                  waren. Sinds de meeting van 24-08 zijn sweet en grazing tables dat, en een
-                  grazing table is hartig — dus geen patisserie. Dit is de regel die de klant
-                  zelf onder haar woordmerk zette op het huisstijl-moodboard. */}
-              <div className="tag mb-4 sm:mb-6">Sweet tables · Grazing tables · Taarten</div>
-              <h1 className="text-4xl sm:text-5xl md:text-6xl leading-[1.05]">
-                <SplitText
-                  text="Atelier"
-                  as="span"
-                  by="char"
-                  stagger={40}
-                  className="block"
-                />
-                <SplitText
-                  text="Boterbloem"
-                  as="span"
-                  by="char"
-                  stagger={40}
-                  delay={400}
-                  className="script-accent text-5xl sm:text-7xl md:text-8xl block leading-none -mt-1 sm:-mt-2"
-                />
-              </h1>
-              <Reveal delay={1200} className="mt-4 mb-4 sm:mt-6 sm:mb-6">
-                <SierDivider className="!mx-auto lg:!mx-0 !max-w-[180px]" />
-              </Reveal>
-              <Reveal delay={1300}>
-                <p className="text-base sm:text-lg text-charcoal/75 max-w-xl leading-relaxed mx-auto lg:mx-0">
-                  {hero?.tagline ??
-                    "Sweet tables en grazing tables voor jouw mooiste momenten. Bruiloften, babyshowers, en alles daartussen."}
-                </p>
-              </Reveal>
-              <Reveal delay={1450} className="mt-6 sm:mt-10 flex flex-wrap gap-3 sm:gap-4 justify-center lg:justify-start">
-                <MagneticLink href={hero?.ctaHref ?? "/contact"} className="btn-sage">
-                  {hero?.ctaLabel ?? "Vraag offerte aan"}
-                </MagneticLink>
-                <Link href="/galerij" className="btn-outline">
-                  Bekijk de galerij
-                </Link>
-              </Reveal>
-            </div>
-
-            <Reveal delay={500} className="relative max-w-md mx-auto lg:max-w-none w-full">
-              <div className="absolute -inset-6 -z-10 bg-gradient-to-br from-sage/10 via-transparent to-blush/20 rounded-[2rem] blur-2xl" />
-              <HeroCarousel items={carouselItems} />
-            </Reveal>
-          </div>
-        </div>
-      </section>
+      <HeroCollage
+        fotos={heroFotos}
+        tagline={hero?.tagline}
+        ctaLabel={hero?.ctaLabel}
+        ctaHref={hero?.ctaHref}
+      />
 
       {/* ========== MARQUEE ========== */}
       <Marquee items={MARQUEE_TAGS} duration={50} />
@@ -272,7 +173,7 @@ export default function HomePage() {
               <Link
                 key={s.key}
                 href={s.href}
-                className="group rounded-2xl overflow-hidden bg-white shadow-sm hover:shadow-xl transition-shadow ring-1 ring-sage/10 block"
+                className="group rounded-2xl overflow-hidden bg-linen shadow-sm hover:shadow-xl transition-shadow ring-1 ring-sage/25 block"
               >
                 {s.img && (
                   <div className="relative aspect-[5/4] overflow-hidden">
@@ -324,24 +225,43 @@ export default function HomePage() {
               Alle creaties <ArrowRight size={16} />
             </Link>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+          {/*
+            Masonry in plaats van zes gedwongen vierkanten: `gallery_items` kent de echte
+            afmetingen, dus de foto's mogen hun eigen verhouding houden -- staand naast
+            liggend, zoals in een magazine. CSS-kolommen doen het metselwerk; per kaart houdt
+            `break-inside-avoid` foto en bijschrift bij elkaar.
+
+            De bijschriften staan er áltijd, niet pas bij hover: op een telefoon bestaat hover
+            niet, en ze zijn precies daarvoor geschreven.
+          */}
+          <div className="columns-2 gap-4 md:columns-3 md:gap-6">
             {gridFeatured.map((item) => (
               <Link
                 key={item.id}
-                href="/galerij"
-                className="group relative aspect-square overflow-hidden rounded-lg bg-white shadow-sm ring-1 ring-sage/10"
+                href={item.categoryId != null && slugPerCategorie.get(item.categoryId)
+                  ? `/galerij/${slugPerCategorie.get(item.categoryId)}`
+                  : "/galerij"}
+                className="group mb-4 block break-inside-avoid md:mb-6"
               >
-                <img
-                  src={imageSrc(item)}
-                  alt={item.altText ?? ""}
-                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                  loading="lazy"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-charcoal/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div
+                  className="relative w-full overflow-hidden rounded-lg bg-linen shadow-sm ring-1 ring-sage/25 transition-all duration-300 group-hover:-translate-y-0.5 group-hover:shadow-lg"
+                  style={{
+                    aspectRatio:
+                      item.width && item.height ? `${item.width} / ${item.height}` : "4 / 5",
+                  }}
+                >
+                  <img
+                    src={imageSrc(item)}
+                    alt={item.altText ?? ""}
+                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </div>
                 {item.caption && (
-                  <div className="absolute bottom-3 left-3 right-3 text-linen text-xs opacity-0 group-hover:opacity-100 transition-opacity drop-shadow">
+                  <p className="mt-2 px-0.5 text-xs leading-snug text-charcoal/65 transition-colors group-hover:text-charcoal">
                     {item.caption}
-                  </div>
+                  </p>
                 )}
               </Link>
             ))}
@@ -393,6 +313,21 @@ export default function HomePage() {
 
       {/* ========== CTA STRIP ========== */}
       <Reveal as="section" className="relative section-y bg-charcoal text-linen overflow-hidden">
+        {/* Beeld onder een dikke charcoal-wassing: sfeer zonder het contrast van de tekst aan
+            te tasten. Zonder foto blijft het gewoon het vlak dat er stond. */}
+        {ctaFoto && (
+          <>
+            <img
+              src={imageSrc(ctaFoto)}
+              alt=""
+              aria-hidden
+              loading="lazy"
+              decoding="async"
+              className="absolute inset-0 h-full w-full object-cover object-center"
+            />
+            <div className="absolute inset-0 bg-charcoal/85" />
+          </>
+        )}
         <BotanicalPattern opacity={0.06} className="text-linen" />
         <div className="container-narrow relative text-center">
           <SierDivider className="!text-sage/60" />

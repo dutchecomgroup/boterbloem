@@ -15,7 +15,7 @@ import type { ProcessStep } from "./ProcessStory";
  */
 export function ProcessStrip({ steps }: { steps: ProcessStep[] }) {
   return (
-    <section className="relative overflow-hidden bg-linen section-y-sm">
+    <section className="relative overflow-hidden bg-section-sage section-y-sm">
       <div className="container-tight relative">
         <div className="mb-10 text-center">
           <div className="tag mb-3">Het proces</div>

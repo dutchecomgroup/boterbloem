@@ -52,6 +52,10 @@
   h1, h2, h3, h4 {
     @apply font-display tracking-tight text-charcoal;
   }
+  /* Grote koppen niet laten eindigen met één weeswoord op de tweede regel. */
+  h1, h2 {
+    text-wrap: balance;
+  }
   a {
     @apply transition-colors;
   }
@@ -66,6 +70,14 @@
   }
   .btn {
     @apply inline-flex items-center justify-center gap-2 rounded-full px-5 sm:px-6 py-3 text-xs sm:text-sm font-medium uppercase tracking-widest transition-all disabled:cursor-not-allowed disabled:opacity-50 min-h-[44px];
+  }
+  /* Micro-interactie: het icoon in een knop schuift een tikje mee bij hover. Stil genoeg om
+     nergens op te vallen, aanwezig genoeg om de knop levend te maken. */
+  .btn > svg {
+    @apply transition-transform duration-300;
+  }
+  .btn:hover > svg {
+    transform: translateX(2px);
   }
   .btn-sage {
     @apply btn bg-sage-deep text-linen hover:bg-sage-dark shadow-sm hover:shadow-md;
@@ -82,8 +94,13 @@
   .label {
     @apply block text-xs font-medium uppercase tracking-wider text-charcoal/70 mb-1.5;
   }
+  /*
+   * Linen en geen wit. Een witte kaart op een bijna-wit vlak heeft geen rand om op te vallen,
+   * en dat is precies waarom de pakketkaarten als niets lazen. Regel: **een kaart is nooit wit
+   * op een bijna-wit vlak** -- of de kaart krijgt kleur, of de sectie eronder.
+   */
   .card {
-    @apply rounded-lg border border-charcoal/10 bg-white p-6 shadow-sm;
+    @apply rounded-lg border border-charcoal/10 bg-linen p-6 shadow-sm;
   }
   /* Het accent uit het moodboard: cursieve serif, geen schrijfletter. `sage-deep` en niet
      `sage`, want dit is tekst die gelezen wordt — zie de contrastregel hieronder. */
@@ -101,29 +118,84 @@
   .section-y-sm {
     @apply py-10 sm:py-16;
   }
-  /* Zachte sectie-verlopen. De kleuren komen uit het moodboard: linen #F7F5F0, sand #EDE7DE,
-     blush #F5D9DE, salie #A7B49A. Bewust ver uit elkaar gehouden in verzadiging, zodat twee
-     secties naast elkaar nog van elkaar te onderscheiden zijn. */
+  /* ------------------------------------------------------------------------
+   * Sectievlakken
+   *
+   * **Vlakke velden, geen verlopen die naar linen terugvallen.** Dit stond hier eerst als
+   * `linear-gradient(180deg, #F7F5F0 …, #F7F5F0)` voor élke klasse: elk verloop begon en
+   * eindigde op linen, dus bij iedere naad viel de kleur weg. Vier secties op elkaar gaven
+   * daardoor één doorlopend wit veld met een vage zweem in het midden -- de verlopen hieven
+   * zichzelf op. In de woorden van de gebruiker: *"Bijna alles is WIT op de hele website."*
+   *
+   * Regel bij het gebruik: **twee aangrenzende secties krijgen nooit hetzelfde vlak.** Dat is
+   * wat een pagina ritme geeft; een verloop kan dat niet als hij aan de rand toch weer wit is.
+   *
+   * Contrast van charcoal (#2B2926) op elk vlak, gemeten: linen 13,3 · zand 11,8 · blush 10,6 ·
+   * salie-licht 11,2. Linen-tekst op salie-diep haalt 5,04 en mag dus lopende tekst dragen.
+   * --------------------------------------------------------------------- */
   .bg-section-linen {
-    background: radial-gradient(ellipse at top, #FFFFFF 0%, #F7F5F0 60%);
-  }
-  .bg-section-blush {
-    background: linear-gradient(180deg, #F7F5F0 0%, #FAECEF 60%, #F7F5F0 100%);
+    background-color: #F7F5F0;
   }
   .bg-section-sand {
-    background: linear-gradient(180deg, #F7F5F0 0%, #EDE7DE 50%, #F7F5F0 100%);
+    background-color: #EDE7DE;
   }
-  /* Blush op 45% gaf een vlak dat als rózé leest, en het moodboard is neutraal met salie- en
-     blush-accenten. Deze versie houdt de warmte en laat de foto's het werk doen. */
+  /* Blush verzacht: puur #F5D9DE over een hele sectie leest als rózé, en het moodboard is
+     neutraal mét blush-accenten, niet andersom. */
+  .bg-section-blush {
+    background-color: #F7EAEC;
+  }
+  /* De enige die een verloop blijft, en wel een die érgens anders eindigt dan hij begon. */
   .bg-section-warm {
-    background: linear-gradient(135deg, #F7F5F0 0%, #F9EDEA 40%, #EDE7DE 100%);
+    background: linear-gradient(135deg, #F9EFEC 0%, #F4EDE4 55%, #EDE7DE 100%);
   }
-  /* Salie-wassing, voor een sectie die eruit moet springen zonder een harde kleurvlek te zijn.
-     De middenstop staat breed: bij een hoge sectie loopt een smalle stop zo ver uit elkaar dat
-     er alleen linen overblijft. */
   .bg-section-sage {
-    background: linear-gradient(180deg, #F7F5F0 0%, #DCE3D4 35%, #DCE3D4 65%, #F7F5F0 100%);
+    background-color: #DDE4D6;
   }
+  /*
+   * Het massieve saliepaneel: één per pagina, met linen-tekst.
+   *
+   * Dit is het element dat de site miste. Haar huisstijl-moodboard heeft precies zo'n vlak
+   * ("Liefde in elk detail, smaak in elk moment" in wit op vol salie) en de uitvoering was
+   * volledig aan de linen-kant blijven hangen.
+   */
+  .bg-section-diep {
+    background-color: theme("colors.sage.deep");
+    @apply text-linen;
+  }
+
+  /*
+   * Alles op het saliepaneel omkeren.
+   *
+   * `text-linen` op de sectie alleen is niet genoeg: `h2` krijgt `text-charcoal` uit
+   * `@layer base`, `.tag` krijgt `text-sage-dark`, en de lopende tekst staat op
+   * `text-charcoal/75`. Dat zijn allemaal eigen klassen, dus de sectie wint daar niet van --
+   * en dan staat er donkere tekst op een donker vlak. Deze regels zijn afstammelingsselectors
+   * (element + klasse) en hebben daardoor wél voorrang.
+   *
+   * 🔴 **Geen doorzichtigheid hier.** Linen op sage-deep haalt 5,04:1, maar al bij `linen/85`
+   * zakt het naar 4,16 en dus onder de AA-eis. De gebruikelijke `text-charcoal/75`-nuance kan
+   * op dit vlak niet: alles staat op vol linen.
+   */
+  .bg-section-diep h1,
+  .bg-section-diep h2,
+  .bg-section-diep h3,
+  .bg-section-diep h4,
+  .bg-section-diep p,
+  .bg-section-diep li,
+  .bg-section-diep .tag,
+  .bg-section-diep .script-accent {
+    @apply text-linen;
+  }
+
+  /* De primaire knop is sage-deep op linen -- op dit vlak dus onzichtbaar. Omgekeerd haalt hij
+     dezelfde 5,04:1 en valt hij juist op. */
+  .bg-section-diep .btn-sage {
+    @apply bg-linen text-sage-deep hover:bg-white;
+  }
+  .bg-section-diep .btn-outline {
+    @apply border-linen/70 text-linen hover:bg-linen/15;
+  }
+
   /* Filter pills */
   .pill {
     @apply px-3 sm:px-4 py-2 rounded-full text-[10px] sm:text-xs uppercase tracking-widest transition border min-h-[36px] inline-flex items-center;

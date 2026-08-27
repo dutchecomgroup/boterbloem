@@ -15,7 +15,7 @@ import { SierDivider } from "../../components/ornaments/SierDivider";
 import { BotanicalCorner } from "../../components/ornaments/BotanicalCorner";
 import { Reveal } from "../../components/Reveal";
 import { PageHeader } from "../../components/PageHeader";
-import { PakketKaart, type PakketMetCover } from "../../components/public/PakketKaart";
+import { PakketKaart, pakketFamilie, type PakketMetCover } from "../../components/public/PakketKaart";
 import { GelegenheidCarrousel } from "../../components/public/GelegenheidCarrousel";
 
 /**
@@ -57,6 +57,18 @@ export default function AanbodPage() {
   });
 
   const gelegenheden = (gallery?.categories ?? []).filter((c) => c.itemCount > 0);
+
+  /**
+   * De pakketten in hun twee families. De kleur op de kaarten zegt welke drie bij elkaar
+   * horen; deze koppen zeggen waaróm. Zonder de kop is de tint versiering.
+   */
+  const groepen = useMemo(() => {
+    const alles = pakketten ?? [];
+    return [
+      { sleutel: "zoet" as const, titel: "Sweet tables", regel: "Zoet, en het middelpunt van je feest.", items: alles.filter((p) => pakketFamilie(p.slug) === "zoet") },
+      { sleutel: "hartig" as const, titel: "Grazing tables", regel: "Hartig, en de hele avond door te eten.", items: alles.filter((p) => pakketFamilie(p.slug) === "hartig") },
+    ].filter((g) => g.items.length > 0);
+  }, [pakketten]);
 
   /**
    * De foto naast de taart-menukaart.
@@ -128,18 +140,33 @@ export default function AanbodPage() {
                 helft van waar deze pagina over gaat. Zo staat een overblijver in het midden en
                 leest hij als een keuze in plaats van als een restje.
               */}
-              <div className="flex flex-wrap justify-center gap-4 sm:gap-6">
-                {pakketten.map((p, i) => (
-                  <Reveal
-                    key={p.id}
-                    delay={i * 0.06}
-                    /* Ook op een telefoon twee naast elkaar: één kaart over de volle breedte
-                       is zo hoog dat je per scherm nauwelijks een pakket ziet, en dan scroll je
-                       langs de prijzen in plaats van ze te vergelijken. */
-                    className="w-[calc(50%-0.5rem)] sm:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)]"
-                  >
-                    <PakketKaart pakket={p} />
-                  </Reveal>
+              {/* Per familie een kop, tenzij er maar één familie actief is: "Sweet tables"
+                  boven de enige rij is een mededeling zonder inhoud. */}
+              <div className="space-y-12 sm:space-y-16">
+                {groepen.map((groep) => (
+                  <div key={groep.sleutel}>
+                    {groepen.length > 1 && (
+                      <div className="mb-6 text-center sm:mb-8">
+                        <h2 className="text-2xl sm:text-3xl">{groep.titel}</h2>
+                        <p className="mt-1.5 text-sm text-charcoal/70">{groep.regel}</p>
+                      </div>
+                    )}
+                    <div className="flex flex-wrap justify-center gap-4 sm:gap-6">
+                      {groep.items.map((p, i) => (
+                        <Reveal
+                          key={p.id}
+                          delay={i * 0.06}
+                          /* Ook op een telefoon twee naast elkaar: één kaart over de volle
+                             breedte is zo hoog dat je per scherm nauwelijks een pakket ziet,
+                             en dan scroll je langs de prijzen in plaats van ze te
+                             vergelijken. */
+                          className="w-[calc(50%-0.5rem)] sm:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)]"
+                        >
+                          <PakketKaart pakket={p} familie={groep.sleutel} />
+                        </Reveal>
+                      ))}
+                    </div>
+                  </div>
                 ))}
               </div>
 
@@ -334,10 +361,10 @@ export default function AanbodPage() {
       )}
 
       {/* ---------- Slot ---------- */}
-      <section className="relative bg-section-blush section-y overflow-hidden">
-        <BotanicalPattern opacity={0.05} />
-        <BotanicalCorner position="tl" color="text-sage/30" />
-        <BotanicalCorner position="br" color="text-sage/30" />
+      <section className="relative bg-section-diep text-linen section-y overflow-hidden">
+        <BotanicalPattern opacity={0.07} className="text-linen" />
+        <BotanicalCorner position="tl" color="text-linen/25" />
+        <BotanicalCorner position="br" color="text-linen/25" />
         <div className="container-narrow relative text-center">
           <div className="script-accent text-4xl sm:text-5xl mb-4 leading-none">Klaar om te plannen?</div>
           <p className="text-charcoal/70 mb-8 leading-relaxed text-sm sm:text-base">
@@ -347,7 +374,7 @@ export default function AanbodPage() {
           <Link href="/contact" className="btn-sage">
             Vraag een offerte aan <ArrowRight size={16} />
           </Link>
-          <div className="mt-8 sm:mt-10"><SierDivider /></div>
+          <div className="mt-8 sm:mt-10"><SierDivider color="text-linen/50" /></div>
         </div>
       </section>
     </>

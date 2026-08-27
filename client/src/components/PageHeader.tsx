@@ -44,7 +44,9 @@ export function PageHeader({
       <div className="container-tight relative text-center">
         {boven}
         <div className="tag mb-3">{tag}</div>
-        <h1 className="text-4xl sm:text-5xl md:text-6xl">{titel}</h1>
+        {/* Een slag groter dan voorheen: de editoriale taal van de site leunt op het
+            contrast tussen een grote Playfair-kop en de kleine hoofdletter-labels. */}
+        <h1 className="text-5xl sm:text-6xl md:text-7xl">{titel}</h1>
         <div className="mb-4 mt-4 sm:mb-5 sm:mt-6">
           <SierDivider className="!max-w-[180px]" />
         </div>

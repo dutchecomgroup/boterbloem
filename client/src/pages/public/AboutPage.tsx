@@ -61,16 +61,16 @@ export default function AboutPage() {
       </section>
 
       {/* Pull quote */}
-      <section className="relative bg-section-sand section-y overflow-hidden">
-        <BotanicalPattern opacity={0.05} />
-        <BotanicalCorner position="tl" color="text-sage/30" />
-        <BotanicalCorner position="br" color="text-sage/30" />
+      <section className="relative bg-section-diep text-linen section-y overflow-hidden">
+        <BotanicalPattern opacity={0.07} className="text-linen" />
+        <BotanicalCorner position="tl" color="text-linen/25" />
+        <BotanicalCorner position="br" color="text-linen/25" />
         <div className="container-narrow relative text-center">
           <div className="script-accent text-3xl sm:text-5xl md:text-6xl leading-tight mb-6">
             "Smaak, ambacht, en een glimlach in elke beet."
           </div>
           <div className="tag">Atelier Boterbloem</div>
-          <div className="mt-8 sm:mt-10"><SierDivider /></div>
+          <div className="mt-8 sm:mt-10"><SierDivider color="text-linen/50" /></div>
         </div>
       </section>
     </>

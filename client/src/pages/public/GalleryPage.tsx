@@ -13,6 +13,7 @@ import { Reveal } from "../../components/Reveal";
 import { PageHeader } from "../../components/PageHeader";
 import { FotoScrim, FOTO_TEKST_SCHADUW } from "../../components/FotoScrim";
 import { FotoCyclus } from "../../components/FotoCyclus";
+import { GelegenheidStapel } from "../../components/public/GelegenheidStapel";
 
 /**
  * Drie niveaus, gelijk aan het beheerpaneel en aan hoe je erover praat:
@@ -86,7 +87,7 @@ function OverzichtPagina() {
         tekst="Kies een gelegenheid en bekijk wat we eerder maakten. Zo krijg je een idee van wat er mogelijk is, en van de sfeer die erbij past."
       />
 
-      <section className="relative bg-linen section-y overflow-hidden">
+      <section className="relative bg-section-sand section-y overflow-hidden">
         <BotanicalPattern opacity={0.04} />
         <div className="container-tight relative">
           {isLoading ? (
@@ -94,41 +95,10 @@ function OverzichtPagina() {
           ) : zichtbaar.length === 0 ? (
             <div className="card text-center text-charcoal/50 py-20">Nog geen werk om te tonen.</div>
           ) : (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {zichtbaar.map((c, i) => (
-                <Reveal key={c.id} delay={i * 0.05}>
-                  <Link
-                    href={`/galerij/${c.slug}`}
-                    className="group block rounded-2xl overflow-hidden bg-white shadow-sm hover:shadow-xl transition-all ring-1 ring-sage/10"
-                  >
-                    <div className="relative aspect-[4/3] overflow-hidden bg-blush/30">
-                      {/*
-                        Wisselt door de foto's van álle events onder deze gelegenheid. Eén
-                        vaste cover liet de bezoeker maar één feest zien, terwijl er tien
-                        onder zitten. De cover blijft vooraan staan: dat is de foto die
-                        bewust gekozen is, en die hoort als eerste in beeld te komen.
-                      */}
-                      <FotoCyclus
-                        fotos={tegelFotos(c)}
-                        alt={c.name}
-                        vertraging={i * 900}
-                        periode={5400}
-                        className="transition-transform duration-700 group-hover:scale-105"
-                      />
-                      <FotoScrim />
-                      <div
-                        className={`absolute bottom-4 left-5 right-5 z-30 font-display text-2xl leading-tight text-linen sm:text-3xl ${FOTO_TEKST_SCHADUW}`}
-                      >
-                        {c.name}
-                      </div>
-                    </div>
-                    {c.description && (
-                      <p className="p-5 text-sm text-charcoal/70 leading-relaxed">{c.description}</p>
-                    )}
-                  </Link>
-                </Reveal>
-              ))}
-            </div>
+            /* De stapel: elke gelegenheid een volle kaart die blijft plakken terwijl de
+               volgende eroverheen schuift. Zie de kop van GelegenheidStapel voor het hoe
+               en de valkuilen. */
+            <GelegenheidStapel gelegenheden={zichtbaar} tegelFotos={tegelFotos} />
           )}
         </div>
       </section>
@@ -174,7 +144,7 @@ function GelegenheidPagina({ slug }: { slug: string }) {
                 <Reveal key={album.id} delay={i * 0.05}>
                   <Link
                     href={`/galerij/${cat.slug}/${album.slug}`}
-                    className="group block overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-sage/10 transition-all hover:shadow-xl"
+                    className="group block overflow-hidden rounded-2xl bg-linen shadow-sm ring-1 ring-sage/25 transition-all hover:shadow-xl"
                   >
                     <div className="relative aspect-[4/3] overflow-hidden bg-blush/30">
                       {/* Ook hier wisselen, nu door de foto's van dít feest. */}
@@ -397,7 +367,7 @@ function FotoRaster({ items, onOpen }: { items: GalleryItem[]; onOpen: (index: n
         <button
           key={item.id}
           onClick={() => onOpen(i)}
-          className="mb-4 md:mb-6 block w-full break-inside-avoid overflow-hidden rounded-lg bg-white shadow-sm ring-1 ring-sage/10 group"
+          className="mb-4 md:mb-6 block w-full break-inside-avoid overflow-hidden rounded-lg bg-linen shadow-sm ring-1 ring-sage/25 group"
         >
           <img
             src={imageSrc(item)}

@@ -87,12 +87,15 @@ interface Pakket {
 }
 
 /**
- * Prijzen ontbreken in de aanlevering, dus `priceFrom` blijft `0` en `active` blijft `false`.
+ * Prijzen ontbreken in de aanlevering, dus `priceFrom` blijft `0`.
  *
- * Dat is geen vergissing maar de veilige stand: een pakket zonder prijs dat wél actief is,
- * belooft iets op de site waar geen bedrag bij hoort. `Number(p.priceFrom) > 0` bepaalt in de
- * frontend of er een vanaf-bedrag getoond wordt, dus zodra zij een prijs invult en het pakket
- * aanzet, klopt de pagina vanzelf.
+ * Een nieuw pakket komt binnen op niet-zichtbaar, zodat je hem eerst kunt invullen. Daarna is
+ * zichtbaarheid **haar keuze en niet die van dit script**.
+ *
+ * Er stond hier een regel die bij elke run afdwong dat een pakket zonder prijs onzichtbaar
+ * moest zijn. Die is weg: `PakketKaart` toont een prijsloos pakket al als "Prijs op aanvraag"
+ * en zet nooit € 0,00 op de site, dus het probleem dat de regel oploste bestond niet -- terwijl
+ * hij wél stil ongedaan maakte wat er in het beheerscherm was aangezet.
  */
 const PAKKETTEN: Pakket[] = [
   {
@@ -315,7 +318,16 @@ async function zetPakketten() {
       personsMax: p.personsMax,
       includes: p.includes,
       sortOrder: p.sortOrder,
-      coverItemId,
+      /*
+        Alleen zetten als dit script een foto heeft.
+
+        Eerst stond hier onvoorwaardelijk `coverItemId`, en dat betekende voor de drie
+        graze-pakketten -- die hier geen `coverZoek` hebben -- een harde `null`. Eén run om
+        een tekstje bij te werken wiste zo de covers die `seed-demo-grazefotos.ts` had gezet,
+        en straks die de klant zelf in het beheerscherm kiest. "Niet genoemd in dit script"
+        betekent "laat met rust", niet "maak leeg".
+      */
+      ...(coverItemId ? { coverItemId } : {}),
     };
     if (dryRun) {
       console.log(
@@ -330,43 +342,13 @@ async function zetPakketten() {
       await db.update(packages).set(waarden).where(eq(packages.id, bestaand.id));
       console.log(`  ~ ${p.name}${coverItemId ? "" : "  ⚠ geen coverfoto"}`);
     } else {
-      await db.insert(packages).values({ ...waarden, priceFrom: "0" });
+      // Nieuw pakket start onzichtbaar (de kolomdefault), zodat je hem eerst rustig invult.
+      // Daarna is `active` volledig haar keuze -- dit script raakt hem niet meer aan.
+      await db.insert(packages).values({ ...waarden, priceFrom: "0", active: false, featured: false });
       console.log(`  + ${p.name} (${p.personsMin}–${p.personsMax} pers.)${coverItemId ? "" : "  ⚠ geen coverfoto"}`);
     }
   }
 
-  await handhaafZichtbaarheid();
-}
-
-/**
- * Een pakket zonder prijs staat niet op de site.
- *
- * Dit stond eerst alleen als `active: false` bij het aanmaken, en dat bleek niet genoeg: de zes
- * pakketten kwamen na de eerste seed toch als actief én uitgelicht in de database te staan, met
- * `€ 0` op de homepage als gevolg. Waar dat vandaan kwam is niet meer te achterhalen — een
- * eenmalige aanname bij het aanmaken is sowieso het verkeerde niveau, want zij kan een pakket
- * later aanzetten en de prijs weer leegmaken.
- *
- * Nu is het een regel die bij elke run opnieuw geldt en die zichzelf herstelt. Een prijs
- * invullen is genoeg om een pakket te mogen aanzetten; het omgekeerde gebeurt vanzelf.
- */
-async function handhaafZichtbaarheid() {
-  const alle = await db.select().from(packages);
-  const zonderPrijs = alle.filter((p) => Number(p.priceFrom) <= 0 && (p.active || p.featured));
-  if (zonderPrijs.length === 0) {
-    console.log("  ✓ zichtbaarheid klopt: geen actief pakket zonder prijs");
-    return;
-  }
-  if (!dryRun) {
-    await db
-      .update(packages)
-      .set({ active: false, featured: false })
-      .where(inArray(packages.id, zonderPrijs.map((p) => p.id)));
-  }
-  console.log(
-    `  🚫 ${zonderPrijs.length} pakket(ten) zonder prijs op niet-zichtbaar gezet: ` +
-      zonderPrijs.map((p) => p.name).join(", "),
-  );
 }
 
 async function zetTaarten() {
@@ -418,7 +400,10 @@ async function zetInstellingen() {
   const huidig = (hero?.value ?? {}) as Record<string, unknown>;
   const nieuw = {
     ...huidig,
-    tagline: "Voor momenten die je maar één keer beleeft. Luxe sweet tables, grazing tables en taarten op maat.",
+    // Sinds de collage-hero staat "Voor momenten die je maar één keer beleeft." als grote kop
+    // hardgecodeerd in HeroCollage; de tagline is de subregel erónder. Stond de hele zin ook
+    // hier, dan las de bezoeker hem twee keer direct onder elkaar.
+    tagline: "Luxe sweet tables, grazing tables en taarten op maat, met liefde, stijl en oog voor detail.",
     ctaLabel: "Offerte aanvragen",
     ctaHref: "/contact",
   };

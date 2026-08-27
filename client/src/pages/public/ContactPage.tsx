@@ -103,7 +103,7 @@ export default function ContactPage() {
 
   return (
     <>
-      <section className="relative bg-section-blush overflow-hidden section-y">
+      <section className="relative bg-section-sand overflow-hidden section-y">
         <BotanicalPattern opacity={0.06} />
         <FloralFrame className="absolute -top-8 -right-8 md:-top-12 md:-right-12 w-32 sm:w-56 md:w-80 h-32 sm:h-56 md:h-80" color="text-sage/20" />
         <FloralFrame className="absolute -bottom-8 -left-8 md:-bottom-12 md:-left-12 rotate-180 w-24 sm:w-40 md:w-64 h-24 sm:h-40 md:h-64" color="text-blush" />
@@ -262,7 +262,7 @@ export default function ContactPage() {
       </section>
 
       {/* Steps section */}
-      <section className="relative bg-section-sand section-y overflow-hidden">
+      <section className="relative bg-section-sage section-y overflow-hidden">
         <BotanicalPattern opacity={0.05} />
         <div className="container-tight relative">
           <div className="text-center mb-10 sm:mb-14">

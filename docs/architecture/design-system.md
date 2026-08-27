@@ -105,12 +105,70 @@ Gedefinieerd in `@layer components` in `index.css`.
 
 ### Sectie-verlopen
 
-`.bg-section-linen`, `.bg-section-sand`, `.bg-section-blush`, `.bg-section-warm` en
-`.bg-section-sage` — zachte verlopen die secties van elkaar scheiden zonder harde lijn. Wissel
-ze af zodat een lange pagina ritme krijgt.
+| Klasse | Vlak | Charcoal erop |
+|---|---|---|
+| `.bg-section-linen` | `#F7F5F0` | 13,3:1 |
+| `.bg-section-sand` | `#EDE7DE` | 11,8:1 |
+| `.bg-section-blush` | `#F7EAEC` | 10,6:1 |
+| `.bg-section-sage` | `#DDE4D6` | 11,2:1 |
+| `.bg-section-warm` | verloop `#F9EFEC → #EDE7DE` | — |
+| `.bg-section-diep` | `sage-deep` `#5F6E4E` | **linen erop: 5,04:1** |
 
-De blush-verlopen zijn op 27-08 verzacht: op 45% las het vlak als rózé, terwijl het moodboard
-neutraal is met salie- en blush-*accenten*. De foto's horen het werk te doen.
+🔴 **Vlakken, geen verlopen die naar linen terugvallen.** Tot 27-08 was elke klasse een
+`linear-gradient(180deg, #F7F5F0 …, #F7F5F0)`: elk verloop begon én eindigde op linen, dus bij
+iedere naad viel de kleur weg. Vier secties op elkaar gaven één doorlopend wit veld met een
+vage zweem in het midden — de verlopen hieven zichzelf op. In de woorden van de gebruiker:
+*"Bijna alles is WIT op de hele website."*
+
+**Twee aangrenzende secties krijgen nooit hetzelfde vlak.** Dat is wat een pagina ritme geeft.
+Het huidige ritme per pagina staat in de paginabestanden; home loopt bijvoorbeeld
+warm → `sage-deep` (de marquee) → zand → linen → salie → charcoal.
+
+### Het saliepaneel
+
+`.bg-section-diep` is het massieve accentvlak, **één per pagina**. Het staat op haar eigen
+huisstijl-moodboard ("Liefde in elk detail, smaak in elk moment" in wit op vol salie) en
+ontbrak volledig in de uitvoering.
+
+De klasse keert alles zelf om — koppen, lopende tekst, `.tag`, `.script-accent` en de knoppen.
+Dat moet met afstammelingsselectors, want `text-linen` op de sectie wint niet van de
+`text-charcoal` die `h2` uit `@layer base` krijgt.
+
+> 🔴 **Geen doorzichtigheid op dit vlak.** Linen op `sage-deep` haalt 5,04:1, maar al bij
+> `linen/85` zakt het naar 4,16 en dus onder AA. De gewone `text-charcoal/75`-nuance kan hier
+> niet: alles staat op vol linen. Ornamenten (patroon, hoeken, `SierDivider`) gaan naar
+> `text-linen` met een lage opacity — die dragen geen tekst.
+
+### 🔴 Een kaart is nooit wit op een bijna-wit vlak
+
+`.card` staat op `linen`, niet op wit. Een witte kaart op een gebroken-witte sectie heeft geen
+rand om op te vallen, en dat was precies waarom de pakketkaarten als niets lazen. Of de kaart
+krijgt kleur, of de sectie eronder — nooit allebei bijna-wit.
+
+---
+
+## Kleur per pakketfamilie
+
+De zes pakketten zijn twee families, en de kleur zegt welke drie bij elkaar horen. Dat is
+dezelfde regel als in het beheerpaneel: kleur draagt betekenis, geen versiering. Afgeleid uit
+de slug door `pakketFamilie()` in
+[`PakketKaart.tsx`](../../client/src/components/public/PakketKaart.tsx) — alles op `-graze` is
+hartig.
+
+| Onderdeel | Zoet (Tables) | Hartig (Grazes) |
+|---|---|---|
+| Kaartvlak | `bg-blush/25` + `ring-blush` | `bg-sage/15` + `ring-sage/40` |
+| Prijsband | `bg-blush/40` | `bg-sage/25` |
+| Prijs en vinkjes | `burgundy` | `sage-deep` |
+| Knop | `btn-sage` | `btn-sage` |
+
+De knop blijft in beide families salie: dat is de merk-actiekleur, en die per familie laten
+wisselen zou de kleurtaal juist ondermijnen.
+
+> ⚠️ De kaarten reserveren vaste hoogte voor kop en tagline (`line-clamp` plus `min-h`). Zonder
+> dat begint de prijsband per kaart op een andere hoogte — één tagline is één regel, de
+> volgende drie — en drie kaarten naast elkaar met de band op drie hoogtes leest als slordig
+> werk. De maat verschilt per breedte, want de kaartbreedte doet dat ook.
 
 ---
 

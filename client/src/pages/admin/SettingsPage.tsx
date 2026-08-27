@@ -4,6 +4,7 @@ import { Copy, Check, RefreshCw, ExternalLink, Settings } from "lucide-react";
 import { PageKop } from "../../components/admin/ui/PageKop";
 import { api } from "../../lib/api";
 import { FotoKiezer } from "../../components/admin/FotoKiezer";
+import type { GalleryItem } from "@shared/schema";
 import {
   type ContactSettings,
   type HeroSettings,
@@ -89,7 +90,7 @@ export default function SettingsPage() {
   });
 
   const [contact, setContact] = useState<ContactSettings>({});
-  const [hero, setHero] = useState<HeroSettings>({ tagline: "", ctaLabel: "", ctaHref: "/contact" });
+  const [hero, setHero] = useState<HeroSettings>({ tagline: "", ctaLabel: "", ctaHref: "/contact", fotoIds: [] });
   const [about, setAbout] = useState<AboutSettings>({ heading: "", body: "" });
   const [levertijden, setLevertijden] = useState<LevertijdenSettings>({
     standaardDagen: 10, tekst: "", agendaFeedToken: "",
@@ -99,7 +100,10 @@ export default function SettingsPage() {
 
   useEffect(() => {
     if (data?.contact) setContact(data.contact);
-    if (data?.hero) setHero(data.hero);
+    // `fotoIds` kan in oudere rijen ontbreken: `site_settings` is jsonb, dus wat er vóór dit
+    // veld is opgeslagen heeft de sleutel niet. Zonder terugval wordt de state `undefined` en
+    // klapt `.map()` in de fotokiezers eruit.
+    if (data?.hero) setHero({ ...data.hero, fotoIds: data.hero.fotoIds ?? [] });
     if (data?.about) setAbout(data.about);
     if (data?.levertijden) setLevertijden(data.levertijden);
     if (data?.btw) setBtw(data.btw);
@@ -139,6 +143,33 @@ export default function SettingsPage() {
   }
 
   const bekendeBestemming = KNOP_BESTEMMINGEN.some((b) => b.pad === hero.ctaHref);
+
+  /**
+   * De hero bewaart foto-**id's**; `FotoKiezer` toont een **bestandsnaam**. Deze query vertaalt
+   * daartussen. Hij draait toch al voor de fotokiezer zelf, dus hij kost niets extra's.
+   */
+  const { data: galerij } = useQuery({
+    queryKey: ["admin", "gallery"],
+    queryFn: () => api.get<GalleryItem[]>("/api/admin/gallery"),
+  });
+  const heroFotoNamen = [0, 1, 2].map((i) => {
+    const id = hero.fotoIds?.[i];
+    return id ? galerij?.find((f) => f.id === id)?.filename : undefined;
+  });
+
+  /**
+   * Eén plek uit de rij vervangen of leegmaken.
+   *
+   * De lijst blijft compact: plek 2 leegmaken schuift plek 3 op, in plaats van een `null` in
+   * het midden achter te laten. De homepage vult vanaf de eerste, dus een gat zou daar toch
+   * niet als gat aankomen -- maar wél als een kiezer die leeg lijkt terwijl er een foto staat.
+   */
+  function zetHeroFoto(index: number, id: number | null) {
+    const huidig = [...(hero.fotoIds ?? [])];
+    if (id === null) huidig.splice(index, 1);
+    else huidig[index] = id;
+    setHero({ ...hero, fotoIds: huidig.filter(Boolean).slice(0, 3) });
+  }
 
   return (
     <div>
@@ -223,6 +254,33 @@ export default function SettingsPage() {
                   onChange={(e) => setHero({ ...hero, ctaHref: e.target.value })} />
               )}
             </Veld>
+
+            {/*
+              De drie foto's van de collage bovenaan de homepage.
+
+              Ze werden automatisch gekozen -- de eerste drie foto's met "uitgelicht" aan -- en
+              dat is een prima terugval, maar geen keuze: welke drie er staan hing af van de
+              volgorde in de galerij. Hier kies je ze zelf.
+            */}
+            <div className="sm:col-span-2">
+              <Veld
+                label="Foto's bovenaan"
+                hint="Drie foto's, naast elkaar uitgewaaierd. Laat je ze leeg, dan pakt de site je uitgelichte foto's."
+              >
+                <div className="mt-2 grid gap-5 sm:grid-cols-3">
+                  {[0, 1, 2].map((i) => (
+                    <div key={i}>
+                      <div className="label !mb-2">Foto {i + 1}</div>
+                      <FotoKiezer
+                        waarde={heroFotoNamen[i]}
+                        leegTekst={`Foto ${i + 1}`}
+                        onKies={(_bestandsnaam, item) => zetHeroFoto(i, item?.id ?? null)}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </Veld>
+            </div>
           </div>
         </Blok>
 

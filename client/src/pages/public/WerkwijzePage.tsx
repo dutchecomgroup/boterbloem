@@ -86,10 +86,10 @@ export default function WerkwijzePage() {
       )}
 
       {/* ---------- Levertijd ---------- */}
-      <section className="relative overflow-hidden bg-section-sand section-y-sm">
-        <BotanicalPattern opacity={0.05} />
-        <BotanicalCorner position="tl" color="text-sage/30" />
-        <BotanicalCorner position="br" color="text-sage/30" />
+      <section className="relative overflow-hidden bg-section-diep text-linen section-y-sm">
+        <BotanicalPattern opacity={0.07} className="text-linen" />
+        <BotanicalCorner position="tl" color="text-linen/25" />
+        <BotanicalCorner position="br" color="text-linen/25" />
         <div className="container-narrow relative text-center">
           <div className="tag mb-3">Op tijd aanvragen</div>
           <h2 className="text-2xl sm:text-3xl">Wanneer moet je het vastleggen?</h2>
@@ -98,7 +98,7 @@ export default function WerkwijzePage() {
               "Vraag je tafel het liefst een paar weken van tevoren aan. Voor een losse taart kan het vaak sneller, dus vraag gerust naar de mogelijkheden."}
           </p>
           <div className="mt-8">
-            <SierDivider />
+            <SierDivider color="text-linen/50" />
           </div>
           <p className="mt-8 text-sm text-charcoal/75 sm:text-base">
             Weet je al wat je zoekt, of juist nog niet?

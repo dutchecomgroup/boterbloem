@@ -640,10 +640,24 @@ export const contactSettingsSchema = z.object({
 export const heroSettingsSchema = z.object({
   /** De zin onder de naam. Het eerste wat een bezoeker leest. */
   tagline: z.string().default("Sweet tables en grazing tables voor jouw mooiste momenten"),
-  /** Opschrift van de gouden knop. */
+  /** Opschrift van de knop. */
   ctaLabel: z.string().default("Vraag offerte aan"),
   /** Waar die knop heen gaat. Een pad op de eigen site, of een volledig adres. */
   ctaHref: z.string().default("/contact"),
+  /**
+   * De drie foto's van de collage bovenaan de homepage, als `gallery_items.id`.
+   *
+   * **Id's en geen bestandsnamen**, anders dan `about.imageFilename`: de collage moet ook de
+   * alt-tekst en de verhouding van een foto kennen, en die staan bij de rij. Een bestandsnaam
+   * zou dwingen de hele galerij op te halen om ze terug te zoeken.
+   *
+   * Leeg = de eerste drie uitgelichte foto's, zoals het was voordat dit veld bestond. Zo staat
+   * er altijd iets, ook direct na een verse import.
+   *
+   * Geen foreign key mogelijk (het is jsonb), dus de homepage negeert stil een id dat nergens
+   * meer heen wijst en vult aan met uitgelicht werk.
+   */
+  fotoIds: z.array(z.number().int().positive()).max(3).default([]),
 });
 
 export const aboutSettingsSchema = z.object({
