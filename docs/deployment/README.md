@@ -15,6 +15,7 @@ te kijken als je naar productie gaat.
 | 🗄️ **Migratie-log + procedure** | [db-migraties.md](db-migraties.md) |
 | 📁 **SQL klaar voor live** | [sql-pending/](sql-pending/) |
 | 🌐 **Domein en reverse proxy** | [infra/domein.md](infra/domein.md) |
+| 🖼️ **Foto's veiligstellen + backup-cron** | [thuis-fotos-en-backup.md](thuis-fotos-en-backup.md) |
 
 ## Standaard deploy-flow
 
@@ -43,7 +44,12 @@ De applicatie draait op de VPS op poort 6778, **nog niet achter een domein en zo
 HTTPS**. Inrichten daarvan is
 [../komende-plannen/3-onaangeraakt/infra-domein-livegang.md](../komende-plannen/3-onaangeraakt/infra-domein-livegang.md).
 
-Er draait **geen automatische backup**. Zie [rollback.md](rollback.md).
+Er draait **geen automatische backup** — het script en de cron staan klaar in
+[thuis-fotos-en-backup.md](thuis-fotos-en-backup.md) stap 3, maar zijn nog niet ingericht. Zie ook
+[rollback.md](rollback.md).
+
+🔴 **De foto's van de klant staan op één machine** (de pc thuis): de servermap `uploads/` is leeg
+en `uploads/` is gitignored. Stap 1 van datzelfde document haalt dat risico weg.
 
 ---
 
