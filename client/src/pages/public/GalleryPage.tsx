@@ -95,9 +95,9 @@ function OverzichtPagina() {
           ) : zichtbaar.length === 0 ? (
             <div className="card text-center text-charcoal/50 py-20">Nog geen werk om te tonen.</div>
           ) : (
-            /* De stapel: elke gelegenheid een volle kaart die blijft plakken terwijl de
-               volgende eroverheen schuift. Zie de kop van GelegenheidStapel voor het hoe
-               en de valkuilen. */
+            /* Elke gelegenheid een volle kaart, twee aan twee: de tweede van een paar valt
+               over de eerste. Zie de kop van GelegenheidStapel voor het hoe en waarom er
+               sinds 31-08 geen sticky stapel meer in zit. */
             <GelegenheidStapel gelegenheden={zichtbaar} tegelFotos={tegelFotos} />
           )}
         </div>
