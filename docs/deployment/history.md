@@ -16,6 +16,45 @@
 
 ---
 
+## 2026-08-31 — livegang op de server: alles van 24 t/m 31 augustus naar live
+
+**Wat:** de server draaide `main` van 29 mei met een lege database. Nu draait alles wat sinds de
+meeting van 24-08 gebouwd is, op haar eigen content: 23 foto's, 5 zichtbare gelegenheden, 6
+pakketten, haar teksten en de salie-huisstijl. Bereikbaar op `http://85.215.182.227:6778`.
+
+**Migraties:** de acht uit `sql-pending/` — maar **niet stuk voor stuk gedraaid**. De database
+`atelierboterbloem_dev` is in zijn geheel gedumpt en teruggezet in `atelierboterbloem`, omdat dev
+het resultaat *was* van die acht en de opdracht luidde: zet er precies neer wat er lokaal draait.
+Zie het kader in [db-migraties.md](db-migraties.md#log).
+
+**Commits:** `4f3fb26` … `47830d4` (merge van `development` in `main`, twee keer)
+
+**Bijzonderheden:**
+
+- **Poort 6778 stond dicht.** Bij de hardening van 28-08 ging UFW op `default deny (incoming)` en
+  6778 is toen nooit toegevoegd. De app draaide al 33 dagen prima; er kwam alleen niemand bij.
+  Regel toegevoegd met een comment die zegt wanneer hij weer weg mag.
+- **`COOKIE_SECURE=false` in `.env`.** `NODE_ENV=production` is wat de gebouwde site serveert,
+  maar zet ook `secure` op de sessiecookie — en die bewaart een browser niet over gewoon `http`.
+  Zonder deze sleutel kan zij niet inloggen met een kloppend wachtwoord. 🔴 **Weghalen zodra er
+  HTTPS is**; tot dan reist haar wachtwoord leesbaar over de lijn.
+- **`npm ci` liep vast** op een lockfile die npm 11 (laptop) schreef zonder
+  `vitest/node_modules/esbuild`, terwijl npm 10 (server) die entry eist. Aangevuld door npm op de
+  server en teruggezet in git: één entry erbij, geen versie gewijzigd. `npm ci` werkt nu.
+- **Testdata opgeruimd:** 14 ontwikkel-boekingen, 8 testklanten en 13 aanvragen verwijderd, zodat
+  zij op een leeg beheerpaneel begint. De cascade nam 12 regels, 4 betalingen en 89
+  tijdlijn-gebeurtenissen mee.
+- **Accounts:** `esmee.steensma` aangemaakt, het oude ontwikkelaccount `esmee` verwijderd, `admin`
+  ongewijzigd. ⏳ Het admin-wachtwoord is nog het oude.
+- **Backup-cron staat er nu**, elke nacht 03:20: beide databases + `uploads/`, 30 dagen bewaard.
+  Eerste run met de hand gedaan en gecontroleerd (57 MB, 23 foto's in de tar).
+- **`robots.txt` op `Disallow: /`** zolang dit een besloten preview is.
+
+**Nog open:** HTTPS en een domein, de drie Unsplash-foto's bij de graze-pakketten, de prijzen,
+reviews en over-tekst van de klant, en het admin-wachtwoord.
+
+---
+
 ## Beginstand — 2026-08-24
 
 Eerste vastlegging. Er is nog geen deploy-log bijgehouden; wat hieronder staat is de stand

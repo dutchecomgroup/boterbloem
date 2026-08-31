@@ -94,7 +94,24 @@ function StapelKaart({
 
   const laatste = index === aantal - 1;
   const bewegen = stapelen && !rustig && !laatste;
-  const fotoLinks = index % 2 === 0;
+  /**
+   * De foto staat per **paar** op dezelfde kant, en het paar daarna op de andere.
+   *
+   * Wisselde eerst per kaart, en dat botste met de overlap: de onderste kaart van een paar
+   * legde dan zijn witte tekstvlak precies over de foto van de kaart erboven, en sneed die
+   * doormidden. Nu ligt op de naad foto op foto en tekstvlak op tekstvlak -- de afbeelding is
+   * het overlappende element en er snijdt geen wit vlak meer doorheen.
+   */
+  const fotoLinks = Math.floor(index / 2) % 2 === 0;
+
+  /**
+   * Wordt deze kaart in rust bedekt door de volgende? Alleen de eerste van een paar, en
+   * alleen als er nog een kaart achter komt. Die krijgt onderaan extra lucht ter grootte van
+   * de overlap, zodat de kaart erboven in leegte landt en niet op de laatste regel of de knop.
+   * Zonder dat verschuift het probleem alleen maar: dan snijdt er geen foto meer doorheen,
+   * maar verdwijnt de knop eronder.
+   */
+  const wordtBedekt = index % 2 === 0 && index < aantal - 1;
 
   return (
     <motion.article
@@ -117,7 +134,7 @@ function StapelKaart({
           />
         </div>
 
-        <div className="flex flex-col justify-center p-5 sm:p-8 md:[direction:ltr] lg:p-12">
+        <div className={`flex flex-col justify-center p-5 sm:p-8 md:[direction:ltr] lg:p-12 ${wordtBedekt ? "md:pb-24 lg:pb-28" : ""}`}>
           <div className="tag mb-3">
             {gelegenheid.itemCount} {gelegenheid.itemCount === 1 ? "foto" : "foto's"}
           </div>

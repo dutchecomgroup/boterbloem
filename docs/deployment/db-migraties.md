@@ -118,20 +118,34 @@ in de SELECT, dus één ontbrekende kolom breekt élke query op die tabel.
 | Datum | Bestand | Wat | DEV | LIVE |
 |---|---|---|---|---|
 | _(begin)_ | — | Eerste schema via `db:push`: users, customers, products, orders, order_items, contact_requests, gallery_*, site_settings, sessions | n.v.t. | ✅ |
-| 2026-08-24 | [`2026-08-25-fase-1-schema.sql`](sql-pending/2026-08-25-fase-1-schema.sql) | Fase 1: `packages`, `gallery_albums`, `reviews` + `album_id`, `description`/`published`, `public_visible`, `event_time`/`location`, `package_id`/`category_id` | ✅ | ⏳ |
-| 2026-08-24 | [`2026-08-25-boekingen.sql`](sql-pending/2026-08-25-boekingen.sql) | Boekingen: `reference`/`package_id`/`persons`/`allergies`/`theme`/`setup_time` op `orders`, nieuwe tabel `order_events`, boekingsnummers voor bestaande rijen | ✅ | ⏳ |
-| 2026-08-24 | [`2026-08-25-btw.sql`](sql-pending/2026-08-25-btw.sql) | Btw: `orders.vat_rate` met CHECK op geen/laag/hoog + standaardtarief in `site_settings.btw` | ✅ | ⏳ |
-| 2026-08-24 | [`2026-08-25-regel-details.sql`](sql-pending/2026-08-25-regel-details.sql) | `order_items.details` voor subregels; bestaande `· `-regels van € 0,00 samengevoegd tot subregels en verwijderd | ✅ | ⏳ |
-| 2026-08-24 | [`2026-08-25-album-blokken.sql`](sql-pending/2026-08-25-album-blokken.sql) | `gallery_albums.blocks` — tekst en foto's door elkaar per event, met CHECK dat het een array is | ✅ | ⏳ |
-| 2026-08-25 | [`2026-08-25-betalingen.sql`](sql-pending/2026-08-25-betalingen.sql) | Betalingen: nieuwe tabel `order_payments` (bedrag, datum, wijze, notitie) + betaalde aanbetalingen overgezet als betaalregel | ✅ | ⏳ |
-| 2026-08-25 | [`2026-08-25-btw-per-regel.sql`](sql-pending/2026-08-25-btw-per-regel.sql) | Btw per regel: `order_items.vat_rate`, `packages.vat_rate` + `vat_split_low`/`vat_split_high`, `products.vat_rate`, elk met een CHECK op geen/laag/hoog | ✅ | ⏳ |
-| 2026-08-24 | [`2026-08-24-herstel-testdata.sql`](sql-pending/2026-08-24-herstel-testdata.sql) | Herstel: `contact`/`hero` terug naar seed-waarden + 8 testrijen uit `contact_requests` | n.v.t. | ⏳ |
-| 2026-08-27 | [`2026-08-27-categorie-omslagfoto.sql`](sql-pending/2026-08-27-categorie-omslagfoto.sql) | `gallery_categories.cover_item_id` — een gelegenheid wijst zelf haar omslagfoto aan, nu foto's zonder event eronder hangen | ✅ | ⏳ |
+| 2026-08-24 | [`2026-08-25-fase-1-schema.sql`](sql-pending/2026-08-25-fase-1-schema.sql) | Fase 1: `packages`, `gallery_albums`, `reviews` + `album_id`, `description`/`published`, `public_visible`, `event_time`/`location`, `package_id`/`category_id` | ✅ | ✅ |
+| 2026-08-24 | [`2026-08-25-boekingen.sql`](sql-pending/2026-08-25-boekingen.sql) | Boekingen: `reference`/`package_id`/`persons`/`allergies`/`theme`/`setup_time` op `orders`, nieuwe tabel `order_events`, boekingsnummers voor bestaande rijen | ✅ | ✅ |
+| 2026-08-24 | [`2026-08-25-btw.sql`](sql-pending/2026-08-25-btw.sql) | Btw: `orders.vat_rate` met CHECK op geen/laag/hoog + standaardtarief in `site_settings.btw` | ✅ | ✅ |
+| 2026-08-24 | [`2026-08-25-regel-details.sql`](sql-pending/2026-08-25-regel-details.sql) | `order_items.details` voor subregels; bestaande `· `-regels van € 0,00 samengevoegd tot subregels en verwijderd | ✅ | ✅ |
+| 2026-08-24 | [`2026-08-25-album-blokken.sql`](sql-pending/2026-08-25-album-blokken.sql) | `gallery_albums.blocks` — tekst en foto's door elkaar per event, met CHECK dat het een array is | ✅ | ✅ |
+| 2026-08-25 | [`2026-08-25-betalingen.sql`](sql-pending/2026-08-25-betalingen.sql) | Betalingen: nieuwe tabel `order_payments` (bedrag, datum, wijze, notitie) + betaalde aanbetalingen overgezet als betaalregel | ✅ | ✅ |
+| 2026-08-25 | [`2026-08-25-btw-per-regel.sql`](sql-pending/2026-08-25-btw-per-regel.sql) | Btw per regel: `order_items.vat_rate`, `packages.vat_rate` + `vat_split_low`/`vat_split_high`, `products.vat_rate`, elk met een CHECK op geen/laag/hoog | ✅ | ✅ |
+| 2026-08-24 | [`2026-08-24-herstel-testdata.sql`](sql-pending/2026-08-24-herstel-testdata.sql) | Herstel: `contact`/`hero` terug naar seed-waarden + 8 testrijen uit `contact_requests` | n.v.t. | ✅ |
+| 2026-08-27 | [`2026-08-27-categorie-omslagfoto.sql`](sql-pending/2026-08-27-categorie-omslagfoto.sql) | `gallery_categories.cover_item_id` — een gelegenheid wijst zelf haar omslagfoto aan, nu foto's zonder event eronder hangen | ✅ | ✅ |
 
 > **Volgorde op live:** fase 1 → boekingen → btw → regel-details → album-blokken → betalingen →
 > btw-per-regel → categorie-omslagfoto. `boekingen.sql` legt een foreign key naar `packages`, en
 > die tabel komt uit fase 1; de andere raken `orders` en `order_items` die dan al de nieuwe
 > kolommen hebben. `categorie-omslagfoto` staat los van de rest en mag als laatste.
+
+> 🔴 **Hoe deze acht op live zijn geland (31-08): niet stuk voor stuk.** Bij de livegang is de
+> hele database `atelierboterbloem_dev` gedumpt en teruggezet in `atelierboterbloem`
+> (`DROP SCHEMA public CASCADE` → `pg_dump | psql`). Dev *was* het resultaat van deze acht
+> migraties, dus live heeft nu exact dat schema — geverifieerd: 15 tabellen, eigenaar `abb_app`.
+>
+> Waarom zo: live had 0 foto's en alleen mei-testdata, en de vraag was "zet er precies neer wat
+> er lokaal draait". Een kopie geeft dat; acht migraties achter elkaar geven een reconstructie
+> die er *bijna* gelijk aan is. Wat er bij de kopie verdween — 2 klanten, 2 boekingen, 1
+> aanvraag uit mei — staat in `~/backups/boterbloem/atelierboterbloem-voor-livegang.sql.gz`.
+>
+> **Gevolg voor de volgende keer:** de bestanden in `sql-pending/` zijn hiermee uitgewerkt en
+> horen naar de historie. Een volgende schemawijziging volgt weer gewoon de normale weg — dev,
+> dry run, `pg_dump`, live. Dit was een eenmalige inhaalslag, geen nieuwe werkwijze.
 
 > ⚠️ **`btw-per-regel` stond hier niet in** tot 27-08, terwijl hij wél op dev gedraaid was. Het
 > bestand bestond, de regel ontbrak — precies het gat dat deze tabel hoort te dichten. Alsnog
