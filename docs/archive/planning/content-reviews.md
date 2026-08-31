@@ -1,6 +1,6 @@
 # Reviews — echte reacties in plaats van verzonnen quotes
 
-> **Status:** 🎯 Uitgewerkt, wacht op reviews van de klant
+> **Status:** ✅ **Afgerond** — gebouwd 25-08, live sinds 31-08. Het scherm staat er; er zijn nog nul reviews, en het blok verdwijnt dan volledig. Wachten op de klant is geen open bouwwerk.
 > **Thema:** ⭐ content
 > **Laatst bijgewerkt:** 2026-08-24
 > **Afhankelijk van:** fase 1 (datamodel) · reviews van de klant

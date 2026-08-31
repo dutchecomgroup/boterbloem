@@ -1,6 +1,6 @@
 # Agenda + levertijden
 
-> **Status:** 🎯 Uitgewerkt, klaar om te starten
+> **Status:** ✅ **Afgerond** — gebouwd 25-08, live sinds 31-08. De ICS-feed draait mee.
 > **Thema:** 📅 agenda
 > **Laatst bijgewerkt:** 2026-08-24
 > **Afhankelijk van:** fase 1 (datamodel)
@@ -67,7 +67,7 @@ In `site_settings` (jsonb, dus **geen** schemawijziging) een nieuwe key `leverti
 
 Bijbehorend Zod-schema naast `contactSettingsSchema` in `shared/schema.ts`, en — anders dan
 de bestaande drie — daadwerkelijk **aansluiten** op de settings-route; zie
-[security-hardening.md](../2-in-uitvoering/security-hardening.md), waar dat sowieso opgelost wordt.
+[security-hardening.md](security-hardening.md), waar dat sowieso opgelost wordt.
 
 ### Fase B — Kalender in het beheerpaneel (~4 uur)
 

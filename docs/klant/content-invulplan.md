@@ -7,7 +7,12 @@
 > wat er nog ontbreekt.
 
 De democontent is weg — 36 stockfoto's, 9 verzonnen events en 6 verzonnen reviews. De site
-draait nu volledig op haar eigen materiaal.
+draait volledig op haar eigen materiaal, en sinds **31-08 op de server**:
+`http://85.215.182.227:6778`. Zij kan er zelf in met `esmee.steensma`.
+
+> Nog geen domein en geen HTTPS, dus het is een besloten preview: `robots.txt` staat op
+> `Disallow: /` en de link is nergens gedeeld. Wat er nog van haar nodig is om écht open te
+> gaan, staat in §7 hieronder.
 
 ---
 

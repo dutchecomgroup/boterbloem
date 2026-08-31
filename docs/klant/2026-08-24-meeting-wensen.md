@@ -40,7 +40,7 @@ gaat.
 **Prijzen op de site zijn belangrijk.** Dit was expliciet: bezoekers moeten kunnen zien wat
 iets ongeveer kost voordat ze contact opnemen.
 
-→ [../komende-plannen/1-klaar-voor-livegang/pakketten-en-prijzen.md](../komende-plannen/1-klaar-voor-livegang/pakketten-en-prijzen.md)
+→ [../komende-plannen/1-klaar-voor-livegang/pakketten-en-prijzen.md](../archive/planning/pakketten-en-prijzen.md)
 
 ---
 
@@ -58,7 +58,7 @@ ze een beeld van de variatie in plaats van één willekeurige set.
 Op dit moment is de galerij ingedeeld op **taart-type** (bruidstaarten, verjaardagstaarten,
 cupcakes) en is er geen groepering per event. Dat moet om.
 
-→ [../komende-plannen/1-klaar-voor-livegang/portfolio-categorie-albums.md](../komende-plannen/1-klaar-voor-livegang/portfolio-categorie-albums.md)
+→ [../komende-plannen/1-klaar-voor-livegang/portfolio-categorie-albums.md](../archive/planning/portfolio-categorie-albums.md)
 
 ---
 
@@ -96,7 +96,7 @@ Wel moet de bezoeker in het formulier kunnen aangeven:
 
 Zo komt een aanvraag binnen met genoeg context om meteen een voorstel te kunnen maken.
 
-→ [../komende-plannen/1-klaar-voor-livegang/aanvragen-formulier-uitbreiding.md](../komende-plannen/1-klaar-voor-livegang/aanvragen-formulier-uitbreiding.md)
+→ [../komende-plannen/1-klaar-voor-livegang/aanvragen-formulier-uitbreiding.md](../archive/planning/aanvragen-formulier-uitbreiding.md)
 
 ---
 
@@ -109,7 +109,7 @@ Dit moet zichtbaar zijn op de site, en het formulier mag erop wijzen als iemand 
 kiest die te dichtbij is. Geen harde blokkade — een waarschuwing, want ze wil zelf kunnen
 beslissen of iets nog past.
 
-→ [../komende-plannen/1-klaar-voor-livegang/agenda-boekingen.md](../komende-plannen/1-klaar-voor-livegang/agenda-boekingen.md)
+→ [../komende-plannen/1-klaar-voor-livegang/agenda-boekingen.md](../archive/planning/agenda-boekingen.md)
 
 ---
 
@@ -121,8 +121,8 @@ Wat ze nodig heeft aan de beheerkant:
 - **Agenda** — bestaat nog niet. Boekingen hebben wel een datum, maar er is geen
   kalenderweergave. Ze wil kunnen zien wat er aan komt, ook op haar telefoon.
 
-→ [../komende-plannen/1-klaar-voor-livegang/agenda-boekingen.md](../komende-plannen/1-klaar-voor-livegang/agenda-boekingen.md)
-· [../komende-plannen/1-klaar-voor-livegang/klanten-uitbreiding.md](../komende-plannen/1-klaar-voor-livegang/klanten-uitbreiding.md)
+→ [../komende-plannen/1-klaar-voor-livegang/agenda-boekingen.md](../archive/planning/agenda-boekingen.md)
+· [../komende-plannen/1-klaar-voor-livegang/klanten-uitbreiding.md](../archive/planning/klanten-uitbreiding.md)
 
 ---
 
@@ -134,7 +134,7 @@ moeten vervangen worden door echte reviews die ze zelf kan beheren.
 **Contactgegevens** worden al beheerd via het instellingen-scherm en verschijnen automatisch
 in de footer en op de contactpagina. Die kant is klaar; alleen invullen.
 
-→ [../komende-plannen/1-klaar-voor-livegang/content-reviews.md](../komende-plannen/1-klaar-voor-livegang/content-reviews.md)
+→ [../komende-plannen/1-klaar-voor-livegang/content-reviews.md](../archive/planning/content-reviews.md)
 
 ---
 
@@ -169,20 +169,20 @@ in de footer en op de contactpagina. Die kant is klaar; alleen invullen.
 
 | Wens uit de meeting | Stand nu | Waar het opgepakt wordt |
 |---|---|---|
-| Klantenbeheer | ✅ werkt | [klanten-uitbreiding](../komende-plannen/1-klaar-voor-livegang/klanten-uitbreiding.md) |
-| Agenda | ❌ niet aanwezig | [agenda-boekingen](../komende-plannen/1-klaar-voor-livegang/agenda-boekingen.md) |
-| Portfolio per gelegenheid, meerdere events per gelegenheid | ⚠️ categorieën zijn taart-type, geen event-laag | [portfolio-categorie-albums](../komende-plannen/1-klaar-voor-livegang/portfolio-categorie-albums.md) |
-| Pakketten met vanaf-prijs, aanvulbaar | ❌ niet aanwezig | [pakketten-en-prijzen](../komende-plannen/1-klaar-voor-livegang/pakketten-en-prijzen.md) |
-| Sweet & Grazing Tables als hoofdfocus | ❌ site zet taarten voorop | [pakketten-en-prijzen](../komende-plannen/1-klaar-voor-livegang/pakketten-en-prijzen.md) |
-| Taarten klein, met basis-prijslijst | ⚠️ productenlijst bestaat, is niet publiek zichtbaar | [pakketten-en-prijzen](../komende-plannen/1-klaar-voor-livegang/pakketten-en-prijzen.md) |
-| Prijzen zichtbaar op de site | ❌ nergens zichtbaar | [pakketten-en-prijzen](../komende-plannen/1-klaar-voor-livegang/pakketten-en-prijzen.md) |
+| Klantenbeheer | ✅ werkt | [klanten-uitbreiding](../archive/planning/klanten-uitbreiding.md) |
+| Agenda | ❌ niet aanwezig | [agenda-boekingen](../archive/planning/agenda-boekingen.md) |
+| Portfolio per gelegenheid, meerdere events per gelegenheid | ⚠️ categorieën zijn taart-type, geen event-laag | [portfolio-categorie-albums](../archive/planning/portfolio-categorie-albums.md) |
+| Pakketten met vanaf-prijs, aanvulbaar | ❌ niet aanwezig | [pakketten-en-prijzen](../archive/planning/pakketten-en-prijzen.md) |
+| Sweet & Grazing Tables als hoofdfocus | ❌ site zet taarten voorop | [pakketten-en-prijzen](../archive/planning/pakketten-en-prijzen.md) |
+| Taarten klein, met basis-prijslijst | ⚠️ productenlijst bestaat, is niet publiek zichtbaar | [pakketten-en-prijzen](../archive/planning/pakketten-en-prijzen.md) |
+| Prijzen zichtbaar op de site | ❌ nergens zichtbaar | [pakketten-en-prijzen](../archive/planning/pakketten-en-prijzen.md) |
 | Geen bestellen, alleen contactformulier | ✅ klopt al | — |
-| Feest-type + gewenst pakket in het formulier | ⚠️ feest-type kan al, pakket niet | [aanvragen-formulier-uitbreiding](../komende-plannen/1-klaar-voor-livegang/aanvragen-formulier-uitbreiding.md) |
+| Feest-type + gewenst pakket in het formulier | ⚠️ feest-type kan al, pakket niet | [aanvragen-formulier-uitbreiding](../archive/planning/aanvragen-formulier-uitbreiding.md) |
 | Mail | ✅ buiten scope — `mailto:`-link werkt al | — |
 | Kwalitatief goede foto's | ⚠️ upload werkt, materiaal ontbreekt | [content-checklist](content-checklist.md) |
-| Reviews | ❌ nu verzonnen quotes in de code | [content-reviews](../komende-plannen/1-klaar-voor-livegang/content-reviews.md) |
+| Reviews | ❌ nu verzonnen quotes in de code | [content-reviews](../archive/planning/content-reviews.md) |
 | Contactgegevens | ✅ werkt, moet ingevuld | [content-checklist](content-checklist.md) |
-| Levertijden — 10 dagen, taarten flexibeler | ❌ nergens vastgelegd | [agenda-boekingen](../komende-plannen/1-klaar-voor-livegang/agenda-boekingen.md) |
+| Levertijden — 10 dagen, taarten flexibeler | ❌ nergens vastgelegd | [agenda-boekingen](../archive/planning/agenda-boekingen.md) |
 | Domein via mijndomein | ❌ nog niet ingericht | [infra-domein-livegang](../komende-plannen/3-onaangeraakt/infra-domein-livegang.md) |
 
 ---

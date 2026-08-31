@@ -7,10 +7,12 @@ wil over een half jaar kunnen terugvinden waarom iets zo gedaan is, of waarom ju
 |---|---|
 | [planning/](planning/) | Afgeronde plan-documenten uit `komende-plannen/` |
 
-**Nog leeg**, en dat klopt: zes plannen zijn op dev afgerond, maar archiveren gebeurt pas ná
-de deploy naar live — de werkwijze hieronder vraagt om een deploy-datum en een commit, en alle
-acht migraties staan nog op `LIVE ⏳`. Zie
-[planning/README.md](planning/README.md).
+**Sinds 31-08 gevuld:** zeven plannen zijn met de eerste livegang meegegaan en hierheen
+verhuisd — portfolio, pakketten, agenda, reviews, aanvraagflow, klantenbeheer en de
+security-hardening. Overzicht met wat elk opleverde: [planning/README.md](planning/README.md).
+
+Dat ze tot die dag in `komende-plannen/` bleven staan was geen achterstand maar de regel:
+archiveren gebeurt pas als het **live draait**, niet als het gebouwd is.
 
 ---
 

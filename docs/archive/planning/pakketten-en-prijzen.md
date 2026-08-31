@@ -1,6 +1,6 @@
 # Pakketten & prijzen — Sweet Tables voorop, taarten erbij
 
-> **Status:** 🎯 Uitgewerkt, wacht op prijzen van de klant
+> **Status:** ✅ **Afgerond** — gebouwd 25-08, live sinds 31-08. De zes pakketten staan op de site met *"Prijs op aanvraag"*; de vanaf-prijzen vult de klant zelf in.
 > **Thema:** 🍰 pakketten
 > **Laatst bijgewerkt:** 2026-08-24
 > **Afhankelijk van:** fase 1 (datamodel) · vanaf-prijzen + pakketinhoud van de klant

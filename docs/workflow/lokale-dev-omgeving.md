@@ -104,7 +104,7 @@ VPS halen: `/projects/atelierboterbloem/.env`.
 
 > 🔴 **Plak database-inloggegevens nooit in een chat, transcript of issue.** Poort 5432 staat
 > op dit moment publiek open — zie
-> [../komende-plannen/2-in-uitvoering/security-hardening.md](../komende-plannen/2-in-uitvoering/security-hardening.md).
+> [../komende-plannen/2-in-uitvoering/security-hardening.md](../archive/planning/security-hardening.md).
 > Gebeurt het toch: wachtwoord meteen roteren.
 
 ---

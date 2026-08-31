@@ -79,7 +79,7 @@ waarschuwingen in [../workflow/lokale-dev-omgeving.md](../workflow/lokale-dev-om
 | Migratiebestanden | Sinds 25-08 handgeschreven `.sql` in `docs/deployment/sql-pending/`, met runner en dry run |
 | E-mail | Geen — en **bewust geen**, besloten 25-08. Alleen een `mailto:`-link op de contactpagina |
 | Foutmelding-monitoring | Geen. Alles via `console.error` naar PM2-logs |
-| Snelheidsbegrenzing | Geen. Zie [../komende-plannen/2-in-uitvoering/security-hardening.md](../komende-plannen/2-in-uitvoering/security-hardening.md) |
+| Snelheidsbegrenzing | Geen. Zie [../komende-plannen/2-in-uitvoering/security-hardening.md](../archive/planning/security-hardening.md) |
 
 Bij een project van deze omvang zijn de meeste hiervan verdedigbaar. De twee die wél
 aandacht verdienen: **geen migratiebestanden** (geen weg terug bij een fout schema) en **geen
@@ -91,6 +91,8 @@ snelheidsbegrenzing** (één beheerdersaccount, onbeperkt raden).
 
 | Poort | Wat | Extern |
 |---|---|---|
-| 6778 | Express | Nog niet achter een domein |
+| 6778 | Express | ⚠️ **Open sinds 31-08** voor de besloten preview op het kale IP. Dicht zodra alles via 443 loopt — de UFW-regel draagt die reden als comment |
 | 5173 | Vite dev-server | Alleen lokaal |
-| 5432 | PostgreSQL | 🔴 **Publiek open** — zie security-hardening |
+| 5432 | PostgreSQL | ✅ **Dicht sinds 28-08** (UFW `default deny`). Lokaal verbinden gaat via een SSH-tunnel op 15432 — zie [../workflow/lokale-dev-omgeving.md](../workflow/lokale-dev-omgeving.md) |
+
+UFW laat verder alleen 22, 80, 443, 8443, 8880 en de mailpoorten door.

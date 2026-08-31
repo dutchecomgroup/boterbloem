@@ -80,7 +80,7 @@ _(In te vullen: uitgiftedatum en of automatische verlenging bevestigd is.)_
 ### Poorten dichtzetten
 
 Zodra de proxy draait: 6778 alleen nog op localhost, en 5432 óók. Zie
-[../../komende-plannen/2-in-uitvoering/security-hardening.md](../../komende-plannen/2-in-uitvoering/security-hardening.md).
+[../../komende-plannen/2-in-uitvoering/security-hardening.md](../../archive/planning/security-hardening.md).
 
 ---
 

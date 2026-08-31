@@ -1,6 +1,6 @@
 # Aanvraagflow — gelegenheid en pakket in het formulier
 
-> **Status:** 🎯 Uitgewerkt, klaar om te starten
+> **Status:** ✅ **Afgerond** — gebouwd 25-08, live sinds 31-08.
 > **Thema:** 📨 aanvragen
 > **Laatst bijgewerkt:** 2026-08-25
 > **Afhankelijk van:** fase 1 (datamodel) · [pakketten-en-prijzen](pakketten-en-prijzen.md)
@@ -41,7 +41,7 @@ levertijd.
 > nooit laten mislukken. Reken op ~3 uur plus een verzendkanaal.
 
 Het contactformulier staat verder publiek open zonder rem — geen honeypot, geen
-snelheidsbegrenzing. Dat wordt in [security-hardening.md](../2-in-uitvoering/security-hardening.md) opgelost;
+snelheidsbegrenzing. Dat wordt in [security-hardening.md](security-hardening.md) opgelost;
 hier alleen genoemd omdat het hetzelfde formulier raakt.
 
 ## Scope

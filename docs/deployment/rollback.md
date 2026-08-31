@@ -4,18 +4,37 @@ Wat te doen als een deploy misgaat.
 
 ---
 
-## 🔴 Eerst dit: er draait geen automatische backup
+## Eerst dit: waar je herstelpunt staat
 
-Op dit moment maakt **niets** automatisch een backup van de database of van `uploads/`. Er is
-dus geen recent herstelpunt tenzij je er zelf net een hebt gemaakt.
+Sinds **31-08** draait er elke nacht om **03:20** een backup:
+`/usr/local/bin/backup-boterbloem.sh`, via cron van root.
 
-Inrichten staat in
-[../komende-plannen/3-onaangeraakt/infra-domein-livegang.md](../komende-plannen/3-onaangeraakt/infra-domein-livegang.md)
-fase B, en zou vóór livegang klaar moeten zijn. Zolang dat niet zo is: **altijd handmatig een
-dump nemen** vóór elke deploy.
+| | |
+|---|---|
+| Wat | `atelierboterbloem` + `atelierboterbloem_dev` (gzipte `pg_dump`) en `uploads/` (tar.gz) |
+| Waar | `~/backups/boterbloem/` op de VPS |
+| Hoe lang | 30 dagen; ouder wordt opgeruimd door het script zelf |
 
-`uploads/` is extra gevoelig — dat zijn de foto's van de klant, ze staan nergens anders, en
-ze zijn niet opnieuw te maken.
+```bash
+ls -lh ~/backups/boterbloem/
+```
+
+Daarnaast staat er `atelierboterbloem-voor-livegang.sql.gz` — de live-database zoals hij vóór
+de livegang van 31-08 was, met de mei-testdata erin. Die valt buiten de 30-dagenregel niet;
+**wil je hem houden, verplaats hem dan naar buiten die map.**
+
+> ⚠️ **Alles op dezelfde schijf.** De backups staan op de VPS zelf. Dat beschermt tegen een
+> verkeerde migratie of een foute deploy, niet tegen het uitvallen van de machine. Voor de
+> foto's is dat opgevangen — die staan ook op de pc thuis en in Google Drive — voor de database
+> niet.
+
+> ⚠️ **Nog nooit teruggezet.** Een backup die je niet één keer hebt teruggezet is een aanname.
+> Doe die oefening bij de eerstvolgende keer dat de dev-database toch ververst moet worden:
+> dan test je het herstel én krijg je waar je toch al voor kwam.
+
+`uploads/` is het gevoeligst: dat zijn de foto's van de klant. Ze staan sinds 31-08 op drie
+plekken (pc thuis, Google Drive, server), maar wat zij vanaf nu zelf uploadt bestaat alleen op
+de server — en dus in deze backup.
 
 ---
 

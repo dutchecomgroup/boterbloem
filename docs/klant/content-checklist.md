@@ -103,7 +103,7 @@ verandert dat mee.
 > Eén technisch punt voor ná de livegang: de naam van een gelegenheid zit in het webadres
 > (`/galerij/babyshower`). Vóór de livegang kan er vrij aan geschoven worden; daarna maakt
 > hernoemen een gedeelde link ongeldig. Zie
-> [../komende-plannen/1-klaar-voor-livegang/portfolio-categorie-albums.md](../komende-plannen/1-klaar-voor-livegang/portfolio-categorie-albums.md).
+> [../komende-plannen/1-klaar-voor-livegang/portfolio-categorie-albums.md](../archive/planning/portfolio-categorie-albums.md).
 
 ---
 

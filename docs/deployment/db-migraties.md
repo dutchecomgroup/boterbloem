@@ -88,7 +88,8 @@ sudo -u postgres pg_dump atelierboterbloem | sudo -u postgres psql -d atelierbot
 
 > ⚠️ **Nazorg na elke verversing:** een kopie van live mist alles wat nog niet live staat, dus
 > elke migratie die in de tabel hieronder op `LIVE ⏳` staat moet opnieuw op dev gedraaid
-> worden.
+> worden. Sinds 31-08 staat alles op `LIVE ✅`, dus op dit moment is er niets na te lopen —
+> maar die situatie duurt precies tot de eerstvolgende schemawijziging.
 
 > 🔴 **Test nooit tegen live.** Op 24-08 draaide een verificatiesuite tegen de live database en
 > overschreef daarbij `site_settings.contact` en `.hero` met testwaarden — zichtbaar op de
@@ -153,7 +154,7 @@ in de SELECT, dus één ontbrekende kolom breekt élke query op die tabel.
 
 ### 2026-08-24 — fase 1
 
-**Status: DEV ✅ — gedraaid en volledig geverifieerd. LIVE ⏳.**
+**Status: DEV ✅ — gedraaid en volledig geverifieerd. LIVE ✅ 31-08** (via de kopie van dev, zie het kader bij het log).
 
 Op `atelierboterbloem_dev` uitgevoerd en gecontroleerd:
 
@@ -176,7 +177,7 @@ Overzicht per tabel: [../architecture/datamodel.md](../architecture/datamodel.md
 
 ### 2026-08-24 — boekingen
 
-**Status: DEV ✅ — gedraaid en geverifieerd. LIVE ⏳.**
+**Status: DEV ✅ — gedraaid en geverifieerd. LIVE ✅ 31-08** (via de kopie van dev, zie het kader bij het log).
 
 Op `atelierboterbloem_dev` uitgevoerd en gecontroleerd:
 
@@ -197,7 +198,7 @@ klant.
 
 ### 2026-08-25 — btw per regel, per pakket en per product
 
-**Status: DEV ✅ — gedraaid en geverifieerd. LIVE ⏳.**
+**Status: DEV ✅ — gedraaid en geverifieerd. LIVE ✅ 31-08** (via de kopie van dev, zie het kader bij het log).
 
 Aanleiding: het model van `2026-08-25-btw.sql` legde het tarief op de **boeking**, en dat is te
 grof. Eén offerte kan twee tarieven bevatten — een grazing table valt onder 9% (eten en drinken),
@@ -232,7 +233,7 @@ dev-database* voor wat er misging.
 
 ### 2026-08-25 — betalingen
 
-**Status: DEV ✅ — gedraaid en geverifieerd. LIVE ⏳.**
+**Status: DEV ✅ — gedraaid en geverifieerd. LIVE ✅ 31-08** (via de kopie van dev, zie het kader bij het log).
 
 Aanleiding: `orders.paid_at` werd door de hele codebase alleen **gelezen** en nooit geschreven,
 terwijl de omzettegels erop filterden. Die stonden daardoor structureel op € 0,00. En er was geen

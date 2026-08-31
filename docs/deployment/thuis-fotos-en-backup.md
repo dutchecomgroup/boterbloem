@@ -1,15 +1,47 @@
-# Thuis: de foto's veiligstellen (en waarom dat nu haast heeft)
+# De foto's veiligstellen en de backup inrichten
 
-> **Gemaakt:** 29 augustus 2026
-> **Voor wie:** jezelf, op de pc thuis waar `uploads/content/` staat
-> **Duur:** stap 1 kost twee minuten. Stap 2 en 3 samen ongeveer een half uur.
+> **Gemaakt:** 29 augustus 2026 · **Uitgevoerd:** 31 augustus 2026
+> **Status:** ✅ **Stap 1 t/m 4 gedaan.** Dit document blijft staan als verantwoording en als
+> handleiding voor de volgende keer dat er materiaal binnenkomt.
 >
-> Dit gaat **alleen** over de foto's en de backup. De acht migraties en de deploy naar live
-> zijn een apart traject — zie [pending.md](pending.md). Doe die niet in dezelfde sessie.
+> Wat er nu geldt, in het kort:
+
+| | Toen (29-08) | Nu (31-08) |
+|---|---|---|
+| Originelen | 1 machine | **3 plekken**: pc thuis, Google Drive, server |
+| Foto's op de server | 0 bestanden | **23 webp + 50 bronbestanden** |
+| Backup | geen | **elke nacht 03:20**, beide databases + `uploads/`, 30 dagen |
+| DB vanaf huis | geblokkeerd | via SSH-tunnel op **15432** |
+
+> De acht migraties en de deploy waren toen nog een apart traject; die zijn op 31-08 ook gedaan,
+> in dezelfde sessie. Zie [history.md](history.md).
 
 ---
 
-## De situatie, in één alinea
+## Waar de originelen nu staan
+
+**Google Drive** (`dutchecomgroup@gmail.com`), in de vaste projectstructuur:
+
+```
+Mijn Drive / Dutch eCom Group / 13 Boterbloem / 04 Assets & Foto's /
+    01 Origineel aangeleverd / 2026-08-27 aanlevering Esmee /   25 bestanden
+    02 Hernoemd en bruikbaar / fotos (20) · merk (3) · teksten (2)
+    LEESMIJ.md
+```
+
+De splitsing is de kern: **01 is onvervangbaar** — haar eigen bestandsnamen, inclusief de HEIC's
+uit haar telefoon — en **02 is daaruit afgeleid**, hernoemd naar wat erop staat en met HEIC
+omgezet naar JPG. 20 + 3 + 2 = precies de 25 uit 01, dus er is niets afgevallen. Elke volgende
+aanlevering krijgt een eigen map onder 01 met de datum erin.
+
+> ⚠️ **Niet OneDrive.** Daar stond eerst een kopie, maar OneDrive draaide niet op die pc — dan
+> is het een tweede map op dezelfde schijf en geen tweede plek. Die kopie is verwijderd.
+
+---
+
+## De situatie zoals hij was op 29-08
+
+> Historisch. Dit is waarom het gedaan moest worden; hierboven staat wat het geworden is.
 
 Haar foto's staan op **precies één machine**: de pc thuis. Niet op de server (die map is leeg),
 niet op de laptop, en niet in git (`uploads/` is gitignored, en dat hoort ook zo). De database
@@ -18,7 +50,7 @@ dan is het beeldmateriaal van de klant weg — inclusief de originele HEIC's uit
 
 Dat is de reden dat stap 1 hieronder vóór alle andere staat.
 
-### Wat er gecontroleerd is op 29-08
+### Wat er gecontroleerd was op 29-08
 
 | | |
 |---|---|
@@ -34,7 +66,7 @@ en op dev — nergens anders.
 
 ---
 
-## Stap 1 — Originelen veiligstellen 🔴 doe dit eerst
+## Stap 1 — Originelen veiligstellen ✅ gedaan 31-08
 
 Twee minuten, en het haalt het risico weg dat de rest van dit document overbodig maakt.
 
@@ -60,7 +92,7 @@ is het onvervangbare deel.
 
 ---
 
-## Stap 2 — Foto's naar de server
+## Stap 2 — Foto's naar de server ✅ gedaan 31-08
 
 De server is waar de site ze vandaan serveert ([`server/index.ts:45`](../../server/index.ts#L45):
 `express.static(UPLOADS_DIR)`), dus daar moeten ze staan.
@@ -102,7 +134,7 @@ Dat gebeurt pas na de migraties en de deploy.
 
 ---
 
-## Stap 3 — De backup-cron 🔴 het echte gat
+## Stap 3 — De backup-cron ✅ gedaan 31-08
 
 Er draait **niets** automatisch. De commando's staan in [procedure.md](procedure.md), maar er is
 geen cron. Zolang dat zo is, staat haar materiaal op één plek zodra stap 1 verwatert.
@@ -152,7 +184,7 @@ hem in `atelierboterbloem_dev` — dat is meteen de verversing die na elke deplo
 
 ---
 
-## Stap 4 — Verbinden met de database vanaf huis
+## Stap 4 — Verbinden met de database vanaf huis ✅ in gebruik
 
 Poort 5432 is dicht sinds de hardening van 28-08. Dat is de gewenste situatie: een databasepoort
 hoort niet open op het internet. Op de laptop draait het nu via een **SSH-tunnel**, en thuis werkt
@@ -187,9 +219,12 @@ klopt hier: de SSH-tunnel versleutelt de verbinding al.
 | Backup | geen | elke nacht, DB + uploads, 30 dagen |
 | DB vanaf huis | geblokkeerd | via tunnel |
 
-**Wat hierna nog openstaat**, en bewust niet in dit document zit:
+**Wat hierna nog openstaat:**
 
-1. De **acht migraties naar live** + de deploy — [pending.md](pending.md). De server draait nog
-   `main` van 29 mei; dat is een eigen sessie met een `pg_dump` vooraf.
-2. **Sterk wachtwoord** voor het live `admin`-account.
-3. De **klikronde** (stap 13) en de nieuwe schermen op 375 / 768 / 1440.
+1. ✅ ~~De acht migraties naar live + de deploy~~ — gedaan op 31-08, zie [history.md](history.md).
+2. ⏳ **Sterk wachtwoord** voor het live `admin`-account.
+3. ⏳ De **klikronde** (stap 13) en de nieuwe schermen op 375 / 768 / 1440.
+4. ⏳ **Een backup één keer terugzetten.** Er draait er nu elke nacht een, maar hij is nooit
+   getest. Zolang dat zo is, is het een aanname.
+5. ⏳ **HTTPS.** De backups staan bovendien allemaal op dezelfde schijf als het origineel; dat
+   beschermt tegen een foute migratie, niet tegen het uitvallen van de machine.

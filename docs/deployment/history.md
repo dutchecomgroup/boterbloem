@@ -91,7 +91,7 @@ via PM2 als `atelierboterbloem`.
 
 **Bekende punten bij deze stand:**
 - Poort 5432 publiek open, verbinding valt stil terug op onversleuteld →
-  [../komende-plannen/2-in-uitvoering/security-hardening.md](../komende-plannen/2-in-uitvoering/security-hardening.md)
+  [../komende-plannen/2-in-uitvoering/security-hardening.md](../archive/planning/security-hardening.md)
 - Publieke bundel is 931 kB in één stuk (beheerpaneel laadt mee voor iedere bezoeker)
 - Stockfoto's en verzonnen testimonials staan nog op de site
 - Geen migratiebestanden — `db:push` ging rechtstreeks naar de live database (omgezet naar `.sql`-migraties op 25-08)

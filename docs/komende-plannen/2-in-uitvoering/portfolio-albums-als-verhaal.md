@@ -1,7 +1,7 @@
 > **Status:** 🟡 stap 1 en 2 af · stap 3 uit scope · open: sitemap uit de database en Open Graph per event
 > **Thema:** 🖼️ portfolio
 > **Laatst bijgewerkt:** 2026-08-25
-> **Afhankelijk van:** [portfolio-categorie-albums](../1-klaar-voor-livegang/portfolio-categorie-albums.md) — die laag staat er al
+> **Afhankelijk van:** [portfolio-categorie-albums](../../archive/planning/portfolio-categorie-albums.md) — die laag staat er al
 > **Effort-schatting:** stap 1 gedaan; stap 2 ~4 uur, stap 3 pas als er content is
 
 # Een album als verhaal — portfolio met meer tekst

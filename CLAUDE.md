@@ -2,6 +2,8 @@
 
 Mini-bedrijfssysteem voor je schoonzus: publieke showcase + admin (boekingen, klanten, omzet, galerij). Draait op poort **6778** op de Strato VPS (`85.215.182.227`), zelfde server als `tcgdeckmaster` en `beautystudiodynamic`.
 
+**Sinds 31-08 draait het echt**: `http://85.215.182.227:6778`, op haar eigen content, met een account voor de klant. Nog **geen domein en geen HTTPS**, dus het is een besloten preview met `robots.txt` op `Disallow: /`. Drie dingen staan er alleen daarom en moeten terug zodra er een certificaat is — `COOKIE_SECURE=false`, de UFW-regel op 6778 en die robots.txt. Ze staan met reden in [`docs/deployment/infra/domein.md`](docs/deployment/infra/domein.md).
+
 ## 📍 Lees dit eerst
 
 | Wat | Waar |
@@ -24,8 +26,14 @@ Mini-bedrijfssysteem voor je schoonzus: publieke showcase + admin (boekingen, kl
 
 ## Database
 
-**Eén live PostgreSQL database** op de VPS (`localhost:5432` op de server, `85.215.182.227:5432` vanaf je laptop).
-Geen lokale dev-DB, geen demo-mode. Schema is single source of truth in `shared/schema.ts`.
+**Eén live PostgreSQL database** op de VPS (`localhost:5432` op de server), plus
+`atelierboterbloem_dev` als werkkopie. Geen lokale dev-DB, geen demo-mode. Schema is single
+source of truth in `shared/schema.ts`.
+
+🔴 **Poort 5432 is dicht sinds 28-08.** Vanaf je laptop gaat het via een SSH-tunnel:
+`ssh -N -L 15432:localhost:5432 root@85.215.182.227`, en `.env` wijst naar `localhost:15432`.
+Zonder tunnel krijg je geen foutpagina maar een **lege site** — de queries falen stil en pagina's
+tonen hun lege staat. Zie [`docs/workflow/lokale-dev-omgeving.md`](docs/workflow/lokale-dev-omgeving.md).
 
 ### 🔴 Schema wijzigen — NOOIT `db:push` op live
 
@@ -74,7 +82,7 @@ foto's waren HEIC en zijn vooraf met `ffmpeg` omgezet.
 ## Belangrijke regels
 
 - **Schema-first**: nieuwe velden? Eerst `shared/schema.ts`, dan een `.sql` in `docs/deployment/sql-pending/`, dan routes + frontend. Zie de DB-sectie hierboven.
-- **Geen lokale Postgres**: `.env` connect altijd direct naar de VPS.
+- **Geen lokale Postgres**: `.env` wijst altijd naar de VPS, sinds 28-08 via de tunnel op 15432.
 - **Galerij-bestandsnamen** zijn UUID-gebaseerd; nooit user-input gebruiken in filenames.
 - **Multer in-memory only** — Sharp streamt naar disk, dus geen tijdelijke uploads op disk.
 - **Admin auth**: `requireAuth` middleware op alles onder `/api/admin/*` behalve `/auth/*`.
@@ -116,10 +124,12 @@ Admin (sessie vereist):
 ## Deploy (VPS)
 
 Zie [`docs/deployment/`](docs/deployment/) — procedure, pending, rollback, migratie-log. Korte versie:
-1. `git pull` op `/projects/atelierboterbloem/`
+1. `git pull` op `/projects/atelierboterbloem/` (branch `main`)
 2. `npm ci && npm run build`
 3. Schema veranderd? `.sql` uit `docs/deployment/sql-pending/` draaien (**niet** `db:push`)
 4. `pm2 reload atelierboterbloem`
+
+⚠️ **npm-versies lopen uiteen**: 11 op de laptop, 10 op de server. npm 11 kan een lockfile schrijven die npm 10 weigert (`Missing: … from lock file`). Onderliggend vraagt vitest 4 om `vite ^6 || ^7 || ^8` terwijl het project op vite 5 zit. Loopt `npm ci` vast: laat npm op de server het gat dichten met `npm install` en zet het resultaat terug in git — niet de lockfile opnieuw genereren op de laptop, dan schuiven er 157 versies mee.
 
 ## Stijl
 

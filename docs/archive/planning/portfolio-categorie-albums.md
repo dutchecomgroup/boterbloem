@@ -1,6 +1,6 @@
 # Portfolio per gelegenheid — categorie → album → foto's
 
-> **Status:** 🎯 Uitgewerkt, klaar om te starten
+> **Status:** ✅ **Afgerond** — gebouwd 25-08, live sinds 31-08.
 > **Thema:** 🖼️ portfolio
 > **Laatst bijgewerkt:** 2026-08-25
 > **Afhankelijk van:** fase 1 (datamodel)
@@ -142,7 +142,7 @@ De bestaande upload-route krijgt een optionele `albumId` in de multipart-body, n
 
 > ⚠️ Bij het uitbreiden van `PATCH /gallery/:id`: de huidige route accepteert het volledige
 > insert-schema partieel, inclusief `filename`. Dat wordt in
-> [security-hardening.md](../2-in-uitvoering/security-hardening.md) dichtgezet — houd `albumId` er wél in en
+> [security-hardening.md](security-hardening.md) dichtgezet — houd `albumId` er wél in en
 > `filename` eruit.
 
 ### Fase D — Publieke kant (~0,5 dag)

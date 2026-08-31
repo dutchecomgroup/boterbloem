@@ -151,4 +151,4 @@ contactpagina, die de mail-app van de bezoeker opent met het adres uit
 **Gevolg dat je moet kennen:** een nieuwe contactaanvraag geeft **geen signaal naar buiten**.
 Hij komt alleen terecht in het beheerpaneel onder *Aanvragen*, met een teller op het
 dashboard. Zie
-[../komende-plannen/1-klaar-voor-livegang/aanvragen-formulier-uitbreiding.md](../komende-plannen/1-klaar-voor-livegang/aanvragen-formulier-uitbreiding.md).
+[../komende-plannen/1-klaar-voor-livegang/aanvragen-formulier-uitbreiding.md](../archive/planning/aanvragen-formulier-uitbreiding.md).

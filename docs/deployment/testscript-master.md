@@ -130,8 +130,9 @@ Deze sectie geldt alleen bij de eerste echte livegang.
 | 8.6 | Mail van de klant | Werkt nog ná de DNS-wijziging — we raken de MX-records niet aan, maar dit is het moment waarop het misgaat als er tóch iets is aangepast |
 | 8.6b | `mailto:`-link op de contactpagina | Opent de mail-app met het juiste adres, op desktop **en** op een telefoon |
 | 8.7 | Link delen in WhatsApp | Nette voorbeeldweergave met afbeelding |
-| 8.8 | 🚫 Stockfoto's en verzonnen quotes | **Weg — dit is een harde poort.** Geen `images.unsplash.com` in de gebouwde bundel, geen verzonnen testimonials. Andermans taarten tonen als haar werk misleidt bezoekers die daarop een offerte aanvragen. Geen echte foto's = geen livegang |
-| 8.9 | `pg_dump`-cron | Draait, en is één keer teruggezet in een testdatabase |
+| 8.8 | 🚫 Stockfoto's en verzonnen quotes | **Weg — dit is een harde poort.** Geen `images.unsplash.com` in de gebouwde bundel, geen verzonnen testimonials. Andermans taarten tonen als haar werk misleidt bezoekers die daarop een offerte aanvragen. **Stand 31-08:** de verzonnen quotes zijn weg en de 36 demofoto's ook, maar er staan nog **drie Unsplash-foto's** bij de graze-pakketten. Die mogen mee zolang het een besloten preview is (geen domein, `robots.txt` op `Disallow: /`) en moeten weg vóór de site publiek gaat: `npx tsx scripts/seed-demo-grazefotos.ts --verwijder`. `npm run check:demo -- --strict` faalt er bewust op |
+| 8.9 | `pg_dump`-cron | ✅ Draait sinds 31-08, elke nacht 03:20, beide databases + `uploads/`, 30 dagen. ⏳ **Nog niet één keer teruggezet** — zolang dat zo is, is het een aanname |
+| 8.10 | 🔴 HTTPS | Zolang de site op `http://` draait gaat het wachtwoord van de klant leesbaar over de lijn, en staat `COOKIE_SECURE=false` in `.env` om inloggen mogelijk te maken. **Geen publieke livegang zonder certificaat** |
 
 ---
 

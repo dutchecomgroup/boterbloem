@@ -1,6 +1,6 @@
 # Klantenbeheer — de restpunten
 
-> **Status:** 🎯 Uitgewerkt, klaar om te starten
+> **Status:** ✅ **Afgerond** — gebouwd 25-08, live sinds 31-08.
 > **Thema:** 👥 klanten
 > **Laatst bijgewerkt:** 2026-08-24
 > **Afhankelijk van:** —

@@ -32,7 +32,7 @@ en de mailpoorten open. Lokaal ontwikkelen gaat sindsdien via een SSH-tunnel —
 > 🔴 **Nog open, en het hoort bij dit plan:** de preview draait op `http://` zonder certificaat,
 > met `COOKIE_SECURE=false` in `.env` omdat een `secure`-cookie anders niet bewaard wordt. Haar
 > wachtwoord gaat daarmee leesbaar over de lijn. Weg zodra er HTTPS is — zie
-> [../3-onaangeraakt/infra-domein-livegang.md](../3-onaangeraakt/infra-domein-livegang.md).
+> [../3-onaangeraakt/infra-domein-livegang.md](../../komende-plannen/3-onaangeraakt/infra-domein-livegang.md).
 
 ## Context
 
@@ -106,7 +106,7 @@ Gevolg: een typefout in een sleutelnaam maakt stilzwijgend een nieuwe rij, en ee
 gevormde waarde slaat op zonder klacht en breekt de site pas bij het renderen.
 
 **Aanpak:** een sleutel-naar-schema-kaart, onbekende sleutels afwijzen met een 400. Uit te
-breiden met de `levertijden`-sleutel uit [agenda-boekingen.md](../1-klaar-voor-livegang/agenda-boekingen.md).
+breiden met de `levertijden`-sleutel uit [agenda-boekingen.md](agenda-boekingen.md).
 
 ### 4. 🟡 Bestandsnaam is aanpasbaar → padmanipulatie bij verwijderen
 
@@ -126,7 +126,7 @@ bij het wijzigen valt hij per ongeluk weg.
 
 **Aanpak:** `.omit({ filename: true, source: true })` op het patch-schema. Als extra rem vóór
 de `unlink` controleren dat het opgeloste pad binnen `GALLERY_DIR` valt. `albumId` moet er wél
-in blijven — zie [portfolio-categorie-albums.md](../1-klaar-voor-livegang/portfolio-categorie-albums.md).
+in blijven — zie [portfolio-categorie-albums.md](portfolio-categorie-albums.md).
 
 ### 5. 🟡 Contactformulier zonder rem
 

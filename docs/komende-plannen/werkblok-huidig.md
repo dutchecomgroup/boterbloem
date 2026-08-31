@@ -29,14 +29,14 @@
 
 | Fase | Wat | Stand |
 |---|---|---|
-| **0** | [Hardening](2-in-uitvoering/security-hardening.md) + [domein](3-onaangeraakt/infra-domein-livegang.md) + backups | 🟡 code ✅ · firewall ✅ 28-08 · backup-cron ✅ 31-08 · **DNS open** |
+| **0** | [Hardening](../archive/planning/security-hardening.md) + [domein](3-onaangeraakt/infra-domein-livegang.md) + backups | 🟡 code ✅ · firewall ✅ 28-08 · backup-cron ✅ 31-08 · **DNS open** |
 | **1** | Datamodel: `packages`, `gallery_albums`, `reviews` + velden | ✅ **DEV ✅ / LIVE ✅** |
-| **2** | [Portfolio](1-klaar-voor-livegang/portfolio-categorie-albums.md): gelegenheden, albums, categorie-beheer | ✅ |
-| **3** | [Pakketten & prijzen](1-klaar-voor-livegang/pakketten-en-prijzen.md) | ✅ |
-| **4** | [Aanvraagflow](1-klaar-voor-livegang/aanvragen-formulier-uitbreiding.md) | ✅ |
-| **5** | [Agenda](1-klaar-voor-livegang/agenda-boekingen.md) + ICS-feed | ✅ |
-| **6** | [Reviews](1-klaar-voor-livegang/content-reviews.md) | ✅ |
-| — | [Klantenbeheer](1-klaar-voor-livegang/klanten-uitbreiding.md) | ✅ |
+| **2** | [Portfolio](../archive/planning/portfolio-categorie-albums.md): gelegenheden, albums, categorie-beheer | ✅ |
+| **3** | [Pakketten & prijzen](../archive/planning/pakketten-en-prijzen.md) | ✅ |
+| **4** | [Aanvraagflow](../archive/planning/aanvragen-formulier-uitbreiding.md) | ✅ |
+| **5** | [Agenda](../archive/planning/agenda-boekingen.md) + ICS-feed | ✅ |
+| **6** | [Reviews](../archive/planning/content-reviews.md) | ✅ |
+| — | [Klantenbeheer](../archive/planning/klanten-uitbreiding.md) | ✅ |
 | — | [Boekingen: sheet, agenda, offerte](2-in-uitvoering/boekingen-detailsheet-en-agenda.md) | ✅ stap 1–12 · stap 13 (muis-scenario's) open |
 | — | [Democontent](#democontent) | ✅ staat op dev |
 | — | [Instellingen bruikbaar maken](#instellingen) | ✅ |
@@ -53,14 +53,22 @@
 
 ## Wat er nu moet gebeuren
 
-**1. De acht migraties op live**, in de vaste volgorde uit [../deployment/pending.md](../deployment/pending.md).
-`pg_dump` eerst, dan de migraties, dan pas de code. Nooit andersom: Drizzle neemt elk schemaveld
-op in de SELECT, dus code op een oud schema breekt élke query op die tabel.
+**1. HTTPS.** Het enige punt dat écht dringend is. Zolang de site op een kaal IP draait, gaat
+haar wachtwoord leesbaar over het internet. Twee wegen: een subdomein op een domein dat al op
+deze server staat (`tcgdeckmaster.com`) met Let's Encrypt — dat kan vandaag en raakt het
+`atelierboterbloem.nl`-traject niet — of meteen het echte domein, waarvoor DNS-toegang nodig is.
+Wat er daarna teruggedraaid moet worden staat in
+[../deployment/infra/domein.md](../deployment/infra/domein.md).
 
-**2. De klikronde afmaken** — stap 13 van het boekingenplan, plus de breedtes van de nieuwe
-schermen (375 / 768 / 1440) en de randgevallen.
+**2. Sterk wachtwoord voor het live `admin`-account.** Eén commando, staat al maanden open:
+`ADMIN_USERNAME=admin ADMIN_PASSWORD=… npm run seed:admin`.
 
-**3. Firewall** (poort 5432), **sterk wachtwoord** voor het live `admin`-account, **backup-cron**.
+**3. De klikronde afmaken** — stap 13 van het boekingenplan, plus de breedtes van de nieuwe
+schermen (375 / 768 / 1440) en de randgevallen. Nu op de echte server te doen in plaats van
+lokaal.
+
+**4. De gatenlijst bij de klant.** Zonder prijzen heeft `/aanbod` geen aanbod, en zonder reviews
+blijft dat blok leeg. Zie [../klant/content-invulplan.md](../klant/content-invulplan.md) §7.
 
 ---
 
@@ -381,7 +389,135 @@ Details in [../architecture/design-system.md](../architecture/design-system.md).
 
 ---
 
+## Wat er op 31-08 bij is gekomen
+
+### <a id="livegang"></a>🚀 De livegang: alles naar de server
+
+De server draaide `main` van **29 mei** met een lege database. Nu draait alles van 24 t/m 31
+augustus op `http://85.215.182.227:6778`, met haar eigen content en een account voor Esmee.
+Volledige verantwoording: [../deployment/history.md](../deployment/history.md).
+
+**De database is als geheel gekopieerd**, niet migratie voor migratie. `atelierboterbloem_dev`
+*was* het resultaat van de acht migraties, en de vraag was "zet er precies neer wat er lokaal
+draait" — een kopie geeft dat, acht migraties achter elkaar geven een reconstructie die er
+bijna gelijk aan is. Live had niets te verliezen: 0 foto's en wat mei-testdata, en die staat in
+`~/backups/boterbloem/atelierboterbloem-voor-livegang.sql.gz`.
+
+**Testdata eruit.** 14 ontwikkel-boekingen, 8 testklanten en 13 aanvragen. De cascade nam 12
+regels, 4 betalingen en 89 tijdlijn-gebeurtenissen mee. Haar beheerpaneel begint leeg.
+
+**De foto's staan nu op drie plekken**: de pc thuis, Google Drive en de server. Tot vandaag was
+dat er één, en de originele HEIC's zijn niet opnieuw te maken. In Drive staan ze onder
+`13 Boterbloem / 04 Assets & Foto's`, gesplitst in wat onaanraakbaar is en wat afgeleid is —
+zie het LEESMIJ daar.
+
+**De backup-cron draait**, elke nacht 03:20, beide databases plus `uploads/`, 30 dagen bewaard.
+Eerste run met de hand gedaan en gecontroleerd: alle archieven geldig, 23 foto's in de tar.
+
+### 🔴 De poort die bij de hardening meeging
+
+De site was onbereikbaar, en dat had niets met de deploy te maken. Bij de **hardening van 28-08**
+ging UFW op `default deny (incoming)`, en 6778 is toen nooit toegevoegd. De app draaide al 33
+dagen door met 0 herstarts — er kwam alleen niemand bij, en dat viel niet op omdat er nog
+niemand keek.
+
+Dezelfde oorzaak zat achter een tweede raadsel: **5432 ging óók dicht**, dus lokaal `npm run dev`
+kreeg geen enkele rij binnen. Dat geeft geen foutpagina maar een lege site, en `/aanbod` toonde
+zijn lege staat — *"Binnenkort, we zetten de pakketten en prijzen op dit moment op een rij"* —
+terwijl er zes pakketten in de database stonden. Dat las als een contentprobleem en was een
+verbindingsprobleem. Lokaal gaat het nu via een SSH-tunnel op 15432.
+
+> **Les:** zet je een poort dicht, controleer dan ook wat je *wél* wilde bereiken. En een lege
+> staat die netjes is opgemaakt, verbergt een storing beter dan een foutmelding dat doet.
+
+### 🍪 Een sessiecookie die ook zonder HTTPS blijft plakken
+
+`NODE_ENV=production` doet twee dingen tegelijk: het serveert de gebouwde client
+([`server/index.ts:61`](../../server/index.ts#L61)) én het zet `secure` op de sessiecookie
+(regel 37). Op een kaal IP zonder certificaat bewaart een browser die cookie niet, dus inloggen
+lukte en was bij de volgende pagina weer vergeten — met een wachtwoord dat gewoon klopte.
+`NODE_ENV` verlagen kon niet: dan is er geen site meer.
+
+`COOKIE_SECURE` maakt dat ene geval expliciet in plaats van `NODE_ENV` ervoor te verbuigen. Niet
+gezet = precies het oude gedrag; wel gezet in productie = een waarschuwing in het log, want het
+wachtwoord reist dan leesbaar mee en dat hoort niet stil te gebeuren.
+
+> 🔴 **Dit is een tijdelijke toestand, geen eindsituatie.** Zolang er geen certificaat is, gaat
+> haar wachtwoord onversleuteld over het internet. De drie dingen die terug moeten zodra HTTPS
+> er is, staan in [../deployment/infra/domein.md](../deployment/infra/domein.md).
+
+### 🔧 De lockfile die op twee npm-versies anders uitpakt
+
+`npm ci` liep vast op de server: `Missing: esbuild@0.28.2 from lock file`. De oorzaak is een
+verschil tussen de machines — npm **11** op de laptop, npm **10** op de server. npm 11 schreef de
+boom zonder `vitest/node_modules/esbuild`, terwijl de geneste `vite` van vitest die wel eist, en
+npm 10 weigert zo'n lockfile.
+
+Onderliggend zit er een echte scheefheid: **vitest 4 vraagt `vite ^6 || ^7 || ^8` als peer,
+terwijl het project op vite 5 zit.** npm 11 lost dat op met een geneste vite 7 en laat een gat
+achter; npm 10 struikelt erover.
+
+Opnieuw genereren op de laptop hielp niet — dan schoven er 157 versies mee en klapte `npm ci` op
+platformspecifieke `@esbuild/*`-pakketten die op Windows als verplicht werden weggeschreven. Wat
+wel werkte: npm op de server zelf het gat laten dichten met de bestaande lockfile als vertrekpunt.
+Eén entry erbij, **geen enkele versie gewijzigd, niets verdwenen**, en teruggezet in git. `npm ci`
+werkt nu op beide machines.
+
+### 🎨 Zes pakketten op de homepage
+
+*"Wat we maken"* toonde er drie terwijl er zes actief én uitgelicht zijn. Een bezoeker zag dus de
+helft, en juist de graze-pakketten vielen buiten beeld — terwijl de kop erboven *"Sweet & grazing
+tables"* zegt. Het raster van drie kolommen vult nu twee rijen.
+
+### 🖼️ De galerij: van sticky stapel naar vaste overlap
+
+Begon met een waarneming van de gebruiker: de bovenste twee kaarten schoven halverwege het
+scrollen een stukje over elkaar heen, *"wat eig. best wel mooi is wat eig een bug is."* Dat effect
+is nu opzet, maar het kostte vier rondes om te leren waaróm het niet zomaar kon.
+
+1. **Overlap per paar** met een negatieve marge. Zag er goed uit aan de kant waar de foto over
+   het tekstvlak viel, maar aan de andere kant lag het witte tekstvlak over de foto en sneed die
+   doormidden.
+2. **Foto per paar op dezelfde kant**, zodat op de naad foto op foto ligt. Dat loste het snijden
+   op, maar toen bleek de knop van de kaart eronder te verdwijnen.
+3. **Lucht onder de bedekte kaart.** Werkte bij het tweede paar en niet bij het eerste — en de
+   meting legde uit waarom: **de overlap was daar geen 56 px maar 140.** Zodra een kaart
+   vastplakt schuift hij omlaag de volgende kaart in. Met sticky uit was het overal precies 56.
+4. **Het plakken eruit.** Genoeg lucht reserveren voor de maximale overlap kan wel, maar dan
+   staat de tekst zichtbaar boven het midden van de kaart. Scheef staan is een hogere prijs dan
+   het effect waard is.
+
+Wat overblijft is gewone CSS: een vaste overlap van 56 px per paar, op elke scrollpositie
+hetzelfde, en nooit een bedekte knop. De scroll-meting, de krimp-animatie, de mediaquery in JS en
+de motion-import zijn daarmee vervallen — 105 regels eruit, 47 erin.
+
+De foto wisselt **om en om per kaart** van kant, op verzoek: dat leest als een collage. De
+oplossing uit ronde 2 (per paar dezelfde kant) was een reparatie voor een probleem dat met het
+weghalen van het plakken al verdwenen was, en is dus teruggedraaid.
+
+> **Les:** een effect dat per ongeluk ontstaat tijdens het scrollen, is niet hetzelfde als een
+> effect dat je op elke scrollpositie kunt garanderen. Meten met de sticky aan én uit was wat het
+> uiteindelijk uitlegde.
+
+---
+
 ## Beslissingen die de scope bepaalden
+
+**🗄️ De database is gekopieerd, niet gemigreerd (31-08).** Dev *was* het resultaat van de acht
+migraties, en de vraag was "zet er precies neer wat er lokaal draait". Een kopie geeft dat; acht
+migraties achter elkaar geven een reconstructie die er bijna gelijk aan is. Dit was een eenmalige
+inhaalslag omdat live niets te verliezen had — **geen nieuwe werkwijze.** Een volgende
+schemawijziging volgt weer gewoon de normale weg.
+
+**🔓 De preview draait bewust op http (31-08).** Er is geen domein en geen certificaat, dus
+`COOKIE_SECURE=false` en poort 6778 open. Dat is een aanvaard risico voor een besloten preview op
+een adres dat nergens gedeeld wordt, en géén eindsituatie: haar wachtwoord gaat tot die tijd
+leesbaar over de lijn.
+
+**🖼️ Een vaste overlap wint van een sticky stapel (31-08).** De stapel las mooi, maar zodra een
+kaart vastplakt schuift hij omlaag de volgende kaart in en groeit de overlap van 56 naar 140 px —
+genoeg om een knop op te eten. Voorspelbaar op elke scrollpositie is meer waard dan een effect
+dat je alleen tijdens het scrollen krijgt.
 
 **📭 Mail valt volledig buiten scope (25-08).** Geen mailmodule, geen notificatie bij een nieuwe
 aanvraag. Het enige signaal is de teller op het dashboard.
@@ -439,23 +575,30 @@ Niet om te bouwen — wel om **live** te gaan. Status per item:
 
 ## Volgende sessie
 
-1. **De acht migraties naar live**, dan deployen, dan de foto's en de twee contentscripts op de
-   server draaien — zie de deployvolgorde in [../deployment/pending.md](../deployment/pending.md)
+1. **HTTPS regelen** — zie hierboven. Daarna `COOKIE_SECURE` uit `.env`, de UFW-regel op 6778
+   dicht en `robots.txt` terug op `Allow: /`. Alle drie staan ze met reden in
+   [../deployment/infra/domein.md](../deployment/infra/domein.md)
 2. **De klant de gatenlijst voorleggen** uit
    [../klant/content-invulplan.md](../klant/content-invulplan.md). Wat nu blokkeert: de
    **prijzen** van alle zes pakketten, **foto's van een grazing table** (er zit er geen enkele
    bij haar twintig), **reviews** en de **over-tekst**
 3. **De klikronde**: stap 13 van het boekingenplan, plus de nieuwe schermen op 375 / 768 / 1440
-4. **Reduced motion nakijken** in de browser — de hero-parallax en de galerijstapel schakelen
-   zichzelf uit via `usePrefersReducedMotion`, maar dat is alleen op code gecontroleerd
-5. **`DEMO_PREVIEW`-slot** — minder dringend nu er geen stockmateriaal meer op de site staat,
-   maar `noindex` blijft nodig zolang het domein niet leeft
+4. **Reduced motion nakijken** in de browser — de hero-parallax schakelt zichzelf uit via
+   `usePrefersReducedMotion`, maar dat is alleen op code gecontroleerd. De galerij hoort daar
+   sinds 31-08 niet meer bij: die heeft geen scroll-animatie meer
+5. **Een backup één keer terugzetten.** Er draait er nu elke nacht een, maar teruggezet is er
+   nooit één — en dan is het een aanname. Combineer het met de eerstvolgende keer dat de
+   dev-database toch ververst moet worden
+6. **`vitest` en `vite` rechttrekken.** vitest 4 vraagt `vite ^6 || ^7 || ^8`, het project zit op
+   vite 5. Dat is wat de lockfile scheef trok en `npm ci` liet vallen. Nu gerepareerd, maar de
+   scheefheid zelf staat er nog
 
-**Opgelost sinds vorige keer:** `demoImageForSlug()` lekte op `/over`, `/contact` en de
-processtappen van de homepage — die hele laag is verwijderd. En `check:demo` controleert nu
-ook de database, niet alleen de gebouwde bundel.
+**Opgelost sinds vorige keer:** de acht migraties staan op live, de code draait op de server, de
+backup-cron bestaat, en de foto's staan niet meer op één machine. `demoImageForSlug()` was al
+weg; `check:demo` controleert nu ook de database.
 
-> ⚠️ **Eén ding staat er bewust nog in de weg:** drie Unsplash-foto's bij de grazing-pakketten.
-> `npm run check:demo -- --strict` faalt daarop, en dat is de bedoeling — het is de bewaker die
-> voorkomt dat ze meegaan naar live. Weghalen:
-> `npx tsx scripts/seed-demo-grazefotos.ts --verwijder`.
+> ⚠️ **Drie Unsplash-foto's staan bewust nog bij de grazing-pakketten**, en zijn op 31-08
+> meegegaan naar de server. Dat kan omdat de site niet publiek vindbaar is: geen domein, en
+> `robots.txt` staat op `Disallow: /`. Ze moeten eruit vóór de site echt open gaat.
+> `npm run check:demo -- --strict` faalt erop, en dat is de bedoeling — het is de bewaker.
+> Weghalen: `npx tsx scripts/seed-demo-grazefotos.ts --verwijder`.

@@ -147,7 +147,7 @@ npm run check:demo   # zit er nog demo-content in de gebouwde bundel?
 > ⚠️ **Poort 5432 staat nog publiek open.** De verbinding is sinds 25-08 versleuteld
 > (`server/db.ts` dwingt TLS af buiten loopback), maar de poort zelf moet nog dicht in de
 > firewall — zie
-> [komende-plannen/2-in-uitvoering/security-hardening.md](komende-plannen/2-in-uitvoering/security-hardening.md).
+> [komende-plannen/2-in-uitvoering/security-hardening.md](archive/planning/security-hardening.md).
 
 ---
 
@@ -158,8 +158,9 @@ npm run check:demo   # zit er nog demo-content in de gebouwde bundel?
 onderdeel van [komende-plannen/3-onaangeraakt/infra-domein-livegang.md](komende-plannen/3-onaangeraakt/infra-domein-livegang.md)
 fase B.
 
-Wat er weg moet kunnen: de database én `uploads/` — dat zijn de foto's van de klant, en die
-staan nergens anders.
+Wat er weg moet kunnen: de database én `uploads/`. Sinds 31-08 draait dat elke nacht om 03:20
+op de VPS; details en de kanttekeningen staan in
+[deployment/rollback.md](deployment/rollback.md).
 
 ---
 
@@ -170,7 +171,8 @@ staan nergens anders.
 | `DATABASE_URL` | PostgreSQL-verbinding. De **host** bepaalt of TLS wordt afgedwongen |
 | `SESSION_SECRET` | Sessie-ondertekening — minimaal 32 tekens, app start niet zonder |
 | `PORT` | Standaard 6778 |
-| `NODE_ENV` | `production` zet `secure` cookies aan en serveert de gebouwde client |
+| `NODE_ENV` | `production` zet `secure` cookies aan **en** serveert de gebouwde client. Die twee zitten aan dezelfde schakelaar, en dat is precies waarom `COOKIE_SECURE` bestaat |
+| `COOKIE_SECURE` | Overschrijft alleen de `secure`-vlag op de sessiecookie. Niet gezet = volgt `NODE_ENV`. Staat op de VPS op `false` zolang de site op een kaal IP zonder certificaat draait, want anders bewaart de browser de cookie niet en is inloggen onmogelijk. 🔴 Weg zodra er HTTPS is |
 | `UPLOADS_DIR` | Standaard `./uploads` |
 | `MAX_UPLOAD_MB` | Standaard 10 |
 | `PUBLIC_BASE_URL` | Voor absolute links — moet naar het echte domein bij livegang |

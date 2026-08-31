@@ -71,7 +71,7 @@ livegang-punten.
    `http://localhost:6778`.
 6. **Poort 6778 dichtzetten** voor extern verkeer zodra de proxy draait; alles loopt dan via
    443. Doe dit samen met het dichtzetten van 5432 uit
-   [security-hardening.md](../2-in-uitvoering/security-hardening.md).
+   [security-hardening.md](../../archive/planning/security-hardening.md).
 
 De sessiecookie staat op `secure: isProd`, dus die werkt pas achter HTTPS. Dat bepaalt de
 volgorde: eerst het certificaat, dan pas `NODE_ENV=production`.
