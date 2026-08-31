@@ -46,6 +46,26 @@ import { FotoCyclus } from "../FotoCyclus";
 /** Boven de kaart blijft dit aan lucht over; de trapjes van 14px laten de stapelranden zien. */
 const KLEEF_MARGE = 84;
 
+/**
+ * De kaarten staan twee aan twee: de tweede van elk paar valt met zijn bovenrand over de
+ * onderrand van de eerste. Dat effect ontstond eerst per ongeluk, halverwege het scrollen van
+ * de stapel, en bleek er beter uit te zien dan de gelijke tussenruimte die er stond.
+ *
+ * **Pas vanaf `md`.** Daaronder is een kaart één kolom met de knop onderaan, en dan zou de
+ * volgende kaart precies die knop bedekken. In twee kolommen staat de tekst verticaal
+ * gecentreerd en valt de overlap in de padding eronder — daar bedekt hij niets.
+ *
+ * De bovenliggende kaart moet winnen: bij het stapelen doet `zIndex: index` dat, en zonder
+ * stapelen wint de latere broer vanzelf omdat er dan geen transform en dus geen eigen
+ * stapelcontext op de kaarten zit.
+ */
+function marge(index: number): string {
+  if (index === 0) return "";
+  return index % 2 === 1
+    ? "mt-5 sm:mt-8 md:-mt-14"   // tweede van het paar: eroverheen
+    : "mt-5 sm:mt-8 md:mt-10";   // nieuw paar: gewone lucht
+}
+
 function StapelKaart({
   gelegenheid,
   fotos,
@@ -84,7 +104,7 @@ function StapelKaart({
         // terugschalen omhoog onder de kaart die eroverheen komt, en zie je een spleet.
         ...(bewegen ? { scale: schaal, transformOrigin: "top center" } : {}),
       }}
-      className={`${stapelen ? "md:sticky" : ""} overflow-hidden rounded-3xl bg-linen shadow-xl ring-1 ring-sage/20 will-change-transform`}
+      className={`${stapelen ? "md:sticky" : ""} ${marge(index)} overflow-hidden rounded-3xl bg-linen shadow-xl ring-1 ring-sage/20 will-change-transform`}
     >
       <div className={`grid md:min-h-[26rem] md:grid-cols-2 ${fotoLinks ? "" : "md:[direction:rtl]"}`}>
         {/* [direction:rtl] draait alleen de kolomvolgorde; de inhoud zet zichzelf terug. */}
@@ -140,7 +160,9 @@ export function GelegenheidStapel({
   });
 
   return (
-    <div ref={ouderRef} className="space-y-5 sm:space-y-8 md:space-y-10">
+    /* Geen `space-y` hier: die zet margin-top op elk kind behalve het eerste en zou de
+       overlap-marge van `marge()` overschrijven, afhankelijk van de volgorde in de bundel. */
+    <div ref={ouderRef}>
       {gelegenheden.map((g, i) => (
         <StapelKaart
           key={g.id}
