@@ -1,8 +1,6 @@
+# TODO bij de echte livegang: terugzetten naar "Allow: /" met "Disallow: /admin".
+# De site draait nu als besloten preview op http://85.215.182.227:6778 -- geen domein, geen
+# HTTPS, en de content is nog niet af (geen prijzen, geen reviews, drie stockfoto's bij de
+# graze-pakketten). Wat een zoekmachine hier indexeert, blijft daarna in de resultaten staan.
 User-agent: *
-Allow: /
-
-# Het beheerpaneel hoort niet in zoekresultaten. Dit is geen beveiliging — dat doet
-# requireAuth — maar het houdt de inlogpagina uit Google.
-Disallow: /admin
-
-Sitemap: https://atelierboterbloem.nl/sitemap.xml
+Disallow: /
