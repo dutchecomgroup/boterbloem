@@ -6,7 +6,7 @@ interface Props {
 }
 
 /** A larger floral cluster. Default w-40 sm:w-64 md:w-80; override via className. */
-export function FloralFrame({ className, color = "text-gold/25" }: Props) {
+export function FloralFrame({ className, color = "text-sage/25" }: Props) {
   return (
     <div
       aria-hidden="true"

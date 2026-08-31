@@ -11,6 +11,20 @@
   width: max-content;
 }
 
+/* ---------- Sheet ---------- */
+/* Inschuiven van rechts. 240 ms: lang genoeg om te zien wáár het paneel vandaan komt, kort
+   genoeg om niet in de weg te zitten bij iemand die de hele dag boekingen opent. */
+@keyframes sheet-in {
+  from { transform: translate3d(100%, 0, 0); }
+  to   { transform: translate3d(0, 0, 0); }
+}
+@keyframes sheet-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.animate-sheet-in   { animation: sheet-in 240ms cubic-bezier(0.32, 0.72, 0, 1); }
+.animate-sheet-fade { animation: sheet-fade 240ms ease-out; }
+
 /* ---------- Reduced motion ---------- */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -33,10 +47,14 @@
     -moz-osx-font-smoothing: grayscale;
   }
   body {
-    @apply bg-cream text-charcoal font-body;
+    @apply bg-linen text-charcoal font-body;
   }
   h1, h2, h3, h4 {
     @apply font-display tracking-tight text-charcoal;
+  }
+  /* Grote koppen niet laten eindigen met één weeswoord op de tweede regel. */
+  h1, h2 {
+    text-wrap: balance;
   }
   a {
     @apply transition-colors;
@@ -53,30 +71,45 @@
   .btn {
     @apply inline-flex items-center justify-center gap-2 rounded-full px-5 sm:px-6 py-3 text-xs sm:text-sm font-medium uppercase tracking-widest transition-all disabled:cursor-not-allowed disabled:opacity-50 min-h-[44px];
   }
-  .btn-gold {
-    @apply btn bg-gold text-cream hover:bg-gold-dark shadow-sm hover:shadow-md;
+  /* Micro-interactie: het icoon in een knop schuift een tikje mee bij hover. Stil genoeg om
+     nergens op te vallen, aanwezig genoeg om de knop levend te maken. */
+  .btn > svg {
+    @apply transition-transform duration-300;
+  }
+  .btn:hover > svg {
+    transform: translateX(2px);
+  }
+  .btn-sage {
+    @apply btn bg-sage-deep text-linen hover:bg-sage-dark shadow-sm hover:shadow-md;
   }
   .btn-outline {
-    @apply btn border border-gold text-gold-dark hover:bg-gold/10;
+    @apply btn border border-sage-dark text-sage-deep hover:bg-sage/15;
   }
   .btn-ghost {
     @apply btn text-charcoal hover:bg-charcoal/5;
   }
   .input {
-    @apply w-full rounded-md border border-charcoal/15 bg-white px-4 py-2.5 text-sm shadow-sm focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/30 transition;
+    @apply w-full rounded-md border border-charcoal/15 bg-white px-4 py-2.5 text-sm shadow-sm focus:border-sage focus:outline-none focus:ring-2 focus:ring-sage/30 transition;
   }
   .label {
     @apply block text-xs font-medium uppercase tracking-wider text-charcoal/70 mb-1.5;
   }
+  /*
+   * Linen en geen wit. Een witte kaart op een bijna-wit vlak heeft geen rand om op te vallen,
+   * en dat is precies waarom de pakketkaarten als niets lazen. Regel: **een kaart is nooit wit
+   * op een bijna-wit vlak** -- of de kaart krijgt kleur, of de sectie eronder.
+   */
   .card {
-    @apply rounded-lg border border-charcoal/10 bg-white p-6 shadow-sm;
+    @apply rounded-lg border border-charcoal/10 bg-linen p-6 shadow-sm;
   }
+  /* Het accent uit het moodboard: cursieve serif, geen schrijfletter. `sage-deep` en niet
+     `sage`, want dit is tekst die gelezen wordt — zie de contrastregel hieronder. */
   .script-accent {
-    @apply font-script text-gold;
+    @apply font-script italic text-sage-deep;
   }
-  /* Section labels — gold uppercase tag */
+  /* Sectielabel: kleine hoofdletters in salie die AA haalt. */
   .tag {
-    @apply text-[10px] sm:text-xs uppercase tracking-[0.25em] sm:tracking-[0.3em] text-gold-dark font-medium;
+    @apply text-[10px] sm:text-xs uppercase tracking-[0.25em] sm:tracking-[0.3em] text-sage-dark font-medium;
   }
   /* Section padding scale */
   .section-y {
@@ -85,31 +118,139 @@
   .section-y-sm {
     @apply py-10 sm:py-16;
   }
-  /* Soft section gradients */
-  .bg-section-cream {
-    background: radial-gradient(ellipse at top, #FFF9EF 0%, #FBF6EE 60%);
+  /* ------------------------------------------------------------------------
+   * Sectievlakken
+   *
+   * **Vlakke velden, geen verlopen die naar linen terugvallen.** Dit stond hier eerst als
+   * `linear-gradient(180deg, #F7F5F0 …, #F7F5F0)` voor élke klasse: elk verloop begon en
+   * eindigde op linen, dus bij iedere naad viel de kleur weg. Vier secties op elkaar gaven
+   * daardoor één doorlopend wit veld met een vage zweem in het midden -- de verlopen hieven
+   * zichzelf op. In de woorden van de gebruiker: *"Bijna alles is WIT op de hele website."*
+   *
+   * Regel bij het gebruik: **twee aangrenzende secties krijgen nooit hetzelfde vlak.** Dat is
+   * wat een pagina ritme geeft; een verloop kan dat niet als hij aan de rand toch weer wit is.
+   *
+   * Contrast van charcoal (#2B2926) op elk vlak, gemeten: linen 13,3 · zand 11,8 · blush 10,6 ·
+   * salie-licht 11,2. Linen-tekst op salie-diep haalt 5,04 en mag dus lopende tekst dragen.
+   * --------------------------------------------------------------------- */
+  .bg-section-linen {
+    background-color: #F7F5F0;
   }
+  .bg-section-sand {
+    background-color: #EDE7DE;
+  }
+  /* Blush verzacht: puur #F5D9DE over een hele sectie leest als rózé, en het moodboard is
+     neutraal mét blush-accenten, niet andersom. */
   .bg-section-blush {
-    background: linear-gradient(180deg, #FBF6EE 0%, #F4D9D0 60%, #FBF6EE 100%);
+    background-color: #F7EAEC;
   }
-  .bg-section-butter {
-    background: linear-gradient(180deg, #FBF6EE 0%, #FDF1C7 50%, #FBF6EE 100%);
-  }
+  /* De enige die een verloop blijft, en wel een die érgens anders eindigt dan hij begon. */
   .bg-section-warm {
-    background: linear-gradient(135deg, #FBF6EE 0%, #F4D9D0 50%, #FDF1C7 100%);
+    background: linear-gradient(135deg, #F9EFEC 0%, #F4EDE4 55%, #EDE7DE 100%);
   }
+  .bg-section-sage {
+    background-color: #DDE4D6;
+  }
+  /*
+   * Het massieve saliepaneel: één per pagina, met linen-tekst.
+   *
+   * Dit is het element dat de site miste. Haar huisstijl-moodboard heeft precies zo'n vlak
+   * ("Liefde in elk detail, smaak in elk moment" in wit op vol salie) en de uitvoering was
+   * volledig aan de linen-kant blijven hangen.
+   */
+  .bg-section-diep {
+    background-color: theme("colors.sage.deep");
+    @apply text-linen;
+  }
+
+  /*
+   * Alles op het saliepaneel omkeren.
+   *
+   * `text-linen` op de sectie alleen is niet genoeg: `h2` krijgt `text-charcoal` uit
+   * `@layer base`, `.tag` krijgt `text-sage-dark`, en de lopende tekst staat op
+   * `text-charcoal/75`. Dat zijn allemaal eigen klassen, dus de sectie wint daar niet van --
+   * en dan staat er donkere tekst op een donker vlak. Deze regels zijn afstammelingsselectors
+   * (element + klasse) en hebben daardoor wél voorrang.
+   *
+   * 🔴 **Geen doorzichtigheid hier.** Linen op sage-deep haalt 5,04:1, maar al bij `linen/85`
+   * zakt het naar 4,16 en dus onder de AA-eis. De gebruikelijke `text-charcoal/75`-nuance kan
+   * op dit vlak niet: alles staat op vol linen.
+   */
+  .bg-section-diep h1,
+  .bg-section-diep h2,
+  .bg-section-diep h3,
+  .bg-section-diep h4,
+  .bg-section-diep p,
+  .bg-section-diep li,
+  .bg-section-diep .tag,
+  .bg-section-diep .script-accent {
+    @apply text-linen;
+  }
+
+  /* De primaire knop is sage-deep op linen -- op dit vlak dus onzichtbaar. Omgekeerd haalt hij
+     dezelfde 5,04:1 en valt hij juist op. */
+  .bg-section-diep .btn-sage {
+    @apply bg-linen text-sage-deep hover:bg-white;
+  }
+  .bg-section-diep .btn-outline {
+    @apply border-linen/70 text-linen hover:bg-linen/15;
+  }
+
   /* Filter pills */
   .pill {
     @apply px-3 sm:px-4 py-2 rounded-full text-[10px] sm:text-xs uppercase tracking-widest transition border min-h-[36px] inline-flex items-center;
   }
   .pill-active {
-    @apply bg-gold text-cream border-gold shadow-sm;
+    @apply bg-sage text-linen border-sage shadow-sm;
   }
   .pill-inactive {
-    @apply bg-white text-charcoal/60 border-gold/30 hover:text-charcoal hover:border-gold;
+    @apply bg-white text-charcoal/60 border-sage/30 hover:text-charcoal hover:border-sage;
   }
-  /* Hairline gold border */
-  .hairline-gold {
-    @apply border border-gold/30;
+  /* Fijne salie-rand */
+  .hairline-sage {
+    @apply border border-sage/45;
+  }
+
+  /* ------------------------------------------------------------------------
+   * Beheerpaneel — de kleurtaal
+   *
+   * Kleur heeft hier een betekenis en is geen versiering. Zeven rollen, en alles kiest
+   * daaruit: salie = merk en navigatie · salie-rand = bewerkbaar · groen = voldaan ·
+   * sage-deep = openstaand · burgundy = fout of gevaar · boterbloem = vraagt aandacht ·
+   * charcoal/40 = afgehandeld. Past een accent in geen enkele rol, dan blijft het charcoal.
+   *
+   * 🔴 Contrast. `sage` haalt op wit 2,18:1 en `sage-dark` 3,00:1 — allebei onder de AA-eis
+   * van 4,5:1 voor gewone tekst. `sage-dark` mag op koppen vanaf 24 px (of 19 px vet), op
+   * randen, iconen en streepjes. Lopende tekst, tabelinhoud en labels blijven charcoal, of
+   * `sage-deep` (5,49:1) als de kleur de betekenis draagt. Op `boterbloem` en `blush` staat
+   * tekst altijd in charcoal, nooit in salie.
+   * --------------------------------------------------------------------- */
+
+  /* Kaart met een saliestreep links: het blok dat er op dit scherm toe doet. */
+  .card-accent {
+    @apply card border-l-4 border-l-sage-dark;
+  }
+
+  /* Tabelkop met een zandwassing. Verving `bg-charcoal/5 text-charcoal/60`, dat op elke
+     lijst hetzelfde grijs-op-grijs gaf. Sand en niet boterbloem: dat geel is een signaalkleur
+     ("vraagt aandacht") en elke tabelkop geel maken maakt dat signaal waardeloos. */
+  .tabel-admin thead {
+    @apply bg-sand text-charcoal/80 text-xs uppercase tracking-widest;
+  }
+  .tabel-admin thead th {
+    @apply border-b border-sage/40 font-medium;
+  }
+
+  /* Rij-hover in linen in plaats van grijs: warm, en het onderscheidt zich van de kop. */
+  .rij-hover {
+    @apply border-t border-charcoal/5 transition-colors hover:bg-linen/70;
+  }
+
+  /* De rusttoestand van een inline bewerkbaar veld. Uit `VeldInline` gelicht zodat elk ander
+     klikbaar veld dezelfde belofte kan doen: hier kun je iets wijzigen. */
+  .veld-pil {
+    @apply rounded-md border border-charcoal/10 bg-white/55 transition
+      hover:border-sage/60 hover:bg-white focus:border-sage focus:outline-none
+      focus-visible:ring-2 focus-visible:ring-sage/30;
   }
 }

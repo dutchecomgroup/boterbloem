@@ -1,15 +1,17 @@
 import { Link, useLocation } from "wouter";
 import { useState } from "react";
+import * as Dialog from "@radix-ui/react-dialog";
 import { Menu, X, Instagram } from "lucide-react";
 import { usePublicSettings } from "../../hooks/usePublicSettings";
-import { cn } from "../../lib/utils";
+import { cn, whatsappLink } from "../../lib/utils";
 import { BotanicalPattern } from "../ornaments/BotanicalPattern";
-import { GoldDivider } from "../ornaments/GoldDivider";
+import { SierDivider } from "../ornaments/SierDivider";
 
 const NAV = [
   { href: "/", label: "Home" },
   { href: "/galerij", label: "Galerij" },
-  { href: "/diensten", label: "Aanbod" },
+  { href: "/aanbod", label: "Aanbod" },
+  { href: "/werkwijze", label: "Werkwijze" },
   { href: "/over", label: "Over" },
   { href: "/contact", label: "Contact" },
 ];
@@ -21,8 +23,8 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
   const contact = settings?.contact;
 
   return (
-    <div className="min-h-screen flex flex-col bg-cream">
-      <header className="sticky top-0 z-40 bg-cream/90 backdrop-blur-md border-b border-charcoal/5">
+    <div className="min-h-screen flex flex-col bg-linen">
+      <header className="sticky top-0 z-40 bg-linen/90 backdrop-blur-md border-b border-charcoal/5">
         <div className="container-tight flex items-center justify-between h-16 sm:h-20">
           <Link href="/" className="flex items-baseline gap-1 sm:gap-2 group">
             <span className="font-display text-xl sm:text-2xl tracking-tight">Atelier</span>
@@ -37,78 +39,137 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
                   href={item.href}
                   className={cn(
                     "relative text-sm uppercase tracking-widest transition-colors group/nav",
-                    active ? "text-gold-dark" : "text-charcoal/70 hover:text-charcoal",
+                    active ? "text-sage-dark" : "text-charcoal/70 hover:text-charcoal",
                   )}
                 >
                   {item.label}
                   <span
                     className={cn(
-                      "absolute -bottom-2 left-1/2 -translate-x-1/2 h-px bg-gold transition-all duration-300",
+                      "absolute -bottom-2 left-1/2 -translate-x-1/2 h-px bg-sage transition-all duration-300",
                       active ? "w-8 opacity-100" : "w-0 opacity-0 group-hover/nav:w-6 group-hover/nav:opacity-70",
                     )}
                   />
                 </Link>
               );
             })}
-            <Link href="/contact" className="btn-gold !py-2 !px-5 text-xs">Offerte aanvragen</Link>
+            <Link href="/contact" className="btn-sage !py-2 !px-5 text-xs">Offerte aanvragen</Link>
           </nav>
-          <button className="md:hidden p-2 -mr-2 min-h-[44px] min-w-[44px] flex items-center justify-center" onClick={() => setOpen(true)} aria-label="Menu openen">
-            <Menu size={24} />
-          </button>
+          <Dialog.Root open={open} onOpenChange={setOpen}>
+            <Dialog.Trigger
+              className="md:hidden p-2 -mr-2 min-h-[44px] min-w-[44px] flex items-center justify-center"
+              aria-label="Menu openen"
+            >
+              <Menu size={24} />
+            </Dialog.Trigger>
+
+            {/*
+              Via een portal, en niet als `fixed` kind van deze header.
+
+              De header heeft `backdrop-blur-md`, en een backdrop-filter maakt van een element
+              een containing block voor `position: fixed`. Het paneel stond eerder ín de header
+              en `inset-0` viel daardoor terug op de 64 px hoge headerbalk: het menu werd
+              bovenaan afgeknipt en klapte nergens naartoe uit. Radix rendert in `document.body`
+              en heeft dat probleem niet -- plus focus-trap, Escape en scroll-lock, die je bij
+              een handgemaakte `div` alle drie zelf moet bouwen.
+            */}
+            <Dialog.Portal>
+              {/* De achtergrond blijft zichtbaar, maar wazig: je ziet waar je vandaan komt. */}
+              <Dialog.Overlay className="md:hidden fixed inset-0 z-50 bg-charcoal/20 backdrop-blur-[3px] data-[state=open]:animate-sheet-fade" />
+
+              {/*
+                Halve breedte, met een ondergrens van 16rem. Op een telefoon van 375 px is de
+                letterlijke helft 187 px, en daar breekt "Offerte aanvragen" over drie regels.
+                De ondergrens houdt het menu leesbaar; op alles vanaf ~512 px is het precies de
+                helft, zoals bedoeld.
+              */}
+              <Dialog.Content
+                className="md:hidden fixed inset-y-0 right-0 z-50 flex w-1/2 min-w-[16rem] flex-col
+                  border-l border-charcoal/10 bg-linen/70 shadow-2xl outline-none backdrop-blur-2xl
+                  data-[state=open]:animate-sheet-in"
+              >
+                <Dialog.Title className="sr-only">Menu</Dialog.Title>
+
+                {/* De naam blijft staan waar hij ook in de balk stond, zodat het paneel niet
+                    voelt als een los venster maar als een verlengstuk van de kop. Hij is
+                    tevens de weg terug naar home. */}
+                <div className="flex h-16 shrink-0 items-center justify-between gap-2 border-b border-charcoal/10 px-4 sm:h-20">
+                  <Link
+                    href="/"
+                    onClick={() => setOpen(false)}
+                    className="flex min-w-0 flex-col leading-none"
+                  >
+                    <span className="font-display text-base tracking-tight">Atelier</span>
+                    <span className="script-accent -mt-0.5 text-xl leading-tight">Boterbloem</span>
+                  </Link>
+                  <Dialog.Close
+                    className="-mr-2 flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center p-2"
+                    aria-label="Menu sluiten"
+                  >
+                    <X size={24} />
+                  </Dialog.Close>
+                </div>
+
+                <nav className="flex flex-1 flex-col gap-1 overflow-y-auto overscroll-contain px-4 py-6">
+                  {NAV.map((item) => {
+                    const active =
+                      location === item.href || (item.href !== "/" && location.startsWith(item.href));
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        onClick={() => setOpen(false)}
+                        className={cn(
+                          "border-b border-charcoal/5 py-3.5 font-display text-xl tracking-tight transition-colors",
+                          active ? "text-sage-deep" : "text-charcoal hover:text-sage-deep",
+                        )}
+                      >
+                        {item.label}
+                      </Link>
+                    );
+                  })}
+                  <Link
+                    href="/contact"
+                    onClick={() => setOpen(false)}
+                    className="btn-sage mt-6 w-full !px-3 text-[11px]"
+                  >
+                    Offerte aanvragen
+                  </Link>
+                </nav>
+              </Dialog.Content>
+            </Dialog.Portal>
+          </Dialog.Root>
         </div>
-        {open && (
-          <div className="md:hidden fixed inset-0 bg-cream z-50 overflow-y-auto">
-            <div className="container-tight flex items-center justify-between h-16 sm:h-20 border-b border-charcoal/5">
-              <span className="font-display text-xl">Atelier <span className="script-accent text-2xl">Boterbloem</span></span>
-              <button className="p-2 -mr-2 min-h-[44px] min-w-[44px] flex items-center justify-center" onClick={() => setOpen(false)} aria-label="Menu sluiten">
-                <X size={24} />
-              </button>
-            </div>
-            <nav className="container-tight flex flex-col gap-1 mt-8">
-              {NAV.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setOpen(false)}
-                  className="text-2xl font-display tracking-tight py-4 border-b border-charcoal/5"
-                >
-                  {item.label}
-                </Link>
-              ))}
-              <Link href="/contact" onClick={() => setOpen(false)} className="btn-gold mt-8 w-fit">
-                Offerte aanvragen
-              </Link>
-            </nav>
-          </div>
-        )}
       </header>
 
       <main className="flex-1">{children}</main>
 
-      <footer className="relative bg-charcoal text-cream mt-16 sm:mt-24 overflow-hidden">
-        <BotanicalPattern opacity={0.06} className="text-cream" />
+      <footer className="relative bg-charcoal text-linen mt-16 sm:mt-24 overflow-hidden">
+        <BotanicalPattern opacity={0.06} className="text-linen" />
         <div className="container-tight relative py-10 sm:py-16 grid gap-8 sm:gap-12 md:grid-cols-3">
           <div>
             <div className="font-display text-2xl">Atelier <span className="script-accent text-3xl">Boterbloem</span></div>
-            <p className="mt-4 text-cream/70 text-sm leading-relaxed max-w-xs">
-              Handgemaakte taarten, mini desserts en zoete creaties voor jouw mooiste momenten.
+            <p className="mt-4 text-linen/70 text-sm leading-relaxed max-w-xs">
+              Handgemaakte sweet tables, grazing tables en taarten voor jouw mooiste momenten.
             </p>
           </div>
           <div>
-            <h4 className="text-xs uppercase tracking-widest text-gold mb-4">Contact</h4>
-            <ul className="space-y-2 text-sm text-cream/80">
-              {contact?.email && <li><a href={`mailto:${contact.email}`} className="hover:text-gold">{contact.email}</a></li>}
-              {contact?.phone && <li><a href={`tel:${contact.phone}`} className="hover:text-gold">{contact.phone}</a></li>}
+            <h4 className="text-xs uppercase tracking-widest text-sage mb-4">Contact</h4>
+            <ul className="space-y-2 text-sm text-linen/80">
+              {contact?.email && <li><a href={`mailto:${contact.email}`} className="hover:text-sage">{contact.email}</a></li>}
+              {contact?.phone && <li><a href={`tel:${contact.phone}`} className="hover:text-sage">{contact.phone}</a></li>}
+              {whatsappLink(contact?.whatsapp) && (
+                <li><a href={whatsappLink(contact?.whatsapp)!} target="_blank" rel="noreferrer" className="hover:text-sage">WhatsApp</a></li>
+              )}
               {contact?.address && <li>{contact.address}{contact.city ? `, ${contact.city}` : ""}</li>}
             </ul>
           </div>
           <div>
-            <h4 className="text-xs uppercase tracking-widest text-gold mb-4">Volg ons</h4>
+            <h4 className="text-xs uppercase tracking-widest text-sage mb-4">Volg ons</h4>
             <a
               href={contact?.instagram ?? "https://instagram.com/atelierboterbloem"}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-2 text-sm hover:text-gold"
+              className="inline-flex items-center gap-2 text-sm hover:text-sage"
             >
               <Instagram size={18} /> @atelierboterbloem
             </a>
@@ -116,9 +177,9 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
         </div>
         <div className="relative">
           <div className="container-tight">
-            <GoldDivider className="!text-gold/40 py-4" />
+            <SierDivider className="!text-sage/40 py-4" />
           </div>
-          <div className="py-6 text-center text-xs text-cream/40 relative">
+          <div className="py-6 text-center text-xs text-linen/40 relative">
             © {new Date().getFullYear()} Atelier Boterbloem. Alle rechten voorbehouden.
           </div>
         </div>

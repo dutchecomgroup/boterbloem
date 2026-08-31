@@ -2,6 +2,19 @@
 
 Mini-bedrijfssysteem voor je schoonzus: publieke showcase + admin (boekingen, klanten, omzet, galerij). Draait op poort **6778** op de Strato VPS (`85.215.182.227`), zelfde server als `tcgdeckmaster` en `beautystudiodynamic`.
 
+## 📍 Lees dit eerst
+
+| Wat | Waar |
+|---|---|
+| **Waar staan we / wat gaan we bouwen** | [`docs/komende-plannen/werkblok-huidig.md`](docs/komende-plannen/werkblok-huidig.md) |
+| **Wat wilde de klant** | [`docs/klant/2026-08-24-meeting-wensen.md`](docs/klant/2026-08-24-meeting-wensen.md) |
+| **Welke content er is en wat mist** | [`docs/klant/content-invulplan.md`](docs/klant/content-invulplan.md) |
+| **Documentatie-index** | [`docs/README.md`](docs/README.md) |
+
+**Sinds de meeting van 24-08:** Sweet Tables & Grazing Tables zijn de hoofdfocus, taarten zijn een klein neven-aanbod. Portfolio gaat per **gelegenheid** (met een album-laag per event), er komen **pakketten met vanaf-prijzen**, een **agenda met ICS-feed**, en **reviews**. Werk je aan een van die onderdelen: lees eerst het bijbehorende plan-document in [`docs/komende-plannen/3-onaangeraakt/`](docs/komende-plannen/3-onaangeraakt/).
+
+**Documentatie bijwerken hoort bij het werk.** Feature af → entry in `docs/deployment/pending.md`, plan naar `docs/archive/planning/`. Schema gewijzigd → `docs/deployment/db-migraties.md`. Zie [`docs/workflow/werkwijze.md`](docs/workflow/werkwijze.md).
+
 ## Stack
 
 - React 18 + Vite + TypeScript + Tailwind + Wouter + TanStack Query + React Hook Form + Zod
@@ -14,7 +27,21 @@ Mini-bedrijfssysteem voor je schoonzus: publieke showcase + admin (boekingen, kl
 **Eén live PostgreSQL database** op de VPS (`localhost:5432` op de server, `85.215.182.227:5432` vanaf je laptop).
 Geen lokale dev-DB, geen demo-mode. Schema is single source of truth in `shared/schema.ts`.
 
-`npm run db:push` raakt direct de live DB — bij grotere schema-wijzigingen eerst `pg_dump` nemen op de VPS.
+### 🔴 Schema wijzigen — NOOIT `db:push` op live
+
+Elke schemawijziging gaat via een handgeschreven `.sql` in `docs/deployment/sql-pending/`:
+
+1. `shared/schema.ts` aanpassen
+2. `.sql`-bestand schrijven (additief + idempotent, met uitleg waaróm in de kop)
+3. Regel toevoegen in `docs/deployment/db-migraties.md` met `DEV ⏳ / LIVE ⏳`
+4. `npx tsx scripts/run-sql-migration.ts <bestand> --dry-run` — draait alles en rolt terug
+5. `pg_dump` op de VPS
+6. Echt draaien, log bijwerken naar ✅
+7. **Pas dán** de code deployen die de nieuwe kolommen gebruikt
+
+`db:push` diffed en voert zelf DDL uit: geen versiegeschiedenis, geen weg terug, en bij een
+hernoeming gooit het je data weg. Er is één database en die is live. Volledige uitleg:
+[`docs/deployment/db-migraties.md`](docs/deployment/db-migraties.md).
 
 ## Layout
 
@@ -23,22 +50,55 @@ Geen lokale dev-DB, geen demo-mode. Schema is single source of truth in `shared/
 - `shared/schema.ts` — alles wat Drizzle + Zod beide nodig hebben
 - `uploads/` — gegenereerde WebP files (gitignored). In productie serveert Express deze als static of via Apache `Alias`.
 - `scripts/seed-admin.ts` — eenmalig: admin user + galerij-categorieën + default site_settings
+- `scripts/import-klantfotos.ts` — de foto's van de klant uit `uploads/content/fotos/`. Idempotent
+  op `altText`; zet ook de omslag per gelegenheid en verbergt gelegenheden zonder foto's
+- `scripts/seed-klantcontent.ts` — haar teksten, de zes pakketten en de taartprijzen. Idempotent,
+  en raakt prijzen en btw die zij zelf invulde niet aan
+- `scripts/seed-demo-content.ts` — democontent. ✅ **Al verwijderd op 27-08**; het script blijft
+  staan als vangnet (`npm run seed:demo -- --verwijder`)
+
+## Content
+
+De site draait sinds 27-08 op het echte materiaal van de klant. Twee dingen die daarbij horen:
+
+- **Foto's hangen rechtstreeks onder een gelegenheid**, zonder event ertussen — haar aanlevering
+  is niet per feest gegroepeerd. `gallery_items.album_id` mag leeg zijn en dat is hier de normale
+  situatie, niet de uitzondering. Een event voegt een eigen titel, datum, webadres en tekst
+  tussen de foto's toe; dat komt eronder zodra er materiaal per feest is.
+- **Een gelegenheid zonder foto's staat op verborgen.** Communie en Geboorte zijn dat nu.
+
+🔴 **HEIC kan de server niet omzetten.** De meegeleverde Sharp-binaries bevatten libheif zonder
+HEVC-decoder, dus de uploadroute weigert HEIC met uitleg. Twaalf van de twintig aangeleverde
+foto's waren HEIC en zijn vooraf met `ffmpeg` omgezet.
 
 ## Belangrijke regels
 
-- **Schema-first**: nieuwe velden? Eerst `shared/schema.ts`, dan `db:push`, dan routes + frontend.
+- **Schema-first**: nieuwe velden? Eerst `shared/schema.ts`, dan een `.sql` in `docs/deployment/sql-pending/`, dan routes + frontend. Zie de DB-sectie hierboven.
 - **Geen lokale Postgres**: `.env` connect altijd direct naar de VPS.
 - **Galerij-bestandsnamen** zijn UUID-gebaseerd; nooit user-input gebruiken in filenames.
 - **Multer in-memory only** — Sharp streamt naar disk, dus geen tijdelijke uploads op disk.
 - **Admin auth**: `requireAuth` middleware op alles onder `/api/admin/*` behalve `/auth/*`.
 - **Currency** opslaan als `numeric(10,2)` (string in JS); converteer met `Number()` waar nodig.
-- **Datums** voor evenementen als `date` (geen tijd), `paidAt` als `timestamp`.
+- **Btw hoort bij de regel**, niet bij de boeking: het tarief geldt over een bedrag, en het bedrag
+  staat op `order_items`. Een pakket kan zichzelf splitsen in twee regels (eten 9% · styling 21%).
+  Er is bewust géén bedrijfsbrede standaard meer — die concurreerde met het pakket.
+- **Datums** voor evenementen als `date` (geen tijd).
+- **Omzet telt op de datum van het feest**, bij status `afgeleverd` — niet op de betaaldatum.
+  Diezelfde regel geldt op het dashboard én op `/admin/omzet`; ze stonden eerder los van elkaar
+  en gaven daardoor andere getallen.
+- **Ontvangen is de som van `order_payments`**, nooit een afgeleide van de aanbetaling.
+  `depositAmount` is wat er is *afgesproken* (en op de offerte staat), niet wat er binnen is.
+  Er gaat niets automatisch: een betaling bestaat pas als hij is vastgelegd.
+- `orders.deposit_paid` en `orders.paid_at` zijn **dood** sinds 25-08. Niet opnieuw gaan gebruiken;
+  ze staan er alleen nog omdat de migratie additief was.
 
 ## Routes
 
 Public (geen auth):
 - `GET /api/public/settings`
-- `GET /api/public/gallery` + `GET /api/public/gallery/:slug`
+- `GET /api/public/gallery` + `GET /api/public/gallery/:slug` — alleen gepubliceerde
+  gelegenheden, **ook in de platte `items`-lijst** (die filterde tot 27-08 niet mee, waardoor
+  foto's uit een verborgen gelegenheid op de homepage konden staan)
 - `POST /api/public/contact` (Zod-validated insert in `contact_requests`)
 
 Admin (sessie vereist):
@@ -49,17 +109,25 @@ Admin (sessie vereist):
 - `/api/admin/gallery` — POST is multipart (`files[]`, optionele `categoryId`), `/categories/*`, `/reorder`
 - `/api/admin/contact-requests` — incl. `:id/status`
 - `/api/admin/settings` — JSONB upserts per key (`contact`, `hero`, `about`)
+- `/api/admin/orders/:id/betalingen` — betaalregels; POST voegt toe, DELETE draait terug
+- `/api/admin/omzet` — `?van=&tot=&groep=maand|week`: omzet, btw per tarief, per pakket, openstaand
 - `/api/admin/stats/dashboard` — totalen + 12-maands omzet
 
 ## Deploy (VPS)
 
-Zie `docs/deployment.md`. Korte versie:
+Zie [`docs/deployment/`](docs/deployment/) — procedure, pending, rollback, migratie-log. Korte versie:
 1. `git pull` op `/projects/atelierboterbloem/`
 2. `npm ci && npm run build`
-3. `npm run db:push` (als schema veranderd)
+3. Schema veranderd? `.sql` uit `docs/deployment/sql-pending/` draaien (**niet** `db:push`)
 4. `pm2 reload atelierboterbloem`
 
 ## Stijl
 
-Design tokens in `tailwind.config.ts` — cream/gold/butter/blush/burgundy/charcoal palet.
-Fonts: Cormorant Garamond (display), Allura (script accent), Inter (body).
+Design tokens in `tailwind.config.ts` — **linen/sand/mist/sage/olive/blush/boterbloem/burgundy/
+charcoal**, uit het huisstijl-moodboard dat de klant zelf aanleverde (27-08). Daarvóór was het
+cream/goud; dat paste niet bij haar logo.
+Fonts: Playfair Display (display én het cursieve accent), Montserrat (body).
+
+**Contrast is een regel, geen smaak.** `sage` haalt op wit 2,18:1 en `sage-dark` 3,00:1 — die
+mogen dus niet als lopende tekst. `sage-deep` (5,49:1) mag dat wel. Volledige tabel en de zeven
+kleurrollen van het beheerpaneel: [`docs/architecture/design-system.md`](docs/architecture/design-system.md).

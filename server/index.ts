@@ -3,11 +3,12 @@ import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { env, isProd } from "./env.js";
+import { cookieSecure, env, isProd } from "./env.js";
 import { pg } from "./db.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import { publicRouter } from "./routes/public.js";
 import { adminRouter } from "./routes/admin/index.js";
+import { icsRouter } from "./routes/agenda-ics.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -33,7 +34,7 @@ app.use(
     rolling: true,
     cookie: {
       httpOnly: true,
-      secure: isProd,
+      secure: cookieSecure,
       sameSite: "lax",
       maxAge: 1000 * 60 * 60 * 24 * 14, // 14 days
     },
@@ -50,6 +51,9 @@ app.get("/api/health", (_req, res) => {
 });
 
 // --- API routes ---
+// Buiten /api/admin: agenda-apps sturen geen sessie-cookie mee, deze route heeft een
+// eigen token. Zie server/routes/agenda-ics.ts.
+app.use("/api", icsRouter);
 app.use("/api/public", publicRouter);
 app.use("/api/admin", adminRouter);
 

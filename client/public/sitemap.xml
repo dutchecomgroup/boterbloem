@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Statische sitemap: de site heeft vijf publieke pagina's en die veranderen niet van adres.
+  De galerij-pagina's per gelegenheid (/galerij/<slug>) staan er bewust niet in — die slugs
+  beheert de klant zelf, en een sitemap die naar een verwijderde gelegenheid wijst is
+  slechter dan een sitemap zonder.
+
+  ⚠️ Het domein hieronder moet kloppen bij de livegang; zie
+  docs/komende-plannen/3-onaangeraakt/infra-domein-livegang.md
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://atelierboterbloem.nl/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://atelierboterbloem.nl/aanbod</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://atelierboterbloem.nl/galerij</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://atelierboterbloem.nl/over</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://atelierboterbloem.nl/contact</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.7</priority>
+  </url>
+</urlset>

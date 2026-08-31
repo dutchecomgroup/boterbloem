@@ -1,106 +1,178 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { AlertTriangle, Plus, CalendarCheck, CalendarX } from "lucide-react";
 import { api } from "../../lib/api";
-import { formatCurrency, formatDateShort } from "../../lib/utils";
-import type { Order, Customer } from "@shared/schema";
+import { formatDateShort } from "../../lib/utils";
+import { STATUSSEN, STATUS_LABEL, STATUS_KLEUR, bedragen } from "../../lib/boeking";
+import { BoekingSheet } from "../../components/admin/BoekingSheet";
+import { NieuweBoekingDialoog } from "../../components/admin/NieuweBoekingDialoog";
+import { useSheetParam } from "../../hooks/useSheetParam";
+import { PageKop } from "../../components/admin/ui/PageKop";
+import { LegeStaat } from "../../components/admin/ui/LegeStaat";
+import { Bedrag, rolVanOpenstaand } from "../../components/admin/ui/Bedrag";
+import type { Customer } from "@shared/schema";
 
 interface OrderRow {
   id: number;
+  reference: string | null;
   eventDate: string | null;
-  status: Order["status"];
+  eventTime: string | null;
+  status: string;
   totalPrice: string;
-  deliveryType: Order["deliveryType"];
+  depositAmount: string;
+  depositPaid: boolean;
+  /** Som van de betaalregels, als tekst uit de subquery in de lijstroute. */
+  ontvangen: string;
+  deliveryType: string;
+  persons: number | null;
+  location: string | null;
+  heeftAllergie: boolean;
   customer: Customer | null;
   createdAt: string;
 }
 
-const STATUSES: Order["status"][] = [
-  "aanvraag",
-  "bevestigd",
-  "in_productie",
-  "klaar",
-  "afgeleverd",
-  "geannuleerd",
-];
-
-const STATUS_COLORS: Record<Order["status"], string> = {
-  aanvraag: "bg-blush/40 text-burgundy",
-  bevestigd: "bg-butter/60 text-gold-dark",
-  in_productie: "bg-gold/20 text-gold-dark",
-  klaar: "bg-emerald-100 text-emerald-700",
-  afgeleverd: "bg-charcoal/10 text-charcoal/70",
-  geannuleerd: "bg-burgundy/10 text-burgundy",
-};
-
 export default function OrdersPage() {
   const qc = useQueryClient();
-  const [filter, setFilter] = useState<Order["status"] | "alles">("alles");
+  const [filter, setFilter] = useState<string>("alles");
+  const [nieuwOpen, setNieuwOpen] = useState(false);
+  const sheet = useSheetParam("boeking");
+
   const { data: orders } = useQuery({
     queryKey: ["admin", "orders", filter],
-    queryFn: () => api.get<OrderRow[]>(`/api/admin/orders${filter === "alles" ? "" : `?status=${filter}`}`),
+    queryFn: () =>
+      api.get<OrderRow[]>(`/api/admin/orders${filter === "alles" ? "" : `?status=${filter}`}`),
   });
 
   const updateStatus = useMutation({
-    mutationFn: ({ id, status }: { id: number; status: Order["status"] }) =>
+    mutationFn: ({ id, status }: { id: number; status: string }) =>
       api.patch(`/api/admin/orders/${id}`, { status }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", "orders"] }),
   });
 
   return (
     <div>
-      <h1 className="text-3xl mb-2">Boekingen</h1>
-      <p className="text-charcoal/60 text-sm mb-8">Beheer al je orders en hun status.</p>
+      <PageKop
+        titel="Boekingen"
+        icoon={CalendarCheck}
+        onderschrift="Klik op een rij om het feest te openen."
+        actie={
+          <button type="button" onClick={() => setNieuwOpen(true)} className="btn-sage">
+            <Plus className="h-4 w-4" /> Nieuwe boeking
+          </button>
+        }
+      />
 
-      <div className="flex flex-wrap gap-2 mb-6">
-        {["alles", ...STATUSES].map((s) => (
+      <div className="mb-6 flex flex-wrap gap-2">
+        {["alles", ...STATUSSEN].map((s) => (
           <button
             key={s}
-            onClick={() => setFilter(s as typeof filter)}
-            className={`px-3 py-1.5 rounded-full text-xs uppercase tracking-widest transition ${
-              filter === s ? "bg-gold text-cream" : "bg-white border border-charcoal/10 text-charcoal/60 hover:text-charcoal"
-            }`}
+            onClick={() => setFilter(s)}
+            className={`pill ${filter === s ? "pill-active" : "pill-inactive"}`}
           >
-            {s.replaceAll("_", " ")}
+            {s === "alles" ? "alles" : STATUS_LABEL[s]}
           </button>
         ))}
       </div>
 
-      <div className="card p-0 overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-charcoal/5 text-charcoal/60 text-xs uppercase tracking-widest">
+      <div className="card overflow-hidden p-0">
+        <table className="tabel-admin w-full text-sm">
+          <thead>
             <tr>
-              <th className="text-left px-4 py-3">Datum</th>
-              <th className="text-left px-4 py-3">Klant</th>
-              <th className="text-left px-4 py-3">Status</th>
-              <th className="text-right px-4 py-3">Totaal</th>
+              <th className="px-4 py-3 text-left">Nummer</th>
+              <th className="px-4 py-3 text-left">Datum</th>
+              <th className="px-4 py-3 text-left">Klant</th>
+              <th className="px-4 py-3 text-left">Status</th>
+              <th className="px-4 py-3 text-right">Totaal</th>
+              <th className="px-4 py-3 text-right">Openstaand</th>
             </tr>
           </thead>
           <tbody>
             {orders?.length ? (
-              orders.map((o) => (
-                <tr key={o.id} className="border-t border-charcoal/5 hover:bg-cream/40">
-                  <td className="px-4 py-3">{formatDateShort(o.eventDate)}</td>
-                  <td className="px-4 py-3">{o.customer?.name ?? <span className="text-charcoal/40">—</span>}</td>
-                  <td className="px-4 py-3">
-                    <select
-                      value={o.status}
-                      onChange={(e) => updateStatus.mutate({ id: o.id, status: e.target.value as Order["status"] })}
-                      className={`px-2 py-1 rounded text-xs font-medium ${STATUS_COLORS[o.status]}`}
-                    >
-                      {STATUSES.map((s) => (
-                        <option key={s} value={s}>{s.replaceAll("_", " ")}</option>
-                      ))}
-                    </select>
-                  </td>
-                  <td className="px-4 py-3 text-right font-medium">{formatCurrency(o.totalPrice)}</td>
-                </tr>
-              ))
+              orders.map((o) => {
+                const b = bedragen(o.totalPrice, o.ontvangen, o.depositAmount);
+                return (
+                  <tr
+                    key={o.id}
+                    onClick={() => sheet.openen(o.id)}
+                    className="rij-hover cursor-pointer"
+                  >
+                    <td className="px-4 py-3 font-medium tabular-nums text-charcoal/70">
+                      <span className="inline-flex items-center gap-1.5">
+                        {o.reference ?? "—"}
+                        {/* De lijst toont niet wélke allergie, wel dát er op gelet moet worden. */}
+                        {o.heeftAllergie && (
+                          <AlertTriangle
+                            className="h-3.5 w-3.5 text-burgundy"
+                            aria-label="Heeft allergieën"
+                          />
+                        )}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      {formatDateShort(o.eventDate)}
+                      {o.eventTime && (
+                        <span className="text-charcoal/45"> · {o.eventTime.slice(0, 5)}</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3">
+                      {o.customer?.name ?? <span className="text-charcoal/40">—</span>}
+                    </td>
+                    <td className="px-4 py-3">
+                      {/* De statuskeuze mag de rij niet openen — anders kun je hem niet bedienen. */}
+                      <select
+                        value={o.status}
+                        onClick={(e) => e.stopPropagation()}
+                        onChange={(e) => updateStatus.mutate({ id: o.id, status: e.target.value })}
+                        className={`rounded px-2 py-1 text-xs font-medium ${STATUS_KLEUR[o.status] ?? ""}`}
+                      >
+                        {STATUSSEN.map((s) => (
+                          <option key={s} value={s}>
+                            {STATUS_LABEL[s]}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <Bedrag waarde={o.totalPrice} vet />
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      {b.voldaan ? (
+                        <span className="text-xs font-medium uppercase tracking-widest text-emerald-700">
+                          voldaan
+                        </span>
+                      ) : (
+                        <Bedrag waarde={b.openCenten / 100} rol={rolVanOpenstaand(b.openCenten / 100)} />
+                      )}
+                    </td>
+                  </tr>
+                );
+              })
             ) : (
-              <tr><td colSpan={4} className="px-4 py-12 text-center text-charcoal/40">Geen boekingen</td></tr>
+              <tr>
+                <td colSpan={6} className="p-4">
+                  <LegeStaat
+                    icoon={CalendarX}
+                    titel={filter === "alles" ? "Nog geen boekingen" : "Niets met deze status"}
+                    hint={filter === "alles"
+                      ? "Zet een aanvraag om naar een boeking, of maak er hier zelf een aan."
+                      : "Kies een andere status, of 'alles' om alles te zien."}
+                  />
+                </td>
+              </tr>
             )}
           </tbody>
         </table>
       </div>
+
+      <BoekingSheet boekingId={sheet.id} onClose={sheet.sluiten} />
+      <NieuweBoekingDialoog
+        open={nieuwOpen}
+        onClose={() => setNieuwOpen(false)}
+        onAangemaakt={(id) => {
+          setNieuwOpen(false);
+          sheet.openen(id);
+        }}
+      />
     </div>
   );
 }
