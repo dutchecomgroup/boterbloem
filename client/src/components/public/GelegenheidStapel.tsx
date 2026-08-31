@@ -25,12 +25,13 @@ import { FotoCyclus } from "../FotoCyclus";
  *
  * ## De twee regels die het geheel dragen
  *
- * - **De foto staat per paar op dezelfde kant** (`fotoLinks`), en het paar daarna op de andere.
- *   Wisselde die per kaart, dan legde de onderste kaart zijn witte tekstvlak precies over de
- *   foto van de kaart erboven en sneed die doormidden. Nu ligt op de naad foto op foto en
- *   tekstvlak op tekstvlak.
- * - **De kaart die bedekt wordt, krijgt lucht onderaan** (`wordtBedekt`). Zonder dat verschuift
- *   het probleem alleen: er snijdt geen foto meer doormidden, maar de knop verdwijnt eronder.
+ * - **De foto wisselt per kaart van kant** (`fotoLinks`), om en om. Op de naad valt de foto van
+ *   de onderste kaart daardoor over het tekstvlak van de bovenste, en het tekstvlak van de
+ *   onderste over de foto van de bovenste. Dat is de bedoeling: het is wat het geheel als een
+ *   collage laat lezen in plaats van als een rij losse blokken.
+ * - **De kaart die bedekt wordt, krijgt lucht onderaan** (`wordtBedekt`). Zonder dat landt de
+ *   foto van de kaart eronder precies op de knop, en verdwijnt die. Dat gebeurde ook echt: op
+ *   de eerste versie had de bovenste kaart geen zichtbare knop meer.
  *
  * **Pas vanaf `md`.** Daaronder is een kaart één kolom met de knop onderaan, en daar zou de
  * volgende kaart precies die knop bedekken. In twee kolommen staat de tekst verticaal
@@ -60,7 +61,7 @@ function StapelKaart({
   index: number;
   aantal: number;
 }) {
-  const fotoLinks = Math.floor(index / 2) % 2 === 0;
+  const fotoLinks = index % 2 === 0;
 
   /**
    * Wordt deze kaart bedekt door de volgende? Alleen de eerste van een paar, en alleen als er
