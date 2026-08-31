@@ -100,14 +100,14 @@ export default function HomePage() {
   // Pakketten eerst; zonder actieve pakketten de gelegenheden uit de galerij.
   const gelegenheden = gallery?.categories ?? [];
   const spotlight: SpotlightItem[] = (pakketten ?? []).filter((p) => p.featured).length
-    ? (pakketten ?? []).filter((p) => p.featured).slice(0, 3).map((p, i) => ({
+    ? (pakketten ?? []).filter((p) => p.featured).slice(0, 6).map((p, i) => ({
         key: `pakket-${p.id}`,
         href: `/contact?pakket=${p.slug}`,
         title: p.name,
         body: p.tagline ?? p.description ?? "",
         // De gekozen cover, anders een andere foto per kaart. De terugval was `items[0]` voor
-        // álle drie, dus drie kaarten naast elkaar met exact hetzelfde beeld — dat leest als
-        // een fout, ook al is er alleen een cover niet ingesteld.
+        // álle kaarten, dus een rij met exact hetzelfde beeld — dat leest als een fout, ook
+        // al is er alleen een cover niet ingesteld.
         img: (() => {
           const gekozen = p.coverItemId ? items.find((x) => x.id === p.coverItemId) : undefined;
           const terugval = items[i] ?? items[0];
@@ -119,7 +119,7 @@ export default function HomePage() {
           ? `€ ${Number(p.priceFrom).toFixed(0)}${p.priceUnit === "per_persoon" ? " p.p." : ""}`
           : undefined,
       }))
-    : gelegenheden.filter((c) => c.itemCount > 0).slice(0, 3).map((c) => ({
+    : gelegenheden.filter((c) => c.itemCount > 0).slice(0, 6).map((c) => ({
         key: `gelegenheid-${c.id}`,
         href: `/galerij/${c.slug}`,
         title: c.name,
