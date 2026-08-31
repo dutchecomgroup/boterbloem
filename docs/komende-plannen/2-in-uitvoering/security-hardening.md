@@ -1,6 +1,8 @@
 # Security hardening — vijf bevindingen uit de code-review
 
-> **Status:** 🟡 **Code af en geverifieerd (25-08). Open: de firewall-stap op de VPS.**
+> **Status:** ✅ **Af.** Code 25-08, firewall 28-08 (UFW `default deny`, 5432 dicht). Op 31-08
+> geverifieerd van buitenaf: 5432 en 6778 waren allebei dicht — 6778 is daarna bewust weer
+> opengezet voor de preview, met een comment in de regel die zegt wanneer hij weer dicht mag.
 > **Thema:** 🔒 security
 > **Laatst bijgewerkt:** 2026-08-25
 > **Afhankelijk van:** SSH-toegang tot de VPS (alleen voor het firewall-deel)
@@ -10,7 +12,7 @@
 
 | # | Bevinding | Status |
 |---|---|---|
-| 1 | Database publiek open + `ssl: "prefer"` | 🟡 **TLS afgedwongen in code ✅** — firewall op de VPS staat nog open |
+| 1 | Database publiek open + `ssl: "prefer"` | ✅ TLS afgedwongen in code (25-08) + poort 5432 dicht (28-08) |
 | 2 | Geen begrenzing op inloggen | ✅ gedaan |
 | 3 | Instellingen worden niet gevalideerd | ✅ gedaan |
 | 4 | Bestandsnaam aanpasbaar → padmanipulatie | ✅ gedaan |
@@ -19,9 +21,18 @@
 Geverifieerd met 17 controles tegen de draaiende server, allemaal geslaagd. Details in
 [../../deployment/pending.md](../../deployment/pending.md).
 
-**Wat er nog moet:** poort 5432 (en later 6778) dichtzetten in de firewall van de VPS. Dat
-vraagt SSH-toegang en is geen codewerk. Zolang die poort open staat, blijft het wachtwoord
-van `abb_app` raadbaar vanaf het hele internet — TLS beschermt de verbinding, niet de deur.
+**Gedaan op 28-08.** UFW staat op `default deny (incoming)` met alleen 22, 80, 443, 8443, 8880
+en de mailpoorten open. Lokaal ontwikkelen gaat sindsdien via een SSH-tunnel — zie
+[../../workflow/lokale-dev-omgeving.md](../../workflow/lokale-dev-omgeving.md).
+
+> ⚠️ **Bijvangst die niemand opmerkte:** 6778 ging mee dicht, en daarmee de site zelf. Dat viel
+> pas op bij de livegang van 31-08, want er keek nog niemand naar. De app draaide al die tijd
+> gewoon door. Als je een poort dichtzet, controleer dan ook wat je *wél* wilde bereiken.
+
+> 🔴 **Nog open, en het hoort bij dit plan:** de preview draait op `http://` zonder certificaat,
+> met `COOKIE_SECURE=false` in `.env` omdat een `secure`-cookie anders niet bewaard wordt. Haar
+> wachtwoord gaat daarmee leesbaar over de lijn. Weg zodra er HTTPS is — zie
+> [../3-onaangeraakt/infra-domein-livegang.md](../3-onaangeraakt/infra-domein-livegang.md).
 
 ## Context
 

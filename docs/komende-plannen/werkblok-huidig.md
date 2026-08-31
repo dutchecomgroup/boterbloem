@@ -1,9 +1,10 @@
 # Werkblok — huidig (gestart 2026-08-24)
 
-> **Status:** 🟢 **Alles uit de meeting is gebouwd, en sinds 27-08 draait het op de echte
-> content van de klant.** Wat er nog moet: de acht migraties op live draaien, de code deployen,
-> en de livegang zelf — waarvoor nog materiaal ontbreekt, zie
-> [../klant/content-invulplan.md](../klant/content-invulplan.md).
+> **Status:** 🟢 **Gebouwd, en sinds 31-08 draait het op de server** — `http://85.215.182.227:6778`,
+> op haar eigen content, met een account voor Esmee. Wat er nog moet: HTTPS en een domein, en de
+> content die alleen zij kan aanleveren (prijzen, reviews, over-tekst). Zie
+> [../klant/content-invulplan.md](../klant/content-invulplan.md) en
+> [../deployment/pending.md](../deployment/pending.md).
 > **Branch:** `development` — daar landt het werk; `main` blijft wat er live hoort te kunnen.
 > **Bij afsluiten:** archiveren als `werkblok-v0.1.md` in `../archive/planning/` en dit bestand resetten.
 
@@ -18,7 +19,7 @@
 | `npm run build` | ✅ |
 | Endpoint-verificatie tegen dev | ✅ |
 | Migraties op dev | ✅ alle acht, idempotent |
-| Migraties op live | ⏳ **nog niet** |
+| Migraties op live | ✅ 31-08, via een kopie van dev — zie [../deployment/db-migraties.md](../deployment/db-migraties.md) |
 | Democontent | ✅ **weg** (27-08) — 36 foto's, 9 events en 6 reviews verwijderd |
 | Klantcontent op dev | ✅ 20 foto's, 5 gelegenheden, 6 pakketten, 3 taartprijzen |
 
@@ -28,8 +29,8 @@
 
 | Fase | Wat | Stand |
 |---|---|---|
-| **0** | [Hardening](2-in-uitvoering/security-hardening.md) + [domein](3-onaangeraakt/infra-domein-livegang.md) + backups | 🟡 code af · firewall, DNS en backups open |
-| **1** | Datamodel: `packages`, `gallery_albums`, `reviews` + velden | 🟡 **DEV ✅ / LIVE ⏳** |
+| **0** | [Hardening](2-in-uitvoering/security-hardening.md) + [domein](3-onaangeraakt/infra-domein-livegang.md) + backups | 🟡 code ✅ · firewall ✅ 28-08 · backup-cron ✅ 31-08 · **DNS open** |
+| **1** | Datamodel: `packages`, `gallery_albums`, `reviews` + velden | ✅ **DEV ✅ / LIVE ✅** |
 | **2** | [Portfolio](1-klaar-voor-livegang/portfolio-categorie-albums.md): gelegenheden, albums, categorie-beheer | ✅ |
 | **3** | [Pakketten & prijzen](1-klaar-voor-livegang/pakketten-en-prijzen.md) | ✅ |
 | **4** | [Aanvraagflow](1-klaar-voor-livegang/aanvragen-formulier-uitbreiding.md) | ✅ |
@@ -39,14 +40,14 @@
 | — | [Boekingen: sheet, agenda, offerte](2-in-uitvoering/boekingen-detailsheet-en-agenda.md) | ✅ stap 1–12 · stap 13 (muis-scenario's) open |
 | — | [Democontent](#democontent) | ✅ staat op dev |
 | — | [Instellingen bruikbaar maken](#instellingen) | ✅ |
-| — | [Btw per regel, pakket en product](#btw) | ✅ **DEV ✅ / LIVE ⏳** |
+| — | [Btw per regel, pakket en product](#btw) | ✅ **DEV ✅ / LIVE ✅** |
 | — | [`/aanbod` opnieuw ingedeeld](2-in-uitvoering/pakketten-aanbodpagina-indeling.md) | ✅ |
-| — | [Betalingen + omzetpagina](#omzet) | ✅ **DEV ✅ / LIVE ⏳** |
+| — | [Betalingen + omzetpagina](#omzet) | ✅ **DEV ✅ / LIVE ✅** |
 | — | [Kleur door het beheerpaneel](#kleur) | ✅ |
-| — | [Klantcontent + huisstijl](#klantcontent) | ✅ **DEV ✅ / LIVE ⏳** |
+| — | [Klantcontent + huisstijl](#klantcontent) | ✅ **DEV ✅ / LIVE ✅** |
 | — | [Pakketbeheer in een sheet + coverfoto](#pakketsheet) | ✅ |
 | — | [Ontwerp: hero, galerijstapel, kleur](#ontwerp) | ✅ |
-| **7** | Livegang: SEO, testronde | ⏳ wacht op prijzen, reviews en over-tekst |
+| **7** | Livegang: SEO, testronde | 🟡 draait als besloten preview op het IP · wacht op prijzen, reviews, over-tekst en DNS |
 
 ---
 

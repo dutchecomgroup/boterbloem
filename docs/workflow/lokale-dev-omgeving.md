@@ -33,15 +33,34 @@ Beheerpaneel: http://localhost:5173/admin/login
 waarden verschillen tussen je laptop en de server, en allebei geven een foutmelding die
 niet vertelt wat er echt aan de hand is.
 
-### 1. `DATABASE_URL` — host verschilt per machine
+### 1. `DATABASE_URL` — host verschilt per machine, en gaat sinds 28-08 door een tunnel
+
+🔴 **Poort 5432 staat dicht** sinds de hardening van 28-08 (UFW `default deny`). Rechtstreeks
+verbinden vanaf je laptop kan dus niet meer. Open eerst een SSH-tunnel en laat dat venster open
+staan:
+
+```powershell
+ssh -i $env:USERPROFILE\.ssh\tcgdeckmaster_vps -N -L 15432:localhost:5432 root@85.215.182.227
+```
 
 ```bash
-# Op je laptop:
-DATABASE_URL=postgresql://abb_app:<wachtwoord>@85.215.182.227:5432/atelierboterbloem
+# Op je laptop, via de tunnel:
+DATABASE_URL=postgresql://abb_app:<wachtwoord>@localhost:15432/atelierboterbloem_dev
 
 # Op de VPS:
 DATABASE_URL=postgresql://abb_app:<wachtwoord>@localhost:5432/atelierboterbloem
 ```
+
+Poort **15432** en niet 5433 of 5432: 5433 bleek op de laptop bezet, en 5432 zou botsen met een
+eventuele lokale Postgres. `localhost` zorgt er meteen voor dat
+[`server/db.ts`](../../server/db.ts) TLS overslaat, en dat klopt hier — de tunnel versleutelt al.
+
+> ⚠️ **Zonder tunnel zie je geen foutpagina maar een lege site.** De queries falen, TanStack
+> Query houdt de data op `undefined`, en de pagina toont zijn lege staat: `/aanbod` zegt dan
+> "Binnenkort — we zetten de pakketten en prijzen op dit moment op een rij". Dat las als een
+> contentprobleem terwijl het een verbindingsprobleem was, en heeft op 31-08 een half uur
+> gekost. Zie je die tekst terwijl er zes pakketten in de database staan: kijk eerst naar de
+> tunnel.
 
 Staat `localhost` in je lokale `.env`, dan praat de applicatie tegen een Postgres op je
 eigen machine. Als je die hebt draaien krijg je:
@@ -64,9 +83,12 @@ NODE_ENV=development
 
 Staat er `production` in je lokale `.env`, dan gebeuren er drie dingen die je niet wil:
 
-- **Inloggen lukt niet.** [`server/index.ts`](../../server/index.ts) zet `secure: isProd` op
-  de sessiecookie, en een `secure`-cookie wordt niet meegestuurd over `http://localhost`. Je
-  logt in, krijgt geen foutmelding, en bent meteen weer uitgelogd.
+- **Inloggen lukt niet.** [`server/index.ts`](../../server/index.ts) zet `secure: cookieSecure`
+  op de sessiecookie, en die volgt standaard `NODE_ENV`. Een `secure`-cookie wordt niet
+  meegestuurd over `http://localhost`. Je logt in, krijgt geen foutmelding, en bent meteen weer
+  uitgelogd. (Op de server draait sinds 31-08 `COOKIE_SECURE=false` om precies deze reden —
+  daar is `NODE_ENV=production` nodig om de gebouwde site te serveren. Lokaal heb je die sleutel
+  niet nodig: zet gewoon `NODE_ENV=development`.)
 - **Express serveert `dist/client`** in plaats van door te laten naar Vite — je ziet een
   oude gebouwde versie zonder hot reload.
 - **De databaseverbinding zet SSL uit** (`ssl: isProd ? false : "prefer"` in

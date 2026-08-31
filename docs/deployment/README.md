@@ -40,16 +40,21 @@ te kijken als je naar productie gaat.
 
 ## Huidige stand
 
-De applicatie draait op de VPS op poort 6778, **nog niet achter een domein en zonder
-HTTPS**. Inrichten daarvan is
+De applicatie draait sinds **31-08** op de VPS op poort 6778 met alles erop: haar 23 foto's,
+zes pakketten, haar teksten en de huisstijl. Bereikbaar op `http://85.215.182.227:6778` —
+**nog niet achter een domein en zonder HTTPS**, dus als besloten preview met `noindex`.
+Inrichten van het domein is
 [../komende-plannen/3-onaangeraakt/infra-domein-livegang.md](../komende-plannen/3-onaangeraakt/infra-domein-livegang.md).
 
-Er draait **geen automatische backup** — het script en de cron staan klaar in
-[thuis-fotos-en-backup.md](thuis-fotos-en-backup.md) stap 3, maar zijn nog niet ingericht. Zie ook
-[rollback.md](rollback.md).
+Er draait sinds 31-08 **elke nacht om 03:20 een backup**: beide databases plus `uploads/`, 30
+dagen bewaard in `~/backups/boterbloem/` (`/usr/local/bin/backup-boterbloem.sh`). De eerste run is
+met de hand gedaan en gecontroleerd. Zie ook [rollback.md](rollback.md).
 
-🔴 **De foto's van de klant staan op één machine** (de pc thuis): de servermap `uploads/` is leeg
-en `uploads/` is gitignored. Stap 1 van datzelfde document haalt dat risico weg.
+> ⚠️ Een backup die je nooit teruggezet hebt is een aanname. Terugzetten is nog niet één keer
+> geoefend — doe dat bij de eerstvolgende keer dat de dev-database toch ververst moet worden.
+
+De foto's van de klant staan nu op **drie plekken**: de pc thuis, Google Drive
+(`Mijn Drive / Dutch eCom Group / 13 Boterbloem / 04 Assets & Foto's`) en de server. Tot 31-08 was dat er één.
 
 ---
 

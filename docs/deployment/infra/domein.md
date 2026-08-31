@@ -87,3 +87,18 @@ Zodra de proxy draait: 6778 alleen nog op localhost, en 5432 óók. Zie
 ## Verificatie na inrichting
 
 Zie [../testscript-master.md](../testscript-master.md) §8 — die sectie is precies hiervoor.
+
+---
+
+## Terugdraaien zodra HTTPS er is (gezet op 31-08)
+
+Twee dingen staan er alleen omdat de preview op een kaal IP draait. Ze horen weg op het moment
+dat de reverse proxy en het certificaat er zijn, en als ze blijven staan is dat een gat:
+
+| Wat | Waar | Waarom hij er staat |
+|---|---|---|
+| `ufw allow 6778/tcp` | UFW op de VPS | zonder proxy is dit de enige weg naar de site. Met 443 is het een tweede deur die niets toevoegt |
+| `COOKIE_SECURE=false` | `.env` op de VPS | `NODE_ENV=production` is wat de gebouwde site serveert, maar zet ook `secure` op de sessiecookie — en die bewaart een browser niet over gewoon `http`. Zonder deze sleutel kan zij niet inloggen met een kloppend wachtwoord |
+| `Disallow: /` | `client/public/robots.txt` | de content is nog niet af; wat een zoekmachine nu ophaalt blijft daarna in de resultaten staan |
+
+De UFW-regel draagt zijn eigen reden als comment, dus `ufw status` vertelt het je.
