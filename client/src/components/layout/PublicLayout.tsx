@@ -56,15 +56,17 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
         )}
       >
         <div className="container-tight flex items-center justify-between h-16 sm:h-20">
-          {/* De bloem uit haar logo naast het getypte woordmerk. Het volledige logo past niet in
-              een balk van 64 px: het woordmerk zou een paar pixels hoog worden. `alt` leeg, want
-              de naam staat er als tekst naast -- een schermlezer hoort hem anders twee keer. */}
-          <Link href="/" className="flex items-center gap-2 sm:gap-2.5 group">
-            <img src="/merk/beeldmerk.png" alt="" aria-hidden width={32} height={32} className="h-7 w-7 sm:h-8 sm:w-8" />
-            <span className="flex items-baseline gap-1 sm:gap-2">
-              <span className="font-display text-xl sm:text-2xl tracking-tight">Atelier</span>
-              <span className="script-accent text-2xl sm:text-3xl leading-none -mt-1">Boterbloem</span>
-            </span>
+          {/*
+            Alleen de getypte naam, geen logo.
+
+            Het logo past hier niet: het woordmerk is 10% van de logohoogte, dus in een balk van
+            64 px worden de letters een paar pixels hoog. Een los bloemetje ernaast las als een
+            fragment. Op verzoek van de klant (13-09) staat het logo daarom alleen waar het groot
+            genoeg is: in de voettekst en op /over.
+          */}
+          <Link href="/" className="flex items-baseline gap-1 sm:gap-2 group">
+            <span className="font-display text-xl sm:text-2xl tracking-tight">Atelier</span>
+            <span className="script-accent text-2xl sm:text-3xl leading-none -mt-1">Boterbloem</span>
           </Link>
           <nav className="hidden md:flex items-center gap-8">
             {NAV.map((item) => {

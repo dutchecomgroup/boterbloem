@@ -1,16 +1,23 @@
 import { Router } from "express";
 import { db } from "../../db.js";
 import { siteSettings, siteSettingSchemas, isSiteSettingKey } from "@shared/schema";
-import { eq } from "drizzle-orm";
+import { vulInstellingenAan } from "../../lib/instellingen.js";
 
 export const settingsRouter = Router();
 
+/**
+ * Alle instellingen, volledig ingevuld.
+ *
+ * Gaf eerder alleen de rijen terug die in de tabel stonden. Een sleutel die nog nooit was
+ * opgeslagen kwam dus niet mee, en het beheerscherm Teksten toonde lege velden terwijl de site
+ * de standaardteksten liet zien. Nu wordt elke sleutel door zijn schema aangevuld -- dezelfde
+ * logica als de publieke route. Zie `server/lib/instellingen.ts`.
+ */
 settingsRouter.get("/", async (_req, res, next) => {
   try {
     const rows = await db.select().from(siteSettings);
-    const out: Record<string, unknown> = {};
-    for (const r of rows) out[r.key] = r.value;
-    res.json(out);
+    const opgeslagen = new Map(rows.map((r) => [r.key, r.value]));
+    res.json(vulInstellingenAan(siteSettingSchemas, opgeslagen, "ruw"));
   } catch (err) {
     next(err);
   }

@@ -12,13 +12,13 @@ import {
   reviews,
   insertContactRequestSchema,
   publiekeSiteSettingSchemas,
-  type PubliekeSiteSettingKey,
   type PubliekeSiteSettings,
   type GalleryItem,
   type GalleryAlbum,
   type GalleryCategory,
 } from "@shared/schema";
 import { and, asc, desc, eq } from "drizzle-orm";
+import { vulInstellingenAan } from "../lib/instellingen.js";
 
 export const publicRouter = Router();
 
@@ -57,17 +57,9 @@ publicRouter.get("/settings", async (_req, res, next) => {
   try {
     const rows = await db.select().from(siteSettings);
     const opgeslagen = new Map(rows.map((r) => [r.key, r.value]));
-
-    const out = {} as Record<string, unknown>;
-    for (const key of Object.keys(publiekeSiteSettingSchemas) as PubliekeSiteSettingKey[]) {
-      const schema = publiekeSiteSettingSchemas[key];
-      // Een rij die niet door zijn schema komt (handmatig bewerkt, of achtergebleven uit een
-      // oudere vorm) mag de hele pagina niet leegtrekken: dan liever de standaardwaarden.
-      const ontleed = schema.safeParse(opgeslagen.get(key) ?? {});
-      out[key] = ontleed.success ? ontleed.data : schema.parse({});
-    }
-
-    res.json(out as PubliekeSiteSettings);
+    // Een rij die niet door zijn schema komt mag de pagina niet leegtrekken: dan de standaard.
+    // Dezelfde logica als de admin-route, zie server/lib/instellingen.ts.
+    res.json(vulInstellingenAan(publiekeSiteSettingSchemas, opgeslagen, "standaard") as PubliekeSiteSettings);
   } catch (err) {
     next(err);
   }
