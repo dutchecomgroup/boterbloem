@@ -149,12 +149,60 @@ export function HeroCollage({
       {/* De bovenmarge draagt de zwevende navigatie: die staat `fixed` en neemt geen ruimte meer
           in, zodat dit vlak eráchter doorloopt en er boven de vouw geen naad meer zit. */}
       <div className="container-tight relative pb-14 pt-24 sm:pb-20 sm:pt-32 md:pt-40">
+        {/*
+          Het logo staat hier, en niet in de kopbalk.
+
+          Het woordmerk is 10% van de logohoogte (35 van 341 px). In een balk van 64 px worden de
+          letters een paar pixels hoog; naast de grote zin is er ruimte voor 300 px, en dan zijn ze
+          ~31 px. Gekozen door de klant op 13-09, na een voorvertoning op de pagina.
+
+          Naast elkaar pas vanaf `xl`: bij 1024 px is de zin ~650 px breed en past er geen 360 px
+          logo meer naast. Tussen `lg` en `xl` staat het logo erboven, op 150 px (letters ~15 px).
+
+          Onder `lg` staat er geen logo, en openen de foto's de pagina -- allebei op verzoek van de
+          klant. Het logo stond eerst boven de zin en daarna onder de knoppen, maar paste op een
+          telefoon op geen van beide plekken. Op dat formaat staat het merk in de kopbalk en de
+          voettekst; het eerste scherm is haar werk.
+        */}
+        {drie.length > 0 && (
+          <div className="mb-8 flex items-center justify-center pt-4 lg:hidden">
+            {drie.map((f, i) => (
+              <Kaart
+                key={f.id}
+                foto={f}
+                y={0}
+                draai={i === 0 ? "rotate-[-4deg]" : i === 1 ? "z-10 rotate-[1.5deg]" : "rotate-[4deg]"}
+                className={`${i === 1 ? "-mx-4 -mt-5 w-[38%] sm:-mx-5" : "mt-4 w-[33%]"}`}
+              />
+            ))}
+          </div>
+        )}
+        <img
+          src="/merk/logo.png"
+          alt="Atelier Boterbloem"
+          width={413}
+          height={341}
+          className="mb-6 hidden h-[150px] w-auto lg:block xl:hidden"
+        />
+
         <div className="tag mb-5 text-center sm:mb-7 lg:text-left">
           {bovenschrift}
         </div>
 
-        <div className="text-center lg:max-w-4xl lg:text-left">
-          <GroteZin />
+        <div className="xl:flex xl:items-center xl:justify-between xl:gap-12">
+          <div className="text-center lg:max-w-4xl lg:text-left xl:min-w-0">
+            <GroteZin />
+          </div>
+          {/* `alt` leeg: op dit formaat is het logo hierboven verborgen, maar een schermlezer hoort
+              de naam niet graag twee keer als die er ooit allebei staan. */}
+          <img
+            src="/merk/logo.png"
+            alt=""
+            aria-hidden
+            width={413}
+            height={341}
+            className="hidden h-[300px] w-auto shrink-0 xl:block"
+          />
         </div>
 
         <div className="mt-8 grid items-center gap-10 sm:mt-10 lg:grid-cols-[0.85fr_1.15fr] lg:gap-12">
@@ -185,20 +233,7 @@ export function HeroCollage({
             Hoogte staat vast op `lg` zodat de absolute kaarten geen ruimte hoeven te raden.
           */}
           {drie.length > 0 && (
-            <Reveal delay={400} className="relative">
-              {/* Klein scherm: overlappende rij */}
-              <div className="flex items-center justify-center lg:hidden">
-                {drie.map((f, i) => (
-                  <Kaart
-                    key={f.id}
-                    foto={f}
-                    y={0}
-                    draai={i === 0 ? "rotate-[-4deg]" : i === 1 ? "z-10 rotate-[1.5deg]" : "rotate-[4deg]"}
-                    className={`${i === 1 ? "-mx-4 -mt-5 w-[38%] sm:-mx-5" : "mt-4 w-[33%]"}`}
-                  />
-                ))}
-              </div>
-
+            <Reveal delay={400} className="relative hidden lg:block">
               {/*
                 Breed scherm: dezelfde waaier, maar groter en met parallax.
 
