@@ -16,6 +16,35 @@
 
 ---
 
+## 2026-09-13 (laat) — tekstenscherm gerepareerd, logo naast de grote zin
+
+**Wat:**
+
+- **Het tekstenscherm was leeg.** `GET /api/admin/settings` gaf alleen opgeslagen rijen terug, en
+  de tekstsleutels waren nog nooit bewaard: voor `paginaHome` kwam er letterlijk `null`. De site
+  toonde de standaardteksten, het scherm om ze te wijzigen niet. Beide routes gebruiken nu
+  `vulInstellingenAan` (`server/lib/instellingen.ts`)
+- **Het logo is uit de kopbalk.** Het woordmerk is 10% van de logohoogte en past niet in 64 px
+- **Het logo staat naast de grote zin** op de homepage: 300 px hoog vanaf 1280 px breed, 150 px
+  boven de zin tussen 1024 en 1280 px
+- **Op mobiel geen logo in de hero**, en openen de foto's de pagina in plaats van de zin
+
+**Migraties:** geen
+
+**Commits:** `907de4e` … `3b77f0d`
+
+**Bijzonderheden:**
+
+- **Op de pagina uitgeprobeerd voordat het gebouwd werd**: eerst in de browser, dan lokaal
+  bekeken door de klant. Het logo stond op mobiel eerst boven de zin en daarna onder de knoppen;
+  het paste op geen van beide
+- **Van buitenaf geverifieerd:** pagina's en logo 200, geen agenda-token in de publieke settings,
+  schone start in de logs
+- **Nog na te lopen door de beheerder:** `/admin/teksten` op live. Ik kan daar niet inloggen, maar
+  dezelfde fix is lokaal tegen de dev-database gecontroleerd
+
+---
+
 ## 2026-09-13 (avond) — het volledige logo in de voettekst
 
 **Wat:** de voettekst toont het ongewijzigde logo gecentreerd op 150 px, met de zin en de
