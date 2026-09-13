@@ -221,26 +221,31 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
           className="absolute -right-12 -top-12 h-44 w-44 rotate-180 sm:h-64 sm:w-64"
           color="text-sage-dark/35"
         />
-        <div className="container-tight relative py-8 sm:py-10 grid gap-6 sm:gap-10 md:grid-cols-3">
-          <div>
-            {/*
-              De bloem met de getypte naam, net als in de kopbalk -- niet het volledige logo.
+        {/*
+          Het volledige logo, gecentreerd, en groot genoeg om het woordmerk te lezen.
 
-              Dat stond er eerst wel, maar het woordmerk in het logobestand is klein ten opzichte van
-              de bloem: op voettekstmaat werd "Atelier Boterbloem" zo'n 9 px hoog en nauwelijks
-              leesbaar. Groter maken kon niet, want dan werd de voettekst weer te hoog. Het volledige
-              logo staat waar het groot genoeg is: op /over en in de deel-afbeelding.
+          Het woordmerk is maar 10% van de logohoogte (35 van 341 px). In een kolom naast de
+          contactgegevens werd het een paar pixels hoog, en de losse bloem die er daarna stond las als
+          een fragment. Op 150 px zijn de letters ~15 px: leesbaar, en de voettekst blijft lager dan
+          met het logo op 190 px. Gekozen door de klant op 13-09, na een vergelijking op de live pagina.
 
-              Kleur en niet het negatief: de voettekst is zand, en het negatief is linnen.
-            */}
-            <div className="flex items-center gap-2.5">
-              <img src="/merk/beeldmerk.png" alt="" aria-hidden width={44} height={44} className="h-10 w-10 sm:h-11 sm:w-11" />
-              <div className="font-display text-2xl">Atelier <span className="script-accent text-3xl">Boterbloem</span></div>
-            </div>
-            <p className="mt-4 text-charcoal/70 text-sm leading-relaxed max-w-xs">{voet?.payoff}</p>
-          </div>
+          Kleur en niet het negatief: de voettekst is zand, en het negatief is linnen.
+        */}
+        <div className="container-tight relative pt-8 text-center sm:pt-10">
+          <img
+            src="/merk/logo.png"
+            alt="Atelier Boterbloem"
+            width={413}
+            height={341}
+            className="mx-auto h-[150px] w-auto"
+          />
+          <p className="mx-auto mt-3 max-w-sm text-sm leading-relaxed text-charcoal/70">{voet?.payoff}</p>
+        </div>
+        {/* Contact en Instagram gecentreerd onder het logo, zodat de voettekst één as heeft in plaats
+            van een logo in het midden met kolommen die links beginnen. */}
+        <div className="container-tight relative grid max-w-2xl gap-5 pb-6 pt-6 text-center sm:grid-cols-2 sm:gap-10">
           <div>
-            <h4 className="text-xs uppercase tracking-widest text-charcoal/70 mb-4">{voet?.contactKop}</h4>
+            <h4 className="text-xs uppercase tracking-widest text-charcoal/70 mb-2">{voet?.contactKop}</h4>
             <ul className="space-y-2 text-sm text-charcoal/80">
               {contact?.email && <li><a href={`mailto:${contact.email}`} className="hover:text-charcoal hover:underline">{contact.email}</a></li>}
               {contact?.phone && <li><a href={`tel:${contact.phone}`} className="hover:text-charcoal hover:underline">{contact.phone}</a></li>}
@@ -251,7 +256,7 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
             </ul>
           </div>
           <div>
-            <h4 className="text-xs uppercase tracking-widest text-charcoal/70 mb-4">{voet?.volgKop}</h4>
+            <h4 className="text-xs uppercase tracking-widest text-charcoal/70 mb-2">{voet?.volgKop}</h4>
             <a
               href={contact?.instagram ?? "https://instagram.com/atelierboterbloem"}
               target="_blank"
@@ -266,7 +271,7 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
           <div className="container-tight">
             <SierDivider className="!text-sage-dark/70 py-2" />
           </div>
-          <div className="pb-5 pt-3 text-center text-xs text-charcoal/55 relative">
+          <div className="pb-4 pt-2 text-center text-xs text-charcoal/55 relative">
             © {new Date().getFullYear()} Atelier Boterbloem. Alle rechten voorbehouden.
           </div>
         </div>
