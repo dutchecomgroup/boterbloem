@@ -16,6 +16,30 @@
 
 ---
 
+## 2026-09-13 (avond) — het volledige logo in de voettekst
+
+**Wat:** de voettekst toont het ongewijzigde logo gecentreerd op 150 px, met de zin en de
+contactkolommen op dezelfde as. Daarvoor stond er een losse bloem naast de getypte naam, en de klant
+gaf aan dat die als fragment las.
+
+**Migraties:** geen
+
+**Commits:** `033b0f3` … `7d8712b`
+
+**Bijzonderheden:**
+
+- **Waarom het logo niet in de kopbalk kan:** het woordmerk is 10% van de logohoogte (35 van
+  341 px). In een balk van 64 tot 80 px worden de letters 6,6 tot 8,2 px. Leesbaar wordt het vanaf
+  een logohoogte van ongeveer 150 px
+- **Drie varianten vergeleken op de live pagina**, alleen in de browser en zonder iets aan de server
+  te veranderen: een liggend logo in de kopbalk, het logo groot in de hero, en het logo gecentreerd
+  in de voettekst. De klant koos: kopbalk en homepage blijven, de voettekst krijgt het volledige
+  logo
+- **Hoogte:** 422 px op desktop, 478 px op een telefoon (daar staan de kolommen onder elkaar)
+- **`npm ci` overgeslagen:** `package-lock.json` was niet veranderd
+
+---
+
 ## 2026-09-13 — teksten en taarten zelf beheren, lek gedicht, logo en rustiger homepage
 
 **Wat:** de drie verzoeken van de klant en wat er bij het doorlezen bij kwam.
