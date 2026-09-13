@@ -10,43 +10,9 @@
 
 ---
 
-## Klaar voor live (13-09)
+## Er staat niets klaar
 
-Gebouwd op `development`, getest (typecheck, 119 tests, build) en doorgeklikt op de publieke kant.
-Het beheerpaneel is niet met de hand doorgeklikt: dat zit achter een login.
-
-| Wat | Migratie? |
-|---|---|
-| **Lek gedicht:** `/api/public/settings` stuurde het agenda-token mee | nee |
-| **Teksten beheerbaar** op `/admin/teksten`: koppen, intro's, knoppen, smaken, weetjes en haar werkwijze-stappen | nee (jsonb) |
-| **Taarten bewerken** in een sheet, met leesbare categorieën | nee |
-| **Vanaf-prijs per taart** | **ja**: `2026-09-13-product-vanaf-prijs.sql` |
-| **Slugs maakt de server**, met doortellen bij een dubbele naam | nee |
-| **Logo** in header, voettekst, `/over`, favicon en deel-afbeelding | nee |
-| **Homepage-ritme:** zeven vlakwissels naar vier, groene banden als scheiding, lichte voettekst | nee |
-
-### Volgorde bij het deployen
-
-```
-1. pg_dump op de VPS
-2. 2026-09-13-product-vanaf-prijs.sql draaien, eerst met --dry-run
-   (staat op DEV al gedraaid en tweemaal herhaald: idempotent)
-3. db-migraties.md op LIVE bijwerken
-4. git pull && npm ci && npm run build && pm2 reload atelierboterbloem
-5. Het agenda-token vernieuwen: /admin/instellingen, "Nieuwe link"
-```
-
-> **Stap 2 vóór stap 4.** `shared/schema.ts` kent `products.price_is_from`, en Drizzle zet elk
-> schemaveld in de SELECT: zonder de kolom breekt elke query op `products`, niet alleen de nieuwe.
->
-> **Stap 5 is niet optioneel.** Het oude token is tot deze deploy aan elke bezoeker van de site
-> meegestuurd. Het lek dichten maakt dat niet ongedaan.
-
----
-
-## Stand 31-08
-
-Alles wat hier stond is op **31-08 gedeployd**. De acht migraties, de content van de klant, de
+De ronde van **13-09** (teksten, taarten, slugs, logo, homepage) staat live, zie [history.md](history.md). Daarvóór is alles op **31-08 gedeployd**. De acht migraties, de content van de klant, de
 pakketten, de omzetpagina, het ontwerp — het draait op `http://85.215.182.227:6778`. Volledige
 verantwoording in [history.md](history.md#2026-08-31--livegang-op-de-server-alles-van-24-tm-31-augustus-naar-live).
 
@@ -71,6 +37,10 @@ Niet gedeployd, want het is nog niet gebouwd of het wacht op iemand anders.
 | 🟠 **`robots.txt` terug op `Allow: /`** | de echte livegang. Staat nu op `Disallow: /` |
 | 🟡 **Prijzen, reviews, over-tekst, contactgegevens** | de klant. Zij vult ze zelf in; zie [../klant/content-invulplan.md](../klant/content-invulplan.md) §7 |
 | 🟡 **Klikronde op 375 / 768 / 1440** | niets — stap 13 van het boekingenplan |
+| 🔴 **Agenda-token vernieuwen** | de beheerder: *Instellingen → Nieuwe link*. Het oude token is tot 13-09 aan elke bezoeker meegestuurd |
+| 🟡 **Vanaf-vinkje bij Cupcakes en Mini dessert** | de klant: die staan sinds de migratie op *vanaf € 3,00* en *vanaf € 1,95* |
+| 🟡 **Foto's bij de werkwijze-stappen** | de klant, op `/admin/teksten`. Of alleen `zetWerkwijze()` uit de seed draaien -- níet de hele seed, die overschrijft de hero-tekst |
+| 🟡 **Beheerschermen doorklikken** | niets -- `/admin/teksten` en `/admin/producten` zijn niet met de hand getest, want ze zitten achter een login |
 
 ---
 

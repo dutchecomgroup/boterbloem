@@ -16,6 +16,43 @@
 
 ---
 
+## 2026-09-13 — teksten en taarten zelf beheren, lek gedicht, logo en rustiger homepage
+
+**Wat:** de drie verzoeken van de klant en wat er bij het doorlezen bij kwam.
+
+- **Lek gedicht:** `GET /api/public/settings` stuurde het agenda-token mee naar elke bezoeker
+- **Teksten beheerbaar** op `/admin/teksten`: koppen, intro's, knoppen, smaken, weetjes en haar
+  werkwijze-stappen met een foto per stap
+- **Taarten bewerken** in een sheet, met leesbare categorieën en per taart een vanaf-prijs
+- **Slugs maakt de server**, met doortellen bij een dubbele naam
+- **Logo** in header, voettekst, `/over`, favicon en deel-afbeelding
+- **Homepage** van zeven vlakwissels naar vier, groene banden als scheiding, lichte voettekst
+
+**Migraties:** `2026-09-13-product-vanaf-prijs.sql` — dry run op live, daarna uitgevoerd in één
+transactie. Alle 6 bestaande producten kregen `price_is_from = true`, omdat de site dat al over
+ze beweerde.
+
+**Commits:** `e95a1e7` … `e4dab09` (fast-forward van `main` naar `development`)
+
+**Bijzonderheden:**
+
+- **Backup vooraf:** `~/backups/boterbloem/atelierboterbloem-voor-deploy-e4dab09.sql.gz`,
+  gecontroleerd met `gzip -t`, 15 tabellen
+- **`npm ci` slaagde** zonder de terugval op `npm install` die op 31-08 nodig was
+- **Volgorde gehouden:** backup → `git pull` → migratie → `npm ci` → build → `pm2 reload`. De app
+  draait via `tsx`, dus nieuwe code op schijf doet niets tot de reload; zo stond de migratie er
+  aantoonbaar vóór de code
+- **Van buitenaf geverifieerd:** zes pagina's en vijf merkbestanden geven 200, de publieke
+  settings bevatten geen agenda-token en geen `btw`, en de homepage heeft geen dubbele banden
+- 🔴 **Nog te doen door de beheerder:** het agenda-token vernieuwen (*Instellingen → Nieuwe
+  link*). Het oude is tot deze deploy aan elke bezoeker meegestuurd
+- **Nakijken:** Cupcakes (€ 3,00) en Mini dessert (€ 1,95) staan zichtbaar én op vanaf-prijs, en
+  lezen dus als *vanaf € 3,00*. Voor een prijs per stuk is dat waarschijnlijk niet bedoeld
+- **De werkwijze-stappen** gebruiken de standaardtekst; de sleutel staat nog niet in de database.
+  De foto's bij de stappen zijn daardoor de eerstvolgende vrije, niet de eerder gekozen
+
+---
+
 ## 2026-08-31 — livegang op de server: alles van 24 t/m 31 augustus naar live
 
 **Wat:** de server draaide `main` van 29 mei met een lege database. Nu draait alles wat sinds de

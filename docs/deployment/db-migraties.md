@@ -128,7 +128,7 @@ in de SELECT, dus één ontbrekende kolom breekt élke query op die tabel.
 | 2026-08-25 | [`2026-08-25-btw-per-regel.sql`](sql-pending/2026-08-25-btw-per-regel.sql) | Btw per regel: `order_items.vat_rate`, `packages.vat_rate` + `vat_split_low`/`vat_split_high`, `products.vat_rate`, elk met een CHECK op geen/laag/hoog | ✅ | ✅ |
 | 2026-08-24 | [`2026-08-24-herstel-testdata.sql`](sql-pending/2026-08-24-herstel-testdata.sql) | Herstel: `contact`/`hero` terug naar seed-waarden + 8 testrijen uit `contact_requests` | n.v.t. | ✅ |
 | 2026-08-27 | [`2026-08-27-categorie-omslagfoto.sql`](sql-pending/2026-08-27-categorie-omslagfoto.sql) | `gallery_categories.cover_item_id` — een gelegenheid wijst zelf haar omslagfoto aan, nu foto's zonder event eronder hangen | ✅ | ✅ |
-| 2026-09-13 | [`2026-09-13-product-vanaf-prijs.sql`](sql-pending/2026-09-13-product-vanaf-prijs.sql) | `products.price_is_from` — per taart kiezen of de site *vanaf € X* toont of het kale bedrag. Bestaande regels op `true` (wat de site al beweerde), nieuwe op `false` | ✅ | ⏳ |
+| 2026-09-13 | [`2026-09-13-product-vanaf-prijs.sql`](sql-pending/2026-09-13-product-vanaf-prijs.sql) | `products.price_is_from` — per taart kiezen of de site *vanaf € X* toont of het kale bedrag. Bestaande regels op `true` (wat de site al beweerde), nieuwe op `false` | ✅ | ✅ |
 
 > **Volgorde op live:** fase 1 → boekingen → btw → regel-details → album-blokken → betalingen →
 > btw-per-regel → categorie-omslagfoto. `boekingen.sql` legt een foreign key naar `packages`, en
