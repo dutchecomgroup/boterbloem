@@ -17,6 +17,7 @@ import { and, asc, eq, isNull, sql } from "drizzle-orm";
 import { z } from "zod";
 import { env } from "../../env.js";
 import { requireFields } from "../../lib/patch.js";
+import { vrijeAlbumSlug, vrijeCategorieSlug } from "../../lib/slug.js";
 
 export const galleryRouter = Router();
 
@@ -115,7 +116,10 @@ galleryRouter.get("/categories", async (_req, res, next) => {
 galleryRouter.post("/categories", async (req, res, next) => {
   try {
     const data = insertGalleryCategorySchema.parse(req.body);
-    const [row] = await db.insert(galleryCategories).values(data).returning();
+    // Een expliciete slug blijft staan (de seed maakt zo `sitefotos`, waar de fotokiezer naar
+    // uploadt). Zonder slug maakt de server er een uit de naam.
+    const slug = await vrijeCategorieSlug(data.name, data.slug);
+    const [row] = await db.insert(galleryCategories).values({ ...data, slug }).returning();
     res.status(201).json(row);
   } catch (err) {
     next(err);
@@ -191,37 +195,12 @@ galleryRouter.get("/albums", async (req, res, next) => {
   }
 });
 
-/**
- * Een webadres dat nog niet bestaat binnen deze gelegenheid.
- *
- * Slugs zijn uniek per categorie (`gallery_albums_cat_slug_unique`), en twee feesten met
- * dezelfde titel is heel gewoon — twee keer "Sweet 16" onder Verjaardag. Zonder deze stap
- * gaf de tweede een 500 met een databasefout in beeld. Nu wordt het `sweet-16-2`.
- */
-async function vrijeAlbumSlug(categoryId: number | null, basis: string): Promise<string> {
-  const bestaand = await db
-    .select({ slug: galleryAlbums.slug })
-    .from(galleryAlbums)
-    .where(categoryId === null
-      ? isNull(galleryAlbums.categoryId)
-      : eq(galleryAlbums.categoryId, categoryId));
-
-  const bezet = new Set(bestaand.map((r) => r.slug));
-  if (!bezet.has(basis)) return basis;
-
-  // Doortellen tot er een vrij nummer is; het eerste duplicaat wordt `-2`, zoals een mens
-  // het zou nummeren.
-  for (let n = 2; n < 1000; n++) {
-    const kandidaat = `${basis}-${n}`;
-    if (!bezet.has(kandidaat)) return kandidaat;
-  }
-  return `${basis}-${Date.now()}`;
-}
+// `vrijeAlbumSlug` staat sinds 13-09 in server/lib/slug.ts, naast die van de andere tabellen.
 
 galleryRouter.post("/albums", async (req, res, next) => {
   try {
     const data = insertGalleryAlbumSchema.parse(req.body);
-    const slug = await vrijeAlbumSlug(data.categoryId ?? null, data.slug);
+    const slug = await vrijeAlbumSlug(data.categoryId ?? null, data.title, data.slug);
     const [row] = await db.insert(galleryAlbums).values({ ...data, slug }).returning();
     res.status(201).json(row);
   } catch (err) {

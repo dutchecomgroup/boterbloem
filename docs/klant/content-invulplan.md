@@ -264,8 +264,8 @@ Volledige uitleg in [../architecture/design-system.md](../architecture/design-sy
 | 5 | **Btw-verdeling per pakket** | Welk deel is eten (9%) en welk deel styling en opbouw (21%). Met haar boekhouder. Staat open sinds 25-08. |
 | 6 | **Btw-tarief per taart** | Vermoedelijk 9%, maar dat mag zij bevestigen. |
 | 7 | **Contactgegevens** | `hallo@atelierboterbloem.nl` staat in de database maar is nooit bevestigd. Telefoon, WhatsApp, adres en plaats zijn leeg. |
-| 8 | **Logo in vectorformaat** | Beide bestanden zijn bitmaps met linnen ondergrond, zonder transparantie — op 32×32 onleesbaar. Er staat nu een zelfgetekende boterbloem in `client/public/favicon.svg`; die hoort vervangen te worden zodra het vectorbestand er is. |
-| 9 | **Portretfoto voor `/over`** | Er is er geen, dus die pagina toont nu alleen tekst. |
+| ~~8~~ | ~~**Logo in vectorformaat**~~ | Opgelost 13-09: ze leverde een vrijstaande PNG in kleur en een negatief (`uploads/content/merk/1.png` en `2.png`). Staat in de header, voettekst, op `/over`, als favicon en als deel-afbeelding. Een vectorbestand blijft mooier voor drukwerk, maar blokkeert de site niet meer. |
+| 9 | **Portretfoto voor `/over`** | Er is er geen. Sinds 13-09 staat haar logo in die kolom, zodat de pagina niet half leeg oogt. Een portret blijft beter en gaat vóór zodra ze er een kiest. |
 
 ### ❓ Vragen die beantwoord moeten worden
 
@@ -290,6 +290,10 @@ Volledige uitleg in [../architecture/design-system.md](../architecture/design-sy
 - **Prijzen invullen en een pakket aanzetten** — `/admin/pakketten`.
 - **Reviews toevoegen** — `/admin/reviews`, met toestemming van de persoon in kwestie.
 - **Over-tekst en contactgegevens** — `/admin/instellingen`.
+- **Alle andere teksten op de site** — `/admin/teksten`: koppen, introteksten, knoppen, de smaken,
+  de punten onder "Goed om te weten" en haar werkwijze-stappen met een foto per stap. Laat ze een
+  veld leeg, dan komt de standaardtekst terug.
+- **Een taart wijzigen of een vanaf-prijs zetten** — `/admin/producten`, regel aanklikken.
 
 ---
 

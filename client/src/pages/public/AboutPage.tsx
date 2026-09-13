@@ -24,15 +24,16 @@ export default function AboutPage() {
 
   return (
     <>
-      <section className="relative bg-section-warm overflow-hidden section-y">
+      <section className="relative bg-section-warm overflow-hidden section-y pt-24 sm:pt-36">
         <BotanicalPattern opacity={0.05} />
         <FloralFrame className="absolute -top-8 -right-8 md:-top-12 md:-right-12 w-32 sm:w-56 md:w-72 h-32 sm:h-56 md:h-72" color="text-sage/20" />
         <FloralFrame className="absolute -bottom-8 -left-8 md:-bottom-12 md:-left-12 rotate-180 w-24 sm:w-40 md:w-64 h-24 sm:h-40 md:h-64" color="text-blush" />
 
         <div className="container-tight relative">
-          {/* Zonder portret geen tweede kolom: anders staat de tekst op 60% breedte met een
-              leeg vlak ernaast. */}
-          <div className={`grid gap-8 sm:gap-12 lg:gap-20 items-center ${portraitSrc ? "lg:grid-cols-[1.1fr_1fr]" : "max-w-3xl"}`}>
+          {/* Twee kolommen, altijd. Zonder portret viel de tweede kolom weg en stond haar verhaal
+              alleen; nu staat daar haar logo, tot er een portretfoto is (gat #9 in het
+              content-invulplan). Een portret gaat voor: dat kiest zij in Instellingen. */}
+          <div className="grid gap-8 sm:gap-12 lg:gap-20 items-center lg:grid-cols-[1.1fr_1fr]">
             <div>
               <div className="tag mb-3">Over</div>
               <h1 className="text-4xl sm:text-5xl md:text-6xl">{kop}</h1>
@@ -47,6 +48,11 @@ export default function AboutPage() {
                 {body}
               </div>
             </div>
+            {!portraitSrc && (
+              <div className="flex items-center justify-center">
+                <img src="/merk/logo.png" alt="Logo van Atelier Boterbloem" width={409} height={341} className="h-auto w-full max-w-[340px]" />
+              </div>
+            )}
             {portraitSrc && (
               <div className="relative">
                 <div className="absolute -inset-6 -z-10 bg-gradient-to-br from-sage/10 via-transparent to-blush/30 rounded-[2rem] blur-2xl" />
@@ -67,9 +73,9 @@ export default function AboutPage() {
         <BotanicalCorner position="br" color="text-linen/25" />
         <div className="container-narrow relative text-center">
           <div className="script-accent text-3xl sm:text-5xl md:text-6xl leading-tight mb-6">
-            "Smaak, ambacht, en een glimlach in elke beet."
+            "{about?.citaat}"
           </div>
-          <div className="tag">Atelier Boterbloem</div>
+          <div className="tag">{about?.citaatBron}</div>
           <div className="mt-8 sm:mt-10"><SierDivider color="text-linen/50" /></div>
         </div>
       </section>

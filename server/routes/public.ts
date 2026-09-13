@@ -11,6 +11,9 @@ import {
   products,
   reviews,
   insertContactRequestSchema,
+  publiekeSiteSettingSchemas,
+  type PubliekeSiteSettingKey,
+  type PubliekeSiteSettings,
   type GalleryItem,
   type GalleryAlbum,
   type GalleryCategory,
@@ -36,13 +39,35 @@ const contactLimiter = rateLimit({
   message: { error: "Te veel aanvragen verstuurd. Probeer het later opnieuw." },
 });
 
-// GET /api/public/settings
+/**
+ * GET /api/public/settings
+ *
+ * Het antwoord wordt opgebouwd uit `publiekeSiteSettingSchemas` en **niet** uit de rijen die
+ * toevallig in de tabel staan. Dat doet twee dingen tegelijk:
+ *
+ * 1. **Alleen wat publiek mag komt eruit.** Deze route stuurde eerder elke rij door, inclusief
+ *    `levertijden.agendaFeedToken` — de sleutel tot een agenda-feed met alle klantnamen erin.
+ *    Een sleutel die niet in het register staat, bestaat hier niet meer.
+ * 2. **Alles is ingevuld.** Elke waarde gaat door zijn Zod-schema, dus ontbrekende velden
+ *    krijgen hun standaardwaarde. Daarvóór kwam een verse database als een lege respons binnen
+ *    en moest elke pagina zijn eigen terugvaltekst meenemen — twee bronnen voor dezelfde zin,
+ *    die onvermijdelijk uit elkaar lopen. De standaardtekst staat nu alleen in `shared/schema.ts`.
+ */
 publicRouter.get("/settings", async (_req, res, next) => {
   try {
     const rows = await db.select().from(siteSettings);
-    const out: Record<string, unknown> = {};
-    for (const row of rows) out[row.key] = row.value;
-    res.json(out);
+    const opgeslagen = new Map(rows.map((r) => [r.key, r.value]));
+
+    const out = {} as Record<string, unknown>;
+    for (const key of Object.keys(publiekeSiteSettingSchemas) as PubliekeSiteSettingKey[]) {
+      const schema = publiekeSiteSettingSchemas[key];
+      // Een rij die niet door zijn schema komt (handmatig bewerkt, of achtergebleven uit een
+      // oudere vorm) mag de hele pagina niet leegtrekken: dan liever de standaardwaarden.
+      const ontleed = schema.safeParse(opgeslagen.get(key) ?? {});
+      out[key] = ontleed.success ? ontleed.data : schema.parse({});
+    }
+
+    res.json(out as PubliekeSiteSettings);
   } catch (err) {
     next(err);
   }

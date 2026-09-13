@@ -3,6 +3,7 @@ import { db } from "../../db.js";
 import { packages, galleryItems, insertPackageSchema } from "@shared/schema";
 import { asc, eq } from "drizzle-orm";
 import { requireFields } from "../../lib/patch.js";
+import { vrijePakketSlug } from "../../lib/slug.js";
 
 export const packagesRouter = Router();
 
@@ -30,7 +31,10 @@ packagesRouter.get("/", async (_req, res, next) => {
 packagesRouter.post("/", async (req, res, next) => {
   try {
     const data = insertPackageSchema.parse(req.body);
-    const [row] = await db.insert(packages).values(data).returning();
+    // Het webadres maakt de server, uit de naam. Twee pakketten met dezelfde naam gaven een
+    // databasefout in beeld; nu krijgt de tweede `-2`.
+    const slug = await vrijePakketSlug(data.name, data.slug);
+    const [row] = await db.insert(packages).values({ ...data, slug }).returning();
     res.status(201).json(row);
   } catch (err) {
     next(err);
@@ -40,7 +44,9 @@ packagesRouter.post("/", async (req, res, next) => {
 packagesRouter.patch("/:id", async (req, res, next) => {
   try {
     const id = Number(req.params.id);
-    const data = requireFields(insertPackageSchema.partial().parse(req.body));
+    // `slug` is na het aanmaken niet meer te wijzigen: een gedeelde link naar
+    // /contact?pakket=<slug> hoort niet te breken omdat iemand de naam bijschaaft.
+    const data = requireFields(insertPackageSchema.omit({ slug: true }).partial().parse(req.body));
     const [row] = await db.update(packages).set(data).where(eq(packages.id, id)).returning();
     if (!row) return res.status(404).json({ error: "Pakket niet gevonden" });
     res.json(row);

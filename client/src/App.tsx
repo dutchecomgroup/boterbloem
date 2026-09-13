@@ -27,6 +27,7 @@ const GalleryAdminPage = lazy(() => import("./pages/admin/GalleryAdminPage"));
 const GalleryEventPage = lazy(() => import("./pages/admin/GalleryEventPage"));
 const ContactRequestsPage = lazy(() => import("./pages/admin/ContactRequestsPage"));
 const SettingsPage = lazy(() => import("./pages/admin/SettingsPage"));
+const TekstenPage = lazy(() => import("./pages/admin/TekstenPage"));
 
 import { useAuth } from "./hooks/useAuth";
 import { useLenis } from "./hooks/useLenis";
@@ -99,6 +100,9 @@ export default function App() {
       </Route>
       <Route path="/admin/aanvragen">
         <ProtectedAdmin><ContactRequestsPage /></ProtectedAdmin>
+      </Route>
+      <Route path="/admin/teksten">
+        <ProtectedAdmin><TekstenPage /></ProtectedAdmin>
       </Route>
       <Route path="/admin/instellingen">
         <ProtectedAdmin><SettingsPage /></ProtectedAdmin>

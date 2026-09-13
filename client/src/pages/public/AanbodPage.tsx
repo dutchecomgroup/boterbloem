@@ -18,23 +18,15 @@ import { PageHeader } from "../../components/PageHeader";
 import { PakketKaart, pakketFamilie, type PakketMetCover } from "../../components/public/PakketKaart";
 import { GelegenheidCarrousel } from "../../components/public/GelegenheidCarrousel";
 
-/**
- * De vier vaste taartsmaken uit `uploads/content/teksten/pakketten-en-taartprijzen.pdf`.
+/*
+ * De smaken en de "goed om te weten"-punten stonden hier als constanten. Ze staan nu in
+ * `site_settings.paginaAanbod`, zodat de klant ze zelf kan bijwerken -- juist bij de smaken is
+ * dat nodig: haar PDF en haar eigen artikel noemen verschillende rijtjes (vraag 11 in
+ * docs/klant/content-invulplan.md), en dat hoort zij recht te kunnen zetten zonder ons.
  *
- * Bewust hier en niet in `products`: een smaak is een keuze bij elke maat, geen artikel met een
- * eigen prijs. Ze als product opnemen zou betekenen dat er twaalf regels in de prijslijst
- * komen (vier smaken × drie maten) waarvan er elf hetzelfde bedrag hebben.
- *
- * ⚠️ Haar blogtekst noemt een ándere rij smaken ("Vanille, chocolade, Citroen & Witte chocola,
- * Aarbei"). Deze lijst uit de PDF is aangehouden omdat hij namen en combinaties geeft; de
- * tegenstrijdigheid staat als vraag in docs/klant/content-invulplan.md.
+ * Een smaak blijft bewust geen product: het is een keuze bij elke maat, geen artikel met een
+ * eigen prijs. Als product zou de prijslijst twaalf regels krijgen waarvan elf hetzelfde bedrag.
  */
-const SMAKEN = [
-  { naam: "Lemon Bliss", omschrijving: "Citroen & vanille" },
-  { naam: "Strawberry Blush", omschrijving: "Witte chocolade & aardbei" },
-  { naam: "Caramel Cocoa", omschrijving: "Chocolade & karamel" },
-  { naam: "Coco Blanc", omschrijving: "Kokos, witte chocolade & hazelnoot" },
-];
 
 export default function AanbodPage() {
   const { data: settings } = usePublicSettings();
@@ -87,7 +79,8 @@ export default function AanbodPage() {
       items.find((i) => (i.altText ?? "").toLowerCase().includes(term));
     return zoek("frangipani") ?? zoek("taart") ?? null;
   }, [gallery]);
-  const levertijden = (settings as { levertijden?: { tekst?: string } } | undefined)?.levertijden;
+  const levertijden = settings?.levertijden;
+  const t = settings?.paginaAanbod;
 
 
   return (
@@ -95,9 +88,9 @@ export default function AanbodPage() {
       {/* ---------- Kop ---------- */}
       <PageHeader
         achtergrond="bg-section-warm"
-        tag="Aanbod"
-        titel={<>Sweet &amp; grazing tables</>}
-        tekst="Een tafel vol zoets die het middelpunt van je feest wordt. We werken met pakketten als startpunt: een richtlijn met een vanaf-prijs, die we samen aanvullen tot het precies past bij jouw dag."
+        tag={t?.tag ?? ""}
+        titel={t?.titel ?? ""}
+        tekst={t?.intro}
         onder={
           /*
             De gelegenheden zitten ín de kop, niet in een eigen sectie eronder.
@@ -117,7 +110,7 @@ export default function AanbodPage() {
                 href="/galerij"
                 className="mt-3 inline-flex items-center gap-2 text-xs uppercase tracking-widest text-sage-dark hover:underline"
               >
-                Bekijk de hele galerij <ArrowRight size={14} />
+                {t?.galerijLink} <ArrowRight size={14} />
               </Link>
             </div>
           ) : undefined
@@ -173,18 +166,14 @@ export default function AanbodPage() {
               {/* "Dat rekenen we er gewoon bij" las als een waarschuwing dat het duurder wordt,
                   precies het tegenovergestelde van wat er bedoeld is. */}
               <p className="mx-auto mt-8 max-w-xl text-center text-sm text-charcoal/70">
-                Elk pakket is een startpunt. Meer gasten, een extra lekkernij of een eigen
-                kleurenschema? Dat is allemaal mogelijk. We kijken samen wat bij je feest past.
+                {t?.pakkettenSlotzin}
               </p>
             </>
           ) : (
             <div className="card py-14 text-center">
-              <div className="script-accent mb-3 text-4xl">Binnenkort</div>
-              <p className="mx-auto max-w-md text-sm text-charcoal/70">
-                We zetten de pakketten en prijzen op dit moment op een rij. Wil je nu al weten
-                wat er mogelijk is voor jouw feest? Stuur gerust een bericht.
-              </p>
-              <Link href="/contact" className="btn-sage mt-6">Vraag een offerte aan</Link>
+              <div className="script-accent mb-3 text-4xl">{t?.leegTitel}</div>
+              <p className="mx-auto max-w-md text-sm text-charcoal/70">{t?.leegTekst}</p>
+              <Link href="/contact" className="btn-sage mt-6">{t?.slotKnop}</Link>
             </div>
           )}
         </div>
@@ -196,24 +185,16 @@ export default function AanbodPage() {
         <BotanicalPattern opacity={0.05} />
         <div className="container-tight relative">
           <div className="card mx-auto max-w-3xl">
-            <div className="tag mb-4 text-center">Goed om te weten</div>
+            <div className="tag mb-4 text-center">{t?.weetjesTitel}</div>
             <ul className="grid gap-4 sm:grid-cols-2">
-              <WeetjeItem icoon="📅" titel="Op tijd aanvragen">
-                {levertijden?.tekst ??
-                  "Vraag je tafel het liefst een paar weken van tevoren aan; voor taarten kan het vaak sneller."}
-              </WeetjeItem>
-              <WeetjeItem icoon="🍰" titel="Taarten zijn flexibeler">
-                Een losse taart heeft minder voorbereiding nodig dan een hele tafel, dus vraag
-                gerust wat er nog kan.
-              </WeetjeItem>
-              <WeetjeItem icoon="🚚" titel="Bezorgen of afhalen">
-                We bezorgen en bouwen ter plaatse op. Afhalen kan ook, dan leggen we uit hoe je
-                het veilig vervoert.
-              </WeetjeItem>
-              <WeetjeItem icoon="💬" titel="Altijd op maat">
-                Allergieën, een kleurenschema of een eigen idee? Vertel het bij de aanvraag, dan
-                kijken we samen wat past.
-              </WeetjeItem>
+              {/* Een leeg tekstveld op het eerste punt valt terug op de levertijd uit de
+                  instellingen: die staat daar al, en dezelfde zin op twee plekken invullen
+                  loopt onvermijdelijk uit de pas. */}
+              {(t?.weetjes ?? []).map((w, i) => (
+                <WeetjeItem key={i} icoon={w.icoon} titel={w.titel}>
+                  {w.tekst || (i === 0 ? levertijden?.tekst : "")}
+                </WeetjeItem>
+              ))}
             </ul>
           </div>
         </div>
@@ -237,12 +218,11 @@ export default function AanbodPage() {
 
         <div className="container-tight relative">
           <div className="mb-10 text-center">
-            <div className="tag mb-3">Ook mogelijk</div>
-            <h2 className="text-3xl sm:text-4xl">Taarten</h2>
+            <div className="tag mb-3">{t?.taartenTag}</div>
+            <h2 className="text-3xl sm:text-4xl">{t?.taartenTitel}</h2>
             <div className="mt-5"><SierDivider className="!max-w-[180px]" /></div>
             <p className="mx-auto mt-5 max-w-xl text-sm leading-relaxed text-charcoal/75 sm:text-base">
-              Een taart zonder tafel eromheen kan natuurlijk ook: voor een verjaardag, een
-              bruiloft of gewoon omdat het kan.
+              {t?.taartenIntro}
             </p>
           </div>
 
@@ -288,7 +268,15 @@ export default function AanbodPage() {
                           aria-hidden
                           className="mx-1 min-w-[1.5rem] flex-1 translate-y-[-0.2em] border-b border-dotted border-charcoal/25"
                         />
+                        {/* "vanaf" staat per regel en niet meer als één zin onder de lijst: dat
+                            gold daar voor elke taart tegelijk, ook voor de maten met een vaste
+                            prijs. */}
                         <div className="shrink-0 whitespace-nowrap font-display text-lg text-sage-deep sm:text-xl">
+                          {p.priceIsFrom && (
+                            <span className="mr-1 text-[10px] uppercase tracking-[0.15em] text-charcoal/55">
+                              vanaf
+                            </span>
+                          )}
                           {formatCurrency(Number(p.basePrice))}
                         </div>
                       </li>
@@ -301,26 +289,22 @@ export default function AanbodPage() {
                 )}
 
                 {producten && producten.length > 0 && (
-                  <p className="mt-3 text-xs text-charcoal/60">
-                    Vanaf-prijzen per taart. De uiteindelijke prijs hangt af van het ontwerp.
-                  </p>
+                  <p className="mt-3 text-xs text-charcoal/60">{t?.taartenBijschrift}</p>
                 )}
 
                 {/* De vier vaste smaken. Geen producten in de database: een smaak is een keuze
                     bij elke maat, geen apart artikel met een eigen prijs. Bron: haar eigen PDF. */}
                 <div className="mt-7 border-t border-sage/25 pt-6">
-                  <div className="tag mb-4">Smaken</div>
+                  <div className="tag mb-4">{t?.smakenTitel}</div>
                   <dl className="grid gap-x-6 gap-y-3 sm:grid-cols-2">
-                    {SMAKEN.map((smaak) => (
+                    {(t?.smaken ?? []).map((smaak) => (
                       <div key={smaak.naam}>
                         <dt className="font-display text-base text-charcoal sm:text-lg">{smaak.naam}</dt>
                         <dd className="text-xs text-charcoal/70 sm:text-sm">{smaak.omschrijving}</dd>
                       </div>
                     ))}
                   </dl>
-                  <p className="mt-5 text-xs text-charcoal/65">
-                    Iets anders in gedachten? Vraag het gerust, er kan vaak meer.
-                  </p>
+                  <p className="mt-5 text-xs text-charcoal/65">{t?.smakenSlot}</p>
                 </div>
               </div>
             </Reveal>
@@ -334,8 +318,8 @@ export default function AanbodPage() {
           <BotanicalPattern opacity={0.04} />
           <div className="container-tight relative">
             <div className="text-center mb-10">
-              <div className="tag mb-3">Ervaringen</div>
-              <h2 className="text-3xl sm:text-4xl">Wat klanten zeggen</h2>
+              <div className="tag mb-3">{t?.reviewsTag}</div>
+              <h2 className="text-3xl sm:text-4xl">{t?.reviewsTitel}</h2>
             </div>
             {/* Bij één of twee reviews centreren; anders staat er één kaart eenzaam links
                 in een driekolomsraster. */}
@@ -366,13 +350,10 @@ export default function AanbodPage() {
         <BotanicalCorner position="tl" color="text-linen/25" />
         <BotanicalCorner position="br" color="text-linen/25" />
         <div className="container-narrow relative text-center">
-          <div className="script-accent text-4xl sm:text-5xl mb-4 leading-none">Klaar om te plannen?</div>
-          <p className="text-charcoal/70 mb-8 leading-relaxed text-sm sm:text-base">
-            Vertel ons over je feest: de datum, het aantal gasten en wat je voor je ziet.
-            We denken graag mee.
-          </p>
+          <div className="script-accent text-4xl sm:text-5xl mb-4 leading-none">{t?.slotAccent}</div>
+          <p className="text-charcoal/70 mb-8 leading-relaxed text-sm sm:text-base">{t?.slotTekst}</p>
           <Link href="/contact" className="btn-sage">
-            Vraag een offerte aan <ArrowRight size={16} />
+            {t?.slotKnop} <ArrowRight size={16} />
           </Link>
           <div className="mt-8 sm:mt-10"><SierDivider color="text-linen/50" /></div>
         </div>

@@ -13,13 +13,26 @@ import type { ProcessStep } from "./ProcessStory";
  *
  * Deze versie past binnen één schermhoogte en zegt hetzelfde.
  */
-export function ProcessStrip({ steps }: { steps: ProcessStep[] }) {
+export function ProcessStrip({
+  steps,
+  tag,
+  titel,
+  link,
+}: {
+  steps: ProcessStep[];
+  /** De teksten komen uit `site_settings.paginaHome`, zodat zij ze kan wijzigen. */
+  tag?: string;
+  titel?: string;
+  link?: string;
+}) {
+  // Geen stappen ingevuld: dan geen blok. Een kop boven een lege rij is erger dan niets.
+  if (steps.length === 0) return null;
   return (
-    <section className="relative overflow-hidden bg-section-sage section-y-sm">
+    <section className="relative overflow-hidden bg-linen section-y-sm">
       <div className="container-tight relative">
         <div className="mb-10 text-center">
-          <div className="tag mb-3">Het proces</div>
-          <h2 className="text-3xl sm:text-4xl">Zo gaat het</h2>
+          <div className="tag mb-3">{tag}</div>
+          <h2 className="text-3xl sm:text-4xl">{titel}</h2>
           <div className="mt-5">
             <SierDivider className="!max-w-[180px]" />
           </div>
@@ -53,7 +66,7 @@ export function ProcessStrip({ steps }: { steps: ProcessStep[] }) {
             tekst die op /werkwijze uitgeschreven staat, uit content/werkwijze.ts. */}
         <div className="mt-10 text-center">
           <Link href="/werkwijze" className="btn-outline">
-            Lees hoe het werkt
+            {link}
           </Link>
         </div>
       </div>

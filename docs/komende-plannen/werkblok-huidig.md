@@ -501,6 +501,86 @@ weghalen van het plakken al verdwenen was, en is dus teruggedraaid.
 
 ---
 
+## Wat er op 13-09 bij is gekomen
+
+Drie verzoeken van de klant, een logo, en een lek dat bij het doorlezen boven kwam. Alles staat
+klaar voor live; zie [../deployment/pending.md](../deployment/pending.md) voor de volgorde.
+
+### Een lek: het agenda-token ging mee naar elke bezoeker
+
+`GET /api/public/settings` stuurde alle rijen van `site_settings` ongefilterd door. Daar zat
+`levertijden.agendaFeedToken` bij, en met dat token geeft `/api/agenda.ics` alle boekingen vrij,
+met klantnaam, locatie, bedrag en notitie. Het instellingenscherm waarschuwde dat de link met
+niemand gedeeld mocht worden; de site deelde hem met iedereen.
+
+De route bouwt zijn antwoord nu op uit `publiekeSiteSettingSchemas`, met `.pick()` in plaats van
+`.omit()`, zodat een nieuw veld standaard níet naar buiten gaat. **Na de deploy moet het token
+vernieuwd worden**: dichtzetten maakt niet ongedaan wat er al is uitgegaan.
+
+### "Kan ik ook ergens gewoon tekst van de website aanpassen?"
+
+Er waren acht beheerbare tekstvelden tegenover ruim honderd hardgecodeerde. Nu staan de teksten
+die een bezoeker leest op `/admin/teksten`, per pagina gegroepeerd met een *Bekijk*-link, plus
+haar werkwijze-stappen met een fotokiezer per stap. Hero en over-pagina blijven op
+`/admin/instellingen` en kregen er het bovenschrift, de tweede knop en het citaat bij.
+
+- **Elke standaardwaarde is de tekst die er stond.** Er verandert niets zichtbaars tot zij iets
+  wijzigt. De publieke route parst door de schema's, dus de pagina's dragen geen eigen
+  terugvalteksten meer: die liepen al uit elkaar met die in de seed.
+- **Haar werkwijze stond in een TypeScript-bestand.** Nu in `site_settings.werkwijze`, met een
+  foto-id per stap in plaats van een zoekterm op de alt-tekst, en zonder stapnummer in de data.
+  De contactpagina had een eigen, derde versie van dezelfde stappen; die is weg.
+- **De standaard van die stappen is haar tekst, geen lege lijst.** Eerst stond hij wel op leeg,
+  en dan verdween bij een nog niet gevulde database de hele strip: twee groene banden kwamen
+  direct op elkaar te staan. Vastgelegd in `shared/teksten.test.ts`.
+- **Bewust niet beheerbaar:** navigatie, formulierlabels, foutmeldingen, toegankelijkheidsteksten.
+
+### "Kan ik voor die bruidstaart een vanaf-prijs zetten?"
+
+`/admin/producten` kon toevoegen en verwijderen, maar niet bewerken: een prijs corrigeren was
+verwijderen en opnieuw intikken. De route kon het al; alleen het formulier ontbrak. Nu een sheet,
+zoals bij pakketten, met leesbare categorieën (`Mini desserts` in plaats van `mini_desserts`).
+
+Per taart kiest zij of het een vanaf-prijs is (`products.price_is_from`). Bestaande regels kregen
+`true`, omdat de site dat al over alle taarten beweerde; nieuwe staan op `false`.
+
+### "Slug is te technisch"
+
+Gelegenheden, events en pakketten deden het al in de client, met twee identieke kopieën van
+`slugify`; het taartscherm liet haar hem intikken. Nu maakt de server hem (`server/lib/slug.ts`,
+`shared/slug.ts`) en telt hij door bij een dubbele naam: twee keer "Bruidstaart" gaf eerst een
+databasefout in beeld. Bij hernoemen blijft de slug staan.
+
+> Niet opgelost, wel benoemd: `pakketFamilie()` kleurt een pakket op `slug.endsWith("-graze")`.
+> Een nieuw pakket "Graze deluxe" wordt dus zoet. Een eigen `familie`-kolom lost dat op.
+
+### Het logo
+
+Het oude logobestand was een JPEG zonder transparantie. De nieuwe (`1.png`, `2.png`) zijn
+vrijstaand. `scripts/maak-merkbestanden.ts` maakt er de bloemkop, favicon, apple-touch-icon en een
+deel-afbeelding van, en zet alles in `client/public/`: `uploads/` staat niet in git.
+
+Het logo meet 409 x 341, dus **liggend, niet hoog.** In de voettekst staat de bloem met de getypte naam, zoals in de kopbalk: het woordmerk in het
+logobestand werd op die maat zo'n 9 px hoog. Het volledige logo staat op /over en in de
+deel-afbeelding. Het negatief is gegenereerd maar nergens gebruikt: de voettekst is licht.
+
+### Het ritme van de homepage
+
+*"Ik zie hier gewoon 5 kleuren."* Gemeten waren het zeven vlakwissels, tegen twee op Galerij, Over
+en Contact, met vier lichte tinten binnen tien eenheden van elkaar. Daarbij twee echte fouten: een
+witte strook van 96 px tussen twee charcoal-vlakken (de marge op de voettekst) en een golf in
+zandkleur tussen twee buren die geen van beide zand waren.
+
+- **Een groene band (`SalieBand`) is het enige scheidingsteken**, ook boven de voettekst. Secties
+  met hetzelfde vlak grenzen dan niet aan elkaar en mogen doorlopen
+- **Zand verdiept** van `#EDE7DE` naar `#E4DACA`
+- **De kopbalk heeft bovenaan geen eigen vlak** en zweeft over de sectie eronder
+- **De voettekst is licht en lager**, met de bloemtak uit de hero in plaats van het tegelpatroon
+
+Het voorstel staat als wireframe op https://claude.ai/code/artifact/29ffeb36-dd46-44e1-a933-d5f3c87a6476
+
+---
+
 ## Beslissingen die de scope bepaalden
 
 **🗄️ De database is gekopieerd, niet gemigreerd (31-08).** Dev *was* het resultaat van de acht

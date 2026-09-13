@@ -10,6 +10,7 @@ import { FotoKiezer } from "../../components/admin/FotoKiezer";
 import { useSheetParam } from "../../hooks/useSheetParam";
 import { imageSrc } from "../../lib/images";
 import { personenBereik } from "../../lib/utils";
+import { slugify } from "@shared/slug";
 
 /** Wat `GET /api/admin/packages` teruggeeft: het pakket plus zijn coverfoto. */
 type PakketMetCover = Package & { cover: GalleryItem | null };
@@ -65,7 +66,8 @@ export default function PackagesPage() {
   const opslaan = useMutation({
     mutationFn: (p: Partial<Package>) => {
       const body = {
-        name: p.name, slug: p.slug || slugify(p.name ?? ""),
+        // Geen slug: die maakt de server bij het aanmaken, en daarna staat hij vast.
+        name: p.name,
         tagline: p.tagline || null, description: p.description || null,
         priceFrom: String(p.priceFrom ?? "0"), priceUnit: p.priceUnit ?? "totaal",
         personsMin: p.personsMin ?? null, personsMax: p.personsMax ?? null,
@@ -451,11 +453,6 @@ function PakketSheet({ pakket, open, onOpenChange, onChange, onOpslaan, bezig }:
       </SheetSectie>
     </Sheet>
   );
-}
-
-function slugify(s: string): string {
-  return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "")
-    .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 120);
 }
 
 /* -------------------------------------------------------------------------- */

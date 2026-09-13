@@ -37,8 +37,11 @@ export function PageHeader({
   /** Sier-elementen die absoluut in de sectie gepositioneerd worden. */
   children?: ReactNode;
 }) {
+  // De bovenmarge houdt rekening met de zwevende navigatie: die staat `fixed` en neemt dus geen
+  // ruimte meer in de bladspiegel in, zodat dit vlak eráchter doorloopt in plaats van eronder te
+  // beginnen. Zonder deze ruimte zou de kop onder de navigatie vallen.
   return (
-    <section className={`relative overflow-hidden ${achtergrond} pt-10 pb-8 sm:pt-16 sm:pb-10`}>
+    <section className={`relative overflow-hidden ${achtergrond} pt-24 pb-8 sm:pt-36 sm:pb-10`}>
       <BotanicalPattern opacity={0.05} />
       {children}
       <div className="container-tight relative text-center">

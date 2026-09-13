@@ -3,6 +3,7 @@ import { db } from "../../db.js";
 import { products, insertProductSchema } from "@shared/schema";
 import { asc, eq } from "drizzle-orm";
 import { requireFields } from "../../lib/patch.js";
+import { vrijeProductSlug } from "../../lib/slug.js";
 
 export const productsRouter = Router();
 
@@ -18,7 +19,10 @@ productsRouter.get("/", async (_req, res, next) => {
 productsRouter.post("/", async (req, res, next) => {
   try {
     const data = insertProductSchema.parse(req.body);
-    const [row] = await db.insert(products).values(data).returning();
+    // Het webadres maakt de server, uit de naam. Dit was de enige plek in het beheerpaneel waar
+    // de klant zelf een slug moest intikken: "te technisch, dit moet in de backend gebeuren."
+    const slug = await vrijeProductSlug(data.name, data.slug);
+    const [row] = await db.insert(products).values({ ...data, slug }).returning();
     res.status(201).json(row);
   } catch (err) {
     next(err);
@@ -28,7 +32,7 @@ productsRouter.post("/", async (req, res, next) => {
 productsRouter.patch("/:id", async (req, res, next) => {
   try {
     const id = Number(req.params.id);
-    const data = requireFields(insertProductSchema.partial().parse(req.body));
+    const data = requireFields(insertProductSchema.omit({ slug: true }).partial().parse(req.body));
     const [row] = await db.update(products).set(data).where(eq(products.id, id)).returning();
     if (!row) return res.status(404).json({ error: "Product niet gevonden" });
     res.json(row);

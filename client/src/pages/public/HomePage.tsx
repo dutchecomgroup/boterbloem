@@ -9,12 +9,12 @@ import { imageSrc } from "../../lib/images";
 import { BotanicalPattern } from "../../components/ornaments/BotanicalPattern";
 import { SierDivider } from "../../components/ornaments/SierDivider";
 import { BotanicalCorner } from "../../components/ornaments/BotanicalCorner";
-import { SectionDivider } from "../../components/ornaments/SectionDivider";
+import { SalieBand } from "../../components/ornaments/SalieBand";
 import { Reveal } from "../../components/Reveal";
 import { Marquee } from "../../components/Marquee";
 import { MagneticLink } from "../../components/MagneticLink";
 import { type ProcessStep } from "../../components/ProcessStory";
-import { KORTE_STAPPEN, stapFotos } from "../../content/werkwijze";
+import { naarWeergave } from "../../content/werkwijze";
 import type { GalerijAntwoord } from "../../lib/galerij";
 import { ProcessStrip } from "../../components/ProcessStrip";
 import { HeroCollage } from "../../components/public/HeroCollage";
@@ -47,6 +47,7 @@ interface SpotlightItem {
 
 export default function HomePage() {
   const { data: settings } = usePublicSettings();
+  const t = settings?.paginaHome;
   const hero = settings?.hero;
   const { data: reviews } = useQuery({
     queryKey: ["public", "reviews"],
@@ -129,19 +130,14 @@ export default function HomePage() {
       }));
 
   /**
-   * De vijf stappen komen uit `content/werkwijze.ts` — haar eigen tekst, en dezelfde bron als
-   * de uitgebreide versie op `/werkwijze`. Hier stond tot 27-08 door ons geschreven tekst met
-   * stockfoto's ("Jij geniet van het moment terwijl iedere gast zegt: wow, kijk dat").
+   * De korte versie van haar werkwijze, uit de instellingen. Dezelfde bron als de uitgebreide
+   * versie op `/werkwijze`, en te bewerken op `/admin/teksten`. Hier stond tot 27-08 door ons
+   * geschreven tekst met stockfoto's ("Jij geniet van het moment terwijl iedere gast zegt: wow").
    */
-  const processSteps: ProcessStep[] = useMemo(() => {
-    const fotos = stapFotos(KORTE_STAPPEN, items);
-    return KORTE_STAPPEN.map((stap, i) => ({
-      n: stap.n,
-      title: stap.title,
-      body: stap.body,
-      imageSrc: fotos[i] ?? "",
-    }));
-  }, [items]);
+  const processSteps: ProcessStep[] = useMemo(
+    () => naarWeergave(settings?.werkwijze?.kort ?? [], items),
+    [items, settings],
+  );
 
   return (
     <>
@@ -151,6 +147,8 @@ export default function HomePage() {
         tagline={hero?.tagline}
         ctaLabel={hero?.ctaLabel}
         ctaHref={hero?.ctaHref}
+        bovenschrift={hero?.bovenschrift}
+        tweedeKnop={hero?.tweedeKnop}
       />
 
       {/* ========== MARQUEE ========== */}
@@ -164,8 +162,8 @@ export default function HomePage() {
         <BotanicalPattern opacity={0.04} />
         <div className="container-tight relative">
           <div className="text-center mb-10 sm:mb-16">
-            <div className="tag mb-3">Wat we maken</div>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl">Sweet &amp; grazing tables</h2>
+            <div className="tag mb-3">{t?.aanbodTag}</div>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl">{t?.aanbodTitel}</h2>
             <div className="mt-6"><SierDivider /></div>
           </div>
           <div className="grid md:grid-cols-3 gap-6">
@@ -207,22 +205,23 @@ export default function HomePage() {
         </div>
       </Reveal>
 
-      <SectionDivider color="fill-linen" variant="scallop" />
-
-      {/* ========== ONS WERK — de foto's, groot ========== */}
-      <Reveal as="section" className="relative section-y bg-linen overflow-hidden">
+      {/* ========== ONS WERK — de foto's, groot ==========
+           Zelfde zandvlak als "Wat we maken" hierboven, en bewust géén scheiding ertussen: het
+           aanbod en het werk dat erbij hoort lezen als één hoofdstuk. De golf die hier stond was
+           een derde kleur op de naad van twee vlakken die nu gewoon doorlopen. */}
+      <Reveal as="section" className="relative section-y bg-section-sand overflow-hidden !pt-0">
         <BotanicalPattern opacity={0.04} />
         <div className="container-tight relative">
           <div className="flex items-end justify-between mb-8 sm:mb-12">
             <div>
-              <div className="tag mb-3">Onze creaties</div>
-              <h2 className="text-3xl sm:text-4xl md:text-5xl">Uitgelicht werk</h2>
+              <div className="tag mb-3">{t?.werkTag}</div>
+              <h2 className="text-3xl sm:text-4xl md:text-5xl">{t?.werkTitel}</h2>
             </div>
             <Link
               href="/galerij"
               className="hidden md:inline-flex items-center gap-2 text-sm uppercase tracking-widest text-charcoal/60 hover:text-sage-dark"
             >
-              Alle creaties <ArrowRight size={16} />
+              {t?.werkLink} <ArrowRight size={16} />
             </Link>
           </div>
           {/*
@@ -269,24 +268,26 @@ export default function HomePage() {
         </div>
       </Reveal>
 
+      {/* De band alleen als er daarna ook een linnen blok komt. Zonder stappen en zonder reviews
+          stond hij direct op de band boven het slotblok: twee groene stroken op elkaar. */}
+      {(processSteps.length > 0 || (reviews?.length ?? 0) > 0) && <SalieBand />}
+
       {/* ========== ZO GAAT HET ==========
            Eén strip in plaats van het scroll-verhaal: dat kostte 260vh voor vier zinnen.
            De uitgebreide versie (`ProcessStory`) past beter op /over. */}
-      <ProcessStrip steps={processSteps} />
-
-      <SectionDivider color="fill-sand" variant="wave" flip />
+      <ProcessStrip steps={processSteps} tag={t?.procesTag} titel={t?.procesTitel} link={t?.procesLink} />
 
       {/* ========== REVIEWS ========== */}
       {/* Nul gepubliceerde reviews = geen blok. Een leeg reviewblok is slechter dan geen. */}
       {(reviews?.length ?? 0) > 0 && (
-      <Reveal as="section" className="relative section-y bg-section-blush overflow-hidden" staggerChildren={0.12}>
+      <Reveal as="section" className={`relative section-y bg-linen overflow-hidden ${processSteps.length > 0 ? "!pt-0" : ""}`} staggerChildren={0.12}>
         <BotanicalPattern opacity={0.05} />
         <BotanicalCorner position="tl" color="text-sage/30" />
         <BotanicalCorner position="br" color="text-sage/30" />
         <div className="container-tight relative">
           <div className="text-center mb-10 sm:mb-14">
-            <div className="tag mb-3">Klanten over ons</div>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl">Wat klanten vertellen</h2>
+            <div className="tag mb-3">{t?.reviewsTag}</div>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl">{t?.reviewsTitel}</h2>
             <div className="mt-6"><SierDivider /></div>
           </div>
           <div className="grid md:grid-cols-3 gap-5 sm:gap-6">
@@ -311,7 +312,11 @@ export default function HomePage() {
       </Reveal>
       )}
 
-      {/* ========== CTA STRIP ========== */}
+      <SalieBand />
+
+      {/* ========== CTA STRIP ==========
+           Loopt door in de voettekst: allebei charcoal, en de marge die daar tussen zat liet een
+           witte streep zien tussen twee zwarte vlakken. */}
       <Reveal as="section" className="relative section-y bg-charcoal text-linen overflow-hidden">
         {/* Beeld onder een dikke charcoal-wassing: sfeer zonder het contrast van de tekst aan
             te tasten. Zonder foto blijft het gewoon het vlak dat er stond. */}
@@ -331,12 +336,10 @@ export default function HomePage() {
         <BotanicalPattern opacity={0.06} className="text-linen" />
         <div className="container-narrow relative text-center">
           <SierDivider className="!text-sage/60" />
-          <div className="script-accent text-3xl sm:text-4xl mt-6 mb-2">Een idee?</div>
-          <h2 className="text-linen text-3xl sm:text-4xl md:text-5xl mb-6">Laten we het bespreken</h2>
-          <p className="text-linen/70 mb-8 leading-relaxed text-sm sm:text-base">
-            Of het nu een bruiloft, verjaardag of een doopfeest is: vertel ons over jouw moment en we ontwerpen iets unieks.
-          </p>
-          <MagneticLink href="/contact" className="btn-sage">Stuur een bericht</MagneticLink>
+          <div className="script-accent text-3xl sm:text-4xl mt-6 mb-2">{t?.slotAccent}</div>
+          <h2 className="text-linen text-3xl sm:text-4xl md:text-5xl mb-6">{t?.slotTitel}</h2>
+          <p className="text-linen/70 mb-8 leading-relaxed text-sm sm:text-base">{t?.slotTekst}</p>
+          <MagneticLink href="/contact" className="btn-sage">{t?.slotKnop}</MagneticLink>
           <div className="mt-8 sm:mt-10"><SierDivider className="!text-sage/60" /></div>
         </div>
       </Reveal>

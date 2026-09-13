@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { LayoutDashboard, CalendarDays, CalendarCheck, Users, Package, Layers, Star, Image as ImageIcon, Inbox, Settings, LogOut, Euro } from "lucide-react";
+import { LayoutDashboard, CalendarDays, CalendarCheck, Users, Package, Layers, Star, Image as ImageIcon, Inbox, Settings, LogOut, Euro, Type } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { cn } from "../../lib/utils";
 
@@ -41,6 +41,7 @@ const GROEPEN: Array<{ kop: string; items: NavItem[] }> = [
       { href: "/admin/producten", label: "Taart-prijslijst", icon: Package },
       { href: "/admin/galerij", label: "Galerij", icon: ImageIcon },
       { href: "/admin/reviews", label: "Reviews", icon: Star },
+      { href: "/admin/teksten", label: "Teksten", icon: Type },
       { href: "/admin/instellingen", label: "Instellingen", icon: Settings },
     ],
   },

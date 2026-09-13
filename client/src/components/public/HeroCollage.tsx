@@ -107,12 +107,21 @@ export function HeroCollage({
   tagline,
   ctaLabel,
   ctaHref,
+  bovenschrift,
+  tweedeKnop,
 }: {
   /** De eerste drie worden getoond; minder mag ook. */
   fotos: GalleryItem[];
+  /*
+   * Alle teksten komen uit `site_settings.hero` en zijn daar al ingevuld: de publieke route parst
+   * door het schema en vult de standaardwaarden aan. De terugvalteksten die hier stonden waren
+   * een tweede kopie van dezelfde zinnen, en die liepen al uit elkaar met die in het schema.
+   */
   tagline?: string;
   ctaLabel?: string;
   ctaHref?: string;
+  bovenschrift?: string;
+  tweedeKnop?: string;
 }) {
   const sectieRef = useRef<HTMLElement>(null);
   const rustig = usePrefersReducedMotion();
@@ -137,9 +146,11 @@ export function HeroCollage({
       <FloralFrame className="absolute -top-8 -right-8 h-32 w-32 sm:h-56 sm:w-56 md:-top-12 md:-right-12 md:h-80 md:w-80" color="text-sage/20" />
       <FloralFrame className="absolute -bottom-8 -left-8 h-24 w-24 rotate-180 sm:h-40 sm:w-40 md:-bottom-12 md:-left-12 md:h-64 md:w-64" color="text-blush" />
 
-      <div className="container-tight relative pb-14 pt-10 sm:pb-20 sm:pt-16 md:pt-20">
+      {/* De bovenmarge draagt de zwevende navigatie: die staat `fixed` en neemt geen ruimte meer
+          in, zodat dit vlak eráchter doorloopt en er boven de vouw geen naad meer zit. */}
+      <div className="container-tight relative pb-14 pt-24 sm:pb-20 sm:pt-32 md:pt-40">
         <div className="tag mb-5 text-center sm:mb-7 lg:text-left">
-          Sweet tables · Grazing tables · Taarten
+          {bovenschrift}
         </div>
 
         <div className="text-center lg:max-w-4xl lg:text-left">
@@ -153,16 +164,15 @@ export function HeroCollage({
             </Reveal>
             <Reveal delay={800}>
               <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-charcoal/75 sm:text-lg lg:mx-0">
-                {tagline ??
-                  "Luxe sweet tables, grazing tables en taarten op maat, met liefde, stijl en oog voor detail."}
+                {tagline}
               </p>
             </Reveal>
             <Reveal delay={950} className="mt-7 flex flex-wrap justify-center gap-3 sm:gap-4 lg:justify-start">
               <MagneticLink href={ctaHref ?? "/contact"} className="btn-sage">
-                {ctaLabel ?? "Offerte aanvragen"}
+                {ctaLabel}
               </MagneticLink>
               <Link href="/galerij" className="btn-outline">
-                Bekijk de galerij
+                {tweedeKnop}
               </Link>
             </Reveal>
           </div>

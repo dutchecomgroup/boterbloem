@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Link, useParams } from "wouter";
 import { ArrowLeft, ArrowRight, X } from "lucide-react";
 import { api } from "../../lib/api";
+import { usePublicSettings } from "../../hooks/usePublicSettings";
 import type { GalleryItem } from "@shared/schema";
 import { imageSrc } from "../../lib/images";
 import type { GalerijAntwoord, PubliekeGelegenheid } from "../../lib/galerij";
@@ -72,6 +73,7 @@ function NietGevonden() {
 /* ------------------------------------------------------------------ */
 
 function OverzichtPagina() {
+  const t = usePublicSettings().data?.paginaGalerij;
   const { data, isLoading } = useQuery({
     queryKey: ["public", "gallery"],
     queryFn: () => api.get<GalerijAntwoord>("/api/public/gallery"),
@@ -82,9 +84,9 @@ function OverzichtPagina() {
   return (
     <>
       <Kop
-        tag="Galerij"
-        titel="Ons werk"
-        tekst="Kies een gelegenheid en bekijk wat we eerder maakten. Zo krijg je een idee van wat er mogelijk is, en van de sfeer die erbij past."
+        tag={t?.tag ?? ""}
+        titel={t?.titel ?? ""}
+        tekst={t?.intro}
       />
 
       <section className="relative bg-section-sand section-y overflow-hidden">
@@ -111,6 +113,7 @@ function OverzichtPagina() {
 /* ------------------------------------------------------------------ */
 
 function GelegenheidPagina({ slug }: { slug: string }) {
+  const t = usePublicSettings().data?.paginaGalerij;
   const [lightbox, setLightbox] = useState<{ items: GalleryItem[]; index: number } | null>(null);
   const { cat, isLoading } = useGelegenheid(slug);
 
@@ -192,10 +195,8 @@ function GelegenheidPagina({ slug }: { slug: string }) {
 
           <div className="text-center pt-4">
             <SierDivider />
-            <p className="mt-8 text-charcoal/70 text-sm sm:text-base">
-              Iets gezien dat past bij jouw feest?
-            </p>
-            <Link href="/contact" className="btn-sage mt-5">Vraag een offerte aan</Link>
+            <p className="mt-8 text-charcoal/70 text-sm sm:text-base">{t?.slotVraag}</p>
+            <Link href="/contact" className="btn-sage mt-5">{t?.slotKnop}</Link>
           </div>
         </div>
       </section>
@@ -217,6 +218,7 @@ function GelegenheidPagina({ slug }: { slug: string }) {
 /* ------------------------------------------------------------------ */
 
 function EventPagina({ slug, albumSlug }: { slug: string; albumSlug: string }) {
+  const t = usePublicSettings().data?.paginaGalerij;
   const [lightbox, setLightbox] = useState<{ items: GalleryItem[]; index: number } | null>(null);
   const { cat, isLoading } = useGelegenheid(slug);
 
@@ -244,10 +246,8 @@ function EventPagina({ slug, albumSlug }: { slug: string; albumSlug: string }) {
 
           <div className="pt-14 text-center">
             <SierDivider />
-            <p className="mt-8 text-sm text-charcoal/75 sm:text-base">
-              Iets gezien dat past bij jouw feest?
-            </p>
-            <Link href="/contact" className="btn-sage mt-5">Vraag een offerte aan</Link>
+            <p className="mt-8 text-sm text-charcoal/75 sm:text-base">{t?.slotVraag}</p>
+            <Link href="/contact" className="btn-sage mt-5">{t?.slotKnop}</Link>
           </div>
         </div>
       </section>

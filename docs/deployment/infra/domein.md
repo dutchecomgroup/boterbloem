@@ -100,5 +100,6 @@ dat de reverse proxy en het certificaat er zijn, en als ze blijven staan is dat 
 | `ufw allow 6778/tcp` | UFW op de VPS | zonder proxy is dit de enige weg naar de site. Met 443 is het een tweede deur die niets toevoegt |
 | `COOKIE_SECURE=false` | `.env` op de VPS | `NODE_ENV=production` is wat de gebouwde site serveert, maar zet ook `secure` op de sessiecookie — en die bewaart een browser niet over gewoon `http`. Zonder deze sleutel kan zij niet inloggen met een kloppend wachtwoord |
 | `Disallow: /` | `client/public/robots.txt` | de content is nog niet af; wat een zoekmachine nu ophaalt blijft daarna in de resultaten staan |
+| relatief `og:image` | `client/index.html` | er is nog geen domein. WhatsApp en de meeste andere diensten negeren een relatief adres, dus bij het domein moet hier `https://<domein>/og-atelier-boterbloem.jpg` komen te staan (13-09) |
 
 De UFW-regel draagt zijn eigen reden als comment, dus `ufw status` vertelt het je.

@@ -127,26 +127,44 @@
    * daardoor één doorlopend wit veld met een vage zweem in het midden -- de verlopen hieven
    * zichzelf op. In de woorden van de gebruiker: *"Bijna alles is WIT op de hele website."*
    *
-   * Regel bij het gebruik: **twee aangrenzende secties krijgen nooit hetzelfde vlak.** Dat is
-   * wat een pagina ritme geeft; een verloop kan dat niet als hij aan de rand toch weer wit is.
+   * Regel bij het gebruik: **twee aangrenzende secties krijgen nooit hetzelfde vlak** -- tenzij
+   * er een `SalieBand` tussen staat. Die band ís de scheiding, en dan mag hetzelfde vlak
+   * terugkomen. Zo lopen secties die bij elkaar horen door in plaats van te wisselen.
    *
-   * Contrast van charcoal (#2B2926) op elk vlak, gemeten: linen 13,3 · zand 11,8 · blush 10,6 ·
+   * 🔴 **De lichte vlakken moeten ver genoeg uit elkaar liggen.** Zand stond op `#EDE7DE` en
+   * linen op `#F7F5F0`: tien tot achttien punten per kanaal, en dat zie je op een scherm niet
+   * als ritme maar als vuil. Het hero-verloop eindigde bovendien op exact diezelfde zandkleur,
+   * dus daar was de overgang letterlijk nul. In de woorden van de gebruiker: *"dit verschil in
+   * kleur is te klein"*. Zand is daarom verdiept naar `#E4DACA` -- ruim het dubbele verschil,
+   * en nog steeds de warme neutrale uit haar moodboard.
+   *
+   * Contrast van charcoal (#2B2926) op elk vlak, gemeten: linen 13,3 · zand 10,5 · blush 10,6 ·
    * salie-licht 11,2. Linen-tekst op salie-diep haalt 5,04 en mag dus lopende tekst dragen.
    * --------------------------------------------------------------------- */
   .bg-section-linen {
     background-color: #F7F5F0;
   }
   .bg-section-sand {
-    background-color: #EDE7DE;
+    background-color: #E4DACA;
   }
   /* Blush verzacht: puur #F5D9DE over een hele sectie leest als rózé, en het moodboard is
      neutraal mét blush-accenten, niet andersom. */
   .bg-section-blush {
     background-color: #F7EAEC;
   }
-  /* De enige die een verloop blijft, en wel een die érgens anders eindigt dan hij begon. */
+  /*
+   * De enige die een verloop blijft, en wel een die érgens anders eindigt dan hij begon.
+   *
+   * **Naar beneden en niet diagonaal.** Op 135° had de bovenrand links een andere kleur dan
+   * rechts, en precies daar ligt de zwevende navigatie overheen -- dan is er geen enkele kleur
+   * die over de volle breedte aansluit. Verticaal is de bovenrand één kleur en werkt het verloop
+   * naar de band eronder toe.
+   *
+   * Twee stops, geen drie: de derde was `#EDE7DE` en dat was exact de oude zandkleur, dus het
+   * verloop liep dood in het vlak van de volgende sectie.
+   */
   .bg-section-warm {
-    background: linear-gradient(135deg, #F9EFEC 0%, #F4EDE4 55%, #EDE7DE 100%);
+    background: linear-gradient(180deg, #F9EFEC 0%, #F2E8DE 100%);
   }
   .bg-section-sage {
     background-color: #DDE4D6;

@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   siteSettingSchemas,
+  publiekeSiteSettingSchemas,
   isSiteSettingKey,
   insertContactRequestSchema,
   insertGalleryItemSchema,
@@ -13,7 +14,11 @@ describe("site-instellingen: sleutel → schema", () => {
   it("kent precies de geregistreerde sleutels", () => {
     // Deze test is er om te merken dat de lijst verandert. Nieuwe instelling toegevoegd?
     // Voeg hem hier bij én controleer of de settings-route hem accepteert.
-    expect(Object.keys(siteSettingSchemas).sort()).toEqual(["about", "btw", "contact", "hero", "levertijden"]);
+    expect(Object.keys(siteSettingSchemas).sort()).toEqual([
+      "about", "btw", "contact", "hero", "levertijden",
+      "paginaAanbod", "paginaContact", "paginaGalerij", "paginaHome", "paginaWerkwijze",
+      "voettekst", "werkwijze",
+    ]);
   });
 
   it("herkent een geldige sleutel", () => {
@@ -49,6 +54,40 @@ describe("site-instellingen: sleutel → schema", () => {
     const r = siteSettingSchemas.hero.parse({});
     expect(r).not.toHaveProperty("title");
     expect(r).not.toHaveProperty("imageFilename");
+  });
+});
+
+/**
+ * Deze groep bewaakt een lek dat er echt geweest is: `GET /api/public/settings` stuurde alle
+ * rijen door, dus wie de homepage opvroeg kreeg `levertijden.agendaFeedToken` mee — en daarmee
+ * toegang tot een agendafeed met alle boekingen en klantnamen erin.
+ */
+describe("publieke instellingen: wat een bezoeker mag zien", () => {
+  it("kent precies de sleutels die publiek zijn", () => {
+    // `btw` hoort hier bewust niet bij: die waarden staan alleen op de offerte.
+    expect(Object.keys(publiekeSiteSettingSchemas).sort()).toEqual([
+      "about", "contact", "hero", "levertijden",
+      "paginaAanbod", "paginaContact", "paginaGalerij", "paginaHome", "paginaWerkwijze",
+      "voettekst", "werkwijze",
+    ]);
+  });
+
+  it("laat het agenda-token er niet doorheen", () => {
+    const r = publiekeSiteSettingSchemas.levertijden.parse({
+      standaardDagen: 10,
+      tekst: "Vraag op tijd aan.",
+      agendaFeedToken: "geheim-token-dat-alle-boekingen-ontsluit",
+    });
+    expect(r).not.toHaveProperty("agendaFeedToken");
+    expect(r.standaardDagen).toBe(10);
+  });
+
+  it("vult standaardwaarden in als er nog niets is opgeslagen", () => {
+    // De route parst elke sleutel door zijn schema, ook als de rij ontbreekt. Daarom hoeven de
+    // publieke pagina's geen eigen terugvalteksten meer te hebben.
+    const r = publiekeSiteSettingSchemas.levertijden.parse({});
+    expect(r.standaardDagen).toBe(10);
+    expect(r.tekst).not.toBe("");
   });
 });
 
@@ -182,9 +221,15 @@ describe("reviews", () => {
 });
 
 describe("galerij-albums", () => {
-  it("eist een titel en een slug", () => {
+  it("eist een titel", () => {
     expect(insertGalleryAlbumSchema.safeParse({ title: "", slug: "x" }).success).toBe(false);
-    expect(insertGalleryAlbumSchema.safeParse({ title: "Pastel table", slug: "" }).success).toBe(false);
     expect(insertGalleryAlbumSchema.safeParse({ title: "Pastel table", slug: "pastel-table" }).success).toBe(true);
+  });
+
+  // Sinds 13-09 maakt de server de slug uit de titel (server/lib/slug.ts). Een ontbrekende of lege
+  // slug is dus geen fout meer: dan leidt de route hem af, en telt hij door bij een dubbele.
+  it("eist geen slug meer: die maakt de server", () => {
+    expect(insertGalleryAlbumSchema.safeParse({ title: "Pastel table" }).success).toBe(true);
+    expect(insertGalleryAlbumSchema.safeParse({ title: "Pastel table", slug: "" }).success).toBe(true);
   });
 });

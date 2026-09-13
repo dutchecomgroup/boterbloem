@@ -3,8 +3,10 @@ import { useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Menu, X, Instagram } from "lucide-react";
 import { usePublicSettings } from "../../hooks/usePublicSettings";
+import { useGescrolld } from "../../hooks/useGescrolld";
 import { cn, whatsappLink } from "../../lib/utils";
-import { BotanicalPattern } from "../ornaments/BotanicalPattern";
+import { FloralFrame } from "../ornaments/FloralFrame";
+import { SalieBand } from "../ornaments/SalieBand";
 import { SierDivider } from "../ornaments/SierDivider";
 
 const NAV = [
@@ -21,14 +23,48 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   const { data: settings } = usePublicSettings();
   const contact = settings?.contact;
+  const voet = settings?.voettekst;
+  const gescrold = useGescrolld();
 
   return (
     <div className="min-h-screen flex flex-col bg-linen">
-      <header className="sticky top-0 z-40 bg-linen/90 backdrop-blur-md border-b border-charcoal/5">
+      {/*
+        De kopbalk zweeft over de pagina en is boven aan de pagina zelf onzichtbaar.
+
+        Hij had altijd een eigen linen-vlak met een randje eronder, en dat botste op de sectie
+        daaronder: die is warm op de homepage, blush op de galerij en zand op de contactpagina.
+        Boven aan elke pagina stond daardoor een lichte streep waar het ene vlak hard overging in
+        het andere -- drie kleuren over elkaar in de bovenste honderd pixels. Eén vaste kleur voor
+        de balk lost dat niet op, want er is er geen die bij alle drie past.
+
+        Nu loopt de sectie gewoon door áchter de navigatie: boven de vouw is er één doorlopend
+        vlak, en de enige lijn die het onderbreekt is de groene band -- en die is bedoeld.
+
+        `fixed` en niet `sticky`: een sticky balk neemt zijn eigen hoogte in de bladspiegel in, en
+        dan begint de sectie eronder in plaats van erachter. De ruimte voor de navigatie zit
+        daarom in de bovenmarge van de eerste sectie van elke pagina (`PageHeader`, `HeroCollage`).
+
+        Zodra er inhoud onder de balk door schuift krijgt hij wél een vlak: dan moet de tekst van
+        de navigatie leesbaar blijven boven op foto's en donkere vlakken.
+      */}
+      <header
+        className={cn(
+          "fixed inset-x-0 top-0 z-40 transition-colors duration-300",
+          gescrold
+            ? "border-b border-charcoal/5 bg-linen/90 backdrop-blur-md"
+            : "border-b border-transparent bg-transparent",
+        )}
+      >
         <div className="container-tight flex items-center justify-between h-16 sm:h-20">
-          <Link href="/" className="flex items-baseline gap-1 sm:gap-2 group">
-            <span className="font-display text-xl sm:text-2xl tracking-tight">Atelier</span>
-            <span className="script-accent text-2xl sm:text-3xl leading-none -mt-1">Boterbloem</span>
+          {/* De bloem uit haar logo naast het getypte woordmerk. Het volledige logo past niet in
+              een balk van 64 px: het woordmerk zou een paar pixels hoog worden. `alt` leeg, want
+              de naam staat er als tekst naast -- een schermlezer hoort hem anders twee keer. */}
+          <Link href="/" className="flex items-center gap-2 sm:gap-2.5 group">
+            <img src="/merk/beeldmerk.png" alt="" aria-hidden width={32} height={32} className="h-7 w-7 sm:h-8 sm:w-8" />
+            <span className="flex items-baseline gap-1 sm:gap-2">
+              <span className="font-display text-xl sm:text-2xl tracking-tight">Atelier</span>
+              <span className="script-accent text-2xl sm:text-3xl leading-none -mt-1">Boterbloem</span>
+            </span>
           </Link>
           <nav className="hidden md:flex items-center gap-8">
             {NAV.map((item) => {
@@ -143,33 +179,84 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
 
       <main className="flex-1">{children}</main>
 
-      <footer className="relative bg-charcoal text-linen mt-16 sm:mt-24 overflow-hidden">
-        <BotanicalPattern opacity={0.06} className="text-linen" />
-        <div className="container-tight relative py-10 sm:py-16 grid gap-8 sm:gap-12 md:grid-cols-3">
+      {/* Dezelfde band die op de homepage de secties scheidt, ook hier: de voettekst is zand en
+          het blok erboven meestal charcoal, en dat is een kleurwissel. De regel geldt overal --
+          een vlak wisselt alleen waar de band staat. In de layout en niet per pagina, zodat elke
+          pagina op dezelfde manier afsluit. */}
+      <SalieBand />
+
+      {/*
+        De voettekst is licht, niet charcoal.
+
+        Hij stond op hetzelfde vlak als de slotsectie erboven, en las daardoor als een
+        verlengstuk van die oproep in plaats van als afsluiting van de pagina -- twee donkere
+        blokken op elkaar, met alleen een marge ertussen die als witte streep doorschemerde.
+
+        Zand en niet linen: de pagina opent warm en sluit nu warm, en de voettekst houdt gewicht
+        in plaats van weg te zweven. Het is bovendien een vlak dat al in het ritme zit, dus er
+        komt geen kleur bij.
+
+        🔴 Contrast, gemeten op zand (#E4DACA): charcoal haalt 10,5:1, maar `sage-deep` blijft
+        op 4,08:1 steken -- onder de AA-eis van 4,5 voor kleine tekst. De kopjes staan daarom in
+        charcoal en niet in groen. Het groen zit waar het geen tekst hoeft te dragen: in het
+        motief en in de sierlijn.
+      */}
+      <footer className="relative bg-section-sand text-charcoal overflow-hidden">
+        {/*
+          De bloemtak uit de hero, niet het herhalende tegelpatroon.
+
+          Dat patroon vulde het hele vlak met kleine takjes en las als behang: op 6% zag je het
+          niet en op 40% ging het met de tekst concurreren. Deze tak is één sierlijke vorm die de
+          hoek draagt -- hetzelfde ornament dat boven aan de pagina staat, zodat de voettekst als
+          tegenhanger van de kop leest.
+
+          Twee stuks, tegenover elkaar en de tweede gespiegeld, zodat ze de tekstkolommen
+          omlijsten in plaats van er middenin te vallen.
+        */}
+        <FloralFrame
+          className="absolute -left-10 -bottom-10 h-52 w-52 sm:h-72 sm:w-72"
+          color="text-sage-dark/45"
+        />
+        <FloralFrame
+          className="absolute -right-12 -top-12 h-44 w-44 rotate-180 sm:h-64 sm:w-64"
+          color="text-sage-dark/35"
+        />
+        <div className="container-tight relative py-8 sm:py-10 grid gap-6 sm:gap-10 md:grid-cols-3">
           <div>
-            <div className="font-display text-2xl">Atelier <span className="script-accent text-3xl">Boterbloem</span></div>
-            <p className="mt-4 text-linen/70 text-sm leading-relaxed max-w-xs">
-              Handgemaakte sweet tables, grazing tables en taarten voor jouw mooiste momenten.
-            </p>
+            {/*
+              De bloem met de getypte naam, net als in de kopbalk -- niet het volledige logo.
+
+              Dat stond er eerst wel, maar het woordmerk in het logobestand is klein ten opzichte van
+              de bloem: op voettekstmaat werd "Atelier Boterbloem" zo'n 9 px hoog en nauwelijks
+              leesbaar. Groter maken kon niet, want dan werd de voettekst weer te hoog. Het volledige
+              logo staat waar het groot genoeg is: op /over en in de deel-afbeelding.
+
+              Kleur en niet het negatief: de voettekst is zand, en het negatief is linnen.
+            */}
+            <div className="flex items-center gap-2.5">
+              <img src="/merk/beeldmerk.png" alt="" aria-hidden width={44} height={44} className="h-10 w-10 sm:h-11 sm:w-11" />
+              <div className="font-display text-2xl">Atelier <span className="script-accent text-3xl">Boterbloem</span></div>
+            </div>
+            <p className="mt-4 text-charcoal/70 text-sm leading-relaxed max-w-xs">{voet?.payoff}</p>
           </div>
           <div>
-            <h4 className="text-xs uppercase tracking-widest text-sage mb-4">Contact</h4>
-            <ul className="space-y-2 text-sm text-linen/80">
-              {contact?.email && <li><a href={`mailto:${contact.email}`} className="hover:text-sage">{contact.email}</a></li>}
-              {contact?.phone && <li><a href={`tel:${contact.phone}`} className="hover:text-sage">{contact.phone}</a></li>}
+            <h4 className="text-xs uppercase tracking-widest text-charcoal/70 mb-4">{voet?.contactKop}</h4>
+            <ul className="space-y-2 text-sm text-charcoal/80">
+              {contact?.email && <li><a href={`mailto:${contact.email}`} className="hover:text-charcoal hover:underline">{contact.email}</a></li>}
+              {contact?.phone && <li><a href={`tel:${contact.phone}`} className="hover:text-charcoal hover:underline">{contact.phone}</a></li>}
               {whatsappLink(contact?.whatsapp) && (
-                <li><a href={whatsappLink(contact?.whatsapp)!} target="_blank" rel="noreferrer" className="hover:text-sage">WhatsApp</a></li>
+                <li><a href={whatsappLink(contact?.whatsapp)!} target="_blank" rel="noreferrer" className="hover:text-charcoal hover:underline">WhatsApp</a></li>
               )}
               {contact?.address && <li>{contact.address}{contact.city ? `, ${contact.city}` : ""}</li>}
             </ul>
           </div>
           <div>
-            <h4 className="text-xs uppercase tracking-widest text-sage mb-4">Volg ons</h4>
+            <h4 className="text-xs uppercase tracking-widest text-charcoal/70 mb-4">{voet?.volgKop}</h4>
             <a
               href={contact?.instagram ?? "https://instagram.com/atelierboterbloem"}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-2 text-sm hover:text-sage"
+              className="inline-flex items-center gap-2 text-sm text-charcoal/80 hover:text-charcoal hover:underline"
             >
               <Instagram size={18} /> @atelierboterbloem
             </a>
@@ -177,9 +264,9 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
         </div>
         <div className="relative">
           <div className="container-tight">
-            <SierDivider className="!text-sage/40 py-4" />
+            <SierDivider className="!text-sage-dark/70 py-2" />
           </div>
-          <div className="py-6 text-center text-xs text-linen/40 relative">
+          <div className="pb-5 pt-3 text-center text-xs text-charcoal/55 relative">
             © {new Date().getFullYear()} Atelier Boterbloem. Alle rechten voorbehouden.
           </div>
         </div>

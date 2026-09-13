@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState, type ReactNode } from "react";
-import { Copy, Check, RefreshCw, ExternalLink, Settings } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Copy, Check, RefreshCw, Settings } from "lucide-react";
+import { Blok, Veld } from "../../components/admin/ui/Instelblok";
 import { PageKop } from "../../components/admin/ui/PageKop";
 import { api } from "../../lib/api";
 import { FotoKiezer } from "../../components/admin/FotoKiezer";
@@ -35,53 +36,6 @@ const KNOP_BESTEMMINGEN = [
 
 const ANDER_ADRES = "__ander__";
 
-/** Een sectie die zegt waar hij over gaat, met een link naar de pagina in kwestie. */
-function Blok({
-  titel,
-  uitleg,
-  bekijk,
-  children,
-}: {
-  titel: string;
-  uitleg?: string;
-  /** Pad op de publieke site, bijvoorbeeld `/over`. */
-  bekijk?: string;
-  children: ReactNode;
-}) {
-  return (
-    <section className="card">
-      <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h2 className="text-xl">{titel}</h2>
-          {uitleg && <p className="mt-1 text-sm text-charcoal/60">{uitleg}</p>}
-        </div>
-        {bekijk && (
-          <a
-            href={bekijk}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex shrink-0 items-center gap-1.5 text-xs uppercase tracking-widest text-sage-dark hover:underline"
-          >
-            Bekijk <ExternalLink size={13} />
-          </a>
-        )}
-      </div>
-      {children}
-    </section>
-  );
-}
-
-/** Label plus één regel uitleg eronder. De uitleg is waar het scherm zichzelf verklaart. */
-function Veld({ label, hint, children }: { label: string; hint?: string; children: ReactNode }) {
-  return (
-    <div>
-      <label className="label">{label}</label>
-      {children}
-      {hint && <p className="mt-1 text-xs text-charcoal/50">{hint}</p>}
-    </div>
-  );
-}
-
 export default function SettingsPage() {
   const qc = useQueryClient();
   const { data } = useQuery({
@@ -90,8 +44,10 @@ export default function SettingsPage() {
   });
 
   const [contact, setContact] = useState<ContactSettings>({});
-  const [hero, setHero] = useState<HeroSettings>({ tagline: "", ctaLabel: "", ctaHref: "/contact", fotoIds: [] });
-  const [about, setAbout] = useState<AboutSettings>({ heading: "", body: "" });
+  const [hero, setHero] = useState<HeroSettings>({
+    tagline: "", ctaLabel: "", ctaHref: "/contact", fotoIds: [], bovenschrift: "", tweedeKnop: "",
+  });
+  const [about, setAbout] = useState<AboutSettings>({ heading: "", body: "", citaat: "", citaatBron: "" });
   const [levertijden, setLevertijden] = useState<LevertijdenSettings>({
     standaardDagen: 10, tekst: "", agendaFeedToken: "",
   });
@@ -230,6 +186,14 @@ export default function SettingsPage() {
                   onChange={(e) => setHero({ ...hero, tagline: e.target.value })} />
               </Veld>
             </div>
+            <Veld label="Regeltje bovenaan" hint="Klein, in hoofdletters, boven de grote zin.">
+              <input className="input" value={hero.bovenschrift ?? ""}
+                onChange={(e) => setHero({ ...hero, bovenschrift: e.target.value })} />
+            </Veld>
+            <Veld label="Tekst op de tweede knop" hint="De lichte knop naar je galerij.">
+              <input className="input" value={hero.tweedeKnop ?? ""}
+                onChange={(e) => setHero({ ...hero, tweedeKnop: e.target.value })} />
+            </Veld>
             <Veld label="Tekst op de knop" hint='Bijvoorbeeld "Vraag offerte aan".'>
               <input className="input" value={hero.ctaLabel ?? ""}
                 onChange={(e) => setHero({ ...hero, ctaLabel: e.target.value })} />
@@ -301,6 +265,14 @@ export default function SettingsPage() {
                   onKies={(bestandsnaam) => setAbout({ ...about, imageFilename: bestandsnaam })}
                 />
               </div>
+            </Veld>
+            <Veld label="Citaat onder je verhaal" hint="Staat groot op het groene vlak.">
+              <input className="input" value={about.citaat ?? ""}
+                onChange={(e) => setAbout({ ...about, citaat: e.target.value })} />
+            </Veld>
+            <Veld label="Van wie het citaat is">
+              <input className="input" value={about.citaatBron ?? ""}
+                onChange={(e) => setAbout({ ...about, citaatBron: e.target.value })} />
             </Veld>
           </div>
         </Blok>

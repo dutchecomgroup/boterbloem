@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { api } from "../../lib/api";
 import { usePublicSettings } from "../../hooks/usePublicSettings";
 import type { GalerijAntwoord } from "../../lib/galerij";
-import { LANGE_STAPPEN, stapFotos } from "../../content/werkwijze";
+import { naarWeergave } from "../../content/werkwijze";
 import { ProcessStory, type ProcessStep } from "../../components/ProcessStory";
 import { PageHeader } from "../../components/PageHeader";
 import { SierDivider } from "../../components/ornaments/SierDivider";
@@ -34,22 +34,18 @@ import { Reveal } from "../../components/Reveal";
  */
 export default function WerkwijzePage() {
   const { data: settings } = usePublicSettings();
-  const levertijden = (settings as { levertijden?: { tekst?: string } } | undefined)?.levertijden;
+  const levertijden = settings?.levertijden;
+  const t = settings?.paginaWerkwijze;
 
   const { data: gallery } = useQuery({
     queryKey: ["public", "gallery"],
     queryFn: () => api.get<GalerijAntwoord>("/api/public/gallery"),
   });
 
-  const stappen: ProcessStep[] = useMemo(() => {
-    const fotos = stapFotos(LANGE_STAPPEN, gallery?.items ?? []);
-    return LANGE_STAPPEN.map((stap, i) => ({
-      n: stap.n,
-      title: stap.title,
-      body: stap.body,
-      imageSrc: fotos[i] ?? "",
-    }));
-  }, [gallery]);
+  const stappen: ProcessStep[] = useMemo(
+    () => naarWeergave(settings?.werkwijze?.lang ?? [], gallery?.items ?? []),
+    [gallery, settings],
+  );
 
   // Zonder foto's heeft het scroll-verhaal niets te tonen: de beeldkolom blijft dan leeg en de
   // stappen staan er verloren naast. Dan liever de tekst alleen, netjes gezet.
@@ -59,9 +55,9 @@ export default function WerkwijzePage() {
     <>
       <PageHeader
         achtergrond="bg-section-warm"
-        tag="Werkwijze"
-        titel="Zo werkt het"
-        tekst="Achter iedere tafel en iedere taart zit een heel proces: van het eerste berichtje tot het moment waarop alles klaarstaat. Dit is hoe dat gaat."
+        tag={t?.tag ?? ""}
+        titel={t?.titel ?? ""}
+        tekst={t?.intro}
       >
         <FloralFrame className="absolute -top-8 -right-8 h-32 w-32 sm:h-56 sm:w-56 md:-top-12 md:-right-12 md:h-72 md:w-72" color="text-sage/20" />
       </PageHeader>
@@ -91,21 +87,16 @@ export default function WerkwijzePage() {
         <BotanicalCorner position="tl" color="text-linen/25" />
         <BotanicalCorner position="br" color="text-linen/25" />
         <div className="container-narrow relative text-center">
-          <div className="tag mb-3">Op tijd aanvragen</div>
-          <h2 className="text-2xl sm:text-3xl">Wanneer moet je het vastleggen?</h2>
+          <div className="tag mb-3">{t?.levertijdTag}</div>
+          <h2 className="text-2xl sm:text-3xl">{t?.levertijdTitel}</h2>
           <p className="mx-auto mt-4 max-w-xl leading-relaxed text-charcoal/75">
-            {levertijden?.tekst ||
-              "Vraag je tafel het liefst een paar weken van tevoren aan. Voor een losse taart kan het vaak sneller, dus vraag gerust naar de mogelijkheden."}
+            {levertijden?.tekst}
           </p>
           <div className="mt-8">
             <SierDivider color="text-linen/50" />
           </div>
-          <p className="mt-8 text-sm text-charcoal/75 sm:text-base">
-            Weet je al wat je zoekt, of juist nog niet?
-          </p>
-          <Link href="/contact" className="btn-sage mt-5">
-            Offerte aanvragen
-          </Link>
+          <p className="mt-8 text-sm text-charcoal/75 sm:text-base">{t?.slotVraag}</p>
+          <Link href="/contact" className="btn-sage mt-5">{t?.slotKnop}</Link>
         </div>
       </section>
     </>

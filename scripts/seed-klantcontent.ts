@@ -8,6 +8,8 @@ import {
   packages,
   products,
   siteSettings,
+  werkwijzeSettingsSchema,
+  type WerkwijzeStapData,
 } from "../shared/schema.js";
 
 /**
@@ -416,6 +418,75 @@ async function zetInstellingen() {
   console.log("  ✓ hero-tagline uit haar huisstijl-moodboard");
 }
 
+/**
+ * Haar werkwijze, in haar eigen woorden.
+ *
+ * **Herkomst.** Eén geschreven artikel, *"Van eerste idee tot taart op tafel"*
+ * (`uploads/content/teksten/artikel-van-idee-tot-taart.pdf`). Dat kwam binnen als blog, maar een
+ * blog met één artikel is een leeg archief met een inhoudsopgave, en de tekst is een
+ * procesbeschrijving. Haar eigen moodboard zet `WERKWIJZE` al in de navigatie, met vijf stappen.
+ *
+ * Deze tekst stond tot nu toe in `client/src/content/werkwijze.ts` -- het enige stuk
+ * klantcontent dat alleen een ontwikkelaar kon wijzigen. Hij verhuist hiermee naar
+ * `site_settings.werkwijze`, waar zij hem op `/admin/teksten` kan bijwerken.
+ *
+ * **Wat er aan haar tekst veranderd is.** Zo min mogelijk. Waar ze "de taart" schrijft terwijl
+ * de zin net zo goed over een sweet table gaat, staat er iets breders: de site kopt sinds de
+ * meeting van 24-08 op tafels. Elke aanpassing staat in docs/klant/content-invulplan.md.
+ *
+ */
+/*
+ * De tekst zelf staat in shared/schema.ts, als standaardwaarde van `werkwijzeSettingsSchema`.
+ * Hier staat per stap alleen welke van haar foto's erbij hoort, als fragment uit de `altText`.
+ * Dat zoeken gebeurt eenmalig; wat er wordt opgeslagen is het id, en daarna kiest zij de foto
+ * zelf in het beheerscherm.
+ */
+const FOTO_KORT = ["monsterabladeren", "geel gestreept", "gezichtsvormige", "bovenaf", "taartdoos"];
+const FOTO_LANG = ["monsterabladeren", "bovenaf", "gezichtsvormige", "twee handen", "zwarte strikken", "taartdoos", "kaarslicht"];
+
+/**
+ * Haar werkwijze-tekst naar `site_settings.werkwijze`.
+ *
+ * **Raakt een bestaande rij niet aan.** Zodra zij de stappen zelf heeft bijgewerkt is dit script
+ * niet meer de bron -- dat was precies de fout die op 27-08 alle pakketcovers wiste. Alleen als
+ * de sleutel nog niet bestaat wordt hij gevuld.
+ */
+async function zetWerkwijze() {
+  const [bestaand] = await db
+    .select()
+    .from(siteSettings)
+    .where(eq(siteSettings.key, "werkwijze"))
+    .limit(1);
+
+  if (bestaand) {
+    console.log("  \u00b7 werkwijze staat er al -- niet aangeraakt");
+    return;
+  }
+
+  const fotos = await db.select().from(galleryItems);
+  const standaard = werkwijzeSettingsSchema.parse({});
+  const metFoto = (zoektermen: string[]) => (stap: WerkwijzeStapData, i: number) => {
+    const term = zoektermen[i]?.toLowerCase();
+    const treffer = term ? fotos.find((f) => (f.altText ?? "").toLowerCase().includes(term)) : undefined;
+    return { ...stap, fotoItemId: treffer?.id ?? null };
+  };
+
+  const waarde = {
+    kort: standaard.kort.map(metFoto(FOTO_KORT)),
+    lang: standaard.lang.map(metFoto(FOTO_LANG)),
+  };
+
+  const zonderFoto = [...waarde.kort, ...waarde.lang].filter((s) => !s.fotoItemId).length;
+
+  if (!dryRun) {
+    await db.insert(siteSettings).values({ key: "werkwijze", value: waarde });
+  }
+  console.log(
+    `  \u2713 werkwijze: ${waarde.kort.length} korte en ${waarde.lang.length} lange stappen` +
+      (zonderFoto ? ` (${zonderFoto} zonder foto)` : ""),
+  );
+}
+
 async function main() {
   console.log(`\nKlantcontent${dryRun ? " (dry run)" : ""}\n`);
 
@@ -433,6 +504,9 @@ async function main() {
 
   console.log("\nInstellingen");
   await zetInstellingen();
+
+  console.log("\nWerkwijze");
+  await zetWerkwijze();
 
   console.log(
     "\n⚠ Nog niet ingevuld, want niet aangeleverd:\n" +

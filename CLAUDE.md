@@ -103,7 +103,9 @@ foto's waren HEIC en zijn vooraf met `ffmpeg` omgezet.
 ## Routes
 
 Public (geen auth):
-- `GET /api/public/settings`
+- `GET /api/public/settings`: alleen wat in `publiekeSiteSettingSchemas` staat, door de
+  Zod-schema's geparst (dus met standaardwaarden). Stuurde tot 13-09 ook het agenda-token mee.
+  Moet een nieuw veld publiek, voeg het daar dan bewust toe (`.pick()`, niet `.omit()`)
 - `GET /api/public/gallery` + `GET /api/public/gallery/:slug` — alleen gepubliceerde
   gelegenheden, **ook in de platte `items`-lijst** (die filterde tot 27-08 niet mee, waardoor
   foto's uit een verborgen gelegenheid op de homepage konden staan)
@@ -113,10 +115,13 @@ Admin (sessie vereist):
 - `/api/admin/auth/{login,logout,me}` — sessie cookie `abb.sid`
 - `/api/admin/orders` + `/from-contact`
 - `/api/admin/customers`
-- `/api/admin/products`
+- `/api/admin/products`: de slug maakt de server bij aanmaken (`server/lib/slug.ts`), en daarna
+  verandert hij niet meer. Geldt ook voor pakketten, gelegenheden en events
 - `/api/admin/gallery` — POST is multipart (`files[]`, optionele `categoryId`), `/categories/*`, `/reorder`
 - `/api/admin/contact-requests` — incl. `:id/status`
-- `/api/admin/settings` — JSONB upserts per key (`contact`, `hero`, `about`)
+- `/api/admin/settings` — JSONB upserts per key. Gegevens: `contact`, `levertijden`, `btw`.
+  Teksten: `hero`, `about`, `paginaHome`, `paginaAanbod`, `paginaGalerij`, `paginaWerkwijze`,
+  `paginaContact`, `voettekst`, `werkwijze`. Beheerd op `/admin/instellingen` en `/admin/teksten`
 - `/api/admin/orders/:id/betalingen` — betaalregels; POST voegt toe, DELETE draait terug
 - `/api/admin/omzet` — `?van=&tot=&groep=maand|week`: omzet, btw per tarief, per pakket, openstaand
 - `/api/admin/stats/dashboard` — totalen + 12-maands omzet

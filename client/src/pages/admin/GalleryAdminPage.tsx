@@ -77,7 +77,8 @@ export default function GalleryAdminPage() {
 
   const catAanmaken = useMutation(mut(async (name: string) => {
     const c = await api.post<GalleryCategory>("/api/admin/gallery/categories", {
-      name, slug: slugify(name), sortOrder: cats?.length ?? 0,
+      // Geen slug meesturen: de server maakt hem uit de naam en telt door bij een dubbele.
+      name, sortOrder: cats?.length ?? 0,
     });
     kies(c.id);
   }));
@@ -104,7 +105,7 @@ export default function GalleryAdminPage() {
 
   const albumAanmaken = useMutation(mut(async (titel: string) => {
     const a = await api.post<GalleryAlbum>("/api/admin/gallery/albums", {
-      categoryId: catId, title: titel, slug: slugify(titel),
+      categoryId: catId, title: titel,
       sortOrder: albumsVanCat.length,
     });
     navigeer(`/admin/galerij/${a.id}`);
@@ -489,12 +490,3 @@ function EventOmslag({ album }: { album: AlbumMetTelling }) {
   );
 }
 
-/** Webadres-veilige naam. Alleen bij aanmaken gebruikt — hernoemen laat de slug staan. */
-function slugify(s: string): string {
-  return s
-    .toLowerCase()
-    .normalize("NFD").replace(/[̀-ͯ]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 120);
-}

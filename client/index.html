@@ -3,7 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <!-- De bloem uit haar logo (scripts/maak-merkbestanden.ts). Verving een zelfgetekende boterbloem
+         in favicon.svg, die er alleen stond omdat er geen vrijstaand logo was. -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -25,6 +29,13 @@
       content="Handgemaakte sweet tables en grazing tables voor bruiloften, babyshowers en feesten. Ook taarten op maat."
     />
     <meta property="og:locale" content="nl_NL" />
+    <!-- Haar logo op linnen, 1200 x 630 (scripts/maak-merkbestanden.ts).
+         Let op: WhatsApp en de meeste andere diensten negeren een relatief adres. Zodra er een
+         domein is, moet hier de volledige URL staan -- zie docs/deployment/infra/domein.md. -->
+    <meta property="og:image" content="/og-atelier-boterbloem.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Logo van Atelier Boterbloem: een gele boterbloem met het woordmerk eronder" />
     <meta name="twitter:card" content="summary_large_image" />
   </head>
   <body class="bg-linen text-charcoal font-body">

@@ -13,7 +13,7 @@ import { useLocation, useSearch } from "wouter";
  * `replace` bij het sluiten: openen-en-sluiten hoort geen twee stappen in de geschiedenis
  * achter te laten, anders moet je drie keer terug om echt weg te zijn.
  */
-export function useSheetParam(naam: "boeking" | "aanvraag" | "pakket") {
+export function useSheetParam(naam: "boeking" | "aanvraag" | "pakket" | "product") {
   const zoek = useSearch();
   const [pad, navigeer] = useLocation();
 

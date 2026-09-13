@@ -14,6 +14,7 @@ import { BotanicalCorner } from "../../components/ornaments/BotanicalCorner";
 import { SierDivider } from "../../components/ornaments/SierDivider";
 import { FloralFrame } from "../../components/ornaments/FloralFrame";
 import { imageSrc } from "../../lib/images";
+import { naarWeergave } from "../../content/werkwijze";
 import type { GalerijAntwoord } from "../../lib/galerij";
 
 const schema = z.object({
@@ -36,17 +37,17 @@ type FormValues = z.infer<typeof schema>;
 
 
 
-const STEPS = [
-  { n: "01", title: "Aanvraag", body: "Vertel ons over jouw moment en idee via het formulier." },
-  { n: "02", title: "Voorstel", body: "Binnen enkele dagen ontvang je een persoonlijk voorstel met smaakopties." },
-  { n: "03", title: "Ontwerp", body: "Samen verfijnen we het ontwerp tot het volledig past." },
-  { n: "04", title: "De dag zelf", body: "Wij zorgen voor levering of opbouw, jij geniet." },
-];
+/*
+ * De stappen stonden hier als derde kopie van haar werkwijze: de homepage had er een, /werkwijze
+ * een tweede, en dit waren weer andere zinnen over hetzelfde proces. Ze komen nu alle drie uit
+ * `site_settings.werkwijze` -- één tekst, die zij beheert.
+ */
 
 export default function ContactPage() {
   const { data: settings } = usePublicSettings();
   const contact = settings?.contact;
-  const levertijden = (settings as { levertijden?: { standaardDagen?: number; tekst?: string } } | undefined)?.levertijden;
+  const levertijden = settings?.levertijden;
+  const t = settings?.paginaContact;
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -59,6 +60,12 @@ export default function ContactPage() {
     queryFn: () => api.get<GalerijAntwoord>("/api/public/gallery"),
   });
   const gelegenheden = gallery?.categories ?? [];
+
+  // Dezelfde stappen als de strip op de homepage: één bron, door haar beheerd.
+  const stappen = useMemo(
+    () => naarWeergave(settings?.werkwijze?.kort ?? [], gallery?.items ?? []),
+    [settings, gallery],
+  );
 
   // Een uitgelichte foto naast het formulier, of de eerste die er is. Hier stond tot 27-08 een
   // vaste stockfoto; nu komt hij uit haar eigen galerij, en is er geen galerij dan staat er
@@ -103,18 +110,18 @@ export default function ContactPage() {
 
   return (
     <>
-      <section className="relative bg-section-sand overflow-hidden section-y">
+      <section className="relative bg-section-sand overflow-hidden section-y pt-24 sm:pt-36">
         <BotanicalPattern opacity={0.06} />
         <FloralFrame className="absolute -top-8 -right-8 md:-top-12 md:-right-12 w-32 sm:w-56 md:w-80 h-32 sm:h-56 md:h-80" color="text-sage/20" />
         <FloralFrame className="absolute -bottom-8 -left-8 md:-bottom-12 md:-left-12 rotate-180 w-24 sm:w-40 md:w-64 h-24 sm:h-40 md:h-64" color="text-blush" />
 
         <div className="container-tight relative grid lg:grid-cols-[1fr_1.2fr] gap-8 sm:gap-12 lg:gap-16">
           <div>
-            <div className="tag mb-3">Contact</div>
-            <h1 className="text-4xl sm:text-5xl md:text-6xl">Vertel ons jouw idee</h1>
+            <div className="tag mb-3">{t?.tag}</div>
+            <h1 className="text-4xl sm:text-5xl md:text-6xl">{t?.titel}</h1>
             <div className="mt-4 mb-4 sm:mt-6 sm:mb-6"><SierDivider className="!mx-0 !max-w-[180px]" /></div>
             <p className="text-charcoal/70 leading-relaxed mb-8 sm:mb-10 text-sm sm:text-base">
-              Vul het formulier in met zoveel mogelijk details: datum, gelegenheid en aantal personen. Dan komen we zo snel mogelijk bij je terug met een voorstel.
+              {t?.intro}
             </p>
 
             {/* Op mobiel staat de foto hier, boven de contactgegevens: hij stond alleen in de
@@ -166,10 +173,8 @@ export default function ContactPage() {
                 <BotanicalCorner position="tl" className="w-16 h-16 sm:w-20 sm:h-20" color="text-sage/40" />
                 <BotanicalCorner position="br" className="w-16 h-16 sm:w-20 sm:h-20" color="text-sage/40" />
                 <div className="text-center py-10">
-                  <div className="script-accent text-5xl mb-4">Bedankt!</div>
-                  <p className="text-charcoal/70 max-w-md mx-auto">
-                    Je bericht is verstuurd. We nemen zo snel mogelijk contact met je op.
-                  </p>
+                  <div className="script-accent text-5xl mb-4">{t?.bedanktTitel}</div>
+                  <p className="text-charcoal/70 max-w-md mx-auto">{t?.bedanktTekst}</p>
                   <button onClick={() => setSent(false)} className="btn-outline mt-8">
                     Nog een bericht sturen
                   </button>
@@ -266,12 +271,14 @@ export default function ContactPage() {
         <BotanicalPattern opacity={0.05} />
         <div className="container-tight relative">
           <div className="text-center mb-10 sm:mb-14">
-            <div className="tag mb-3">Hoe het werkt</div>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl">Van idee tot tafel</h2>
+            <div className="tag mb-3">{t?.stappenTag}</div>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl">{t?.stappenTitel}</h2>
             <div className="mt-6"><SierDivider /></div>
           </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-            {STEPS.map((s) => (
+          {/* `auto-fit` en geen vast aantal kolommen: haar korte werkwijze telt nu vijf
+              stappen, en in een raster van vier stond de vijfde alleen op een nieuwe rij. */}
+          <div className="grid gap-4 sm:gap-6 [grid-template-columns:repeat(auto-fit,minmax(220px,1fr))]">
+            {stappen.map((s) => (
               <div key={s.n} className="card hairline-sage bg-linen relative">
                 <div className="script-accent text-5xl leading-none mb-3">{s.n}</div>
                 <h3 className="text-xl mb-2">{s.title}</h3>

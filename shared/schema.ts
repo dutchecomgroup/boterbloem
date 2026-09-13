@@ -96,6 +96,18 @@ export const products = pgTable("products", {
   category: productCategoryEnum("category").notNull().default("overig"),
   description: text("description"),
   basePrice: numeric("base_price", { precision: 10, scale: 2 }).notNull().default("0"),
+  /**
+   * Toont de site `vanaf € 395,00` of gewoon `€ 65,00`?
+   *
+   * Een bruidstaart op maat begint ergens; een basistaart voor twaalf personen kost wat hij
+   * kost. Tot deze kolom bestond stond er op `/aanbod` hardgecodeerd "Vanaf-prijzen per taart"
+   * boven de hele lijst -- een bewering die voor elke regel tegelijk gold en dus voor sommige
+   * niet klopte.
+   *
+   * Bestaande regels kregen bij de migratie `true`, omdat dat precies is wat de site toen al
+   * over ze zei. Nieuwe producten staan op `false`: een vanaf-prijs is iets wat je bewust kiest.
+   */
+  priceIsFrom: boolean("price_is_from").notNull().default(false),
   unit: varchar("unit", { length: 32 }).notNull().default("stuk"),
   active: boolean("active").notNull().default(true),
   /** Zichtbaar op de publieke taart-prijslijst. Default false: bewust aanzetten. */
@@ -559,6 +571,8 @@ export const insertOrderEventSchema = createInsertSchema(orderEvents).omit({
 
 export const insertProductSchema = createInsertSchema(products, {
   vatRate: z.enum(["geen", "laag", "hoog"]).nullable().optional(),
+  // Optioneel: de server leidt hem af uit de naam (server/lib/slug.ts).
+  slug: z.string().optional(),
 }).omit({
   id: true,
   createdAt: true,
@@ -580,13 +594,18 @@ export const insertGalleryItemSchema = createInsertSchema(galleryItems).omit({
   createdAt: true,
 });
 
-export const insertGalleryCategorySchema = createInsertSchema(galleryCategories).omit({
+export const insertGalleryCategorySchema = createInsertSchema(galleryCategories, {
+  // Optioneel: de server leidt hem af uit de naam. Een expliciete slug mag nog wel mee, want de
+  // seed maakt zo de verborgen gelegenheid `sitefotos` waar de fotokiezer naar uploadt.
+  slug: z.string().optional(),
+}).omit({
   id: true,
 });
 
 export const insertGalleryAlbumSchema = createInsertSchema(galleryAlbums, {
   title: z.string().min(1, "Titel is verplicht"),
-  slug: z.string().min(1, "Slug is verplicht"),
+  // Optioneel: de server leidt hem af uit de naam (server/lib/slug.ts).
+  slug: z.string().optional(),
   // drizzle-zod maakt van een jsonb-kolom een losse `Json` waar ook een string in past. De
   // echte vorm hier vastleggen, anders is de kolom in de praktijk ongetypeerd — en dit is
   // inhoud die op een publieke pagina gerenderd wordt.
@@ -595,7 +614,8 @@ export const insertGalleryAlbumSchema = createInsertSchema(galleryAlbums, {
 
 export const insertPackageSchema = createInsertSchema(packages, {
   name: z.string().min(1, "Naam is verplicht"),
-  slug: z.string().min(1, "Slug is verplicht"),
+  // Optioneel: de server leidt hem af uit de naam (server/lib/slug.ts).
+  slug: z.string().optional(),
   priceUnit: z.enum(["totaal", "per_persoon"]),
   includes: z.array(z.string()),
   // Zonder deze zou 'onzin' pas op de CHECK in de database stuklopen, en dat komt binnen als
@@ -658,12 +678,20 @@ export const heroSettingsSchema = z.object({
    * meer heen wijst en vult aan met uitgelicht werk.
    */
   fotoIds: z.array(z.number().int().positive()).max(3).default([]),
+  /** Het kleine regeltje in hoofdletters boven de grote zin. */
+  bovenschrift: z.string().default("Sweet tables · Grazing tables · Taarten"),
+  /** De tweede, lichtere knop naast de hoofdknop. Gaat altijd naar de galerij. */
+  tweedeKnop: z.string().default("Bekijk de galerij"),
 });
 
 export const aboutSettingsSchema = z.object({
   heading: z.string().default("Over Atelier Boterbloem"),
   body: z.string().default(""),
   imageFilename: z.string().optional(),
+  /** Het citaat op het groene vlak onder haar verhaal. */
+  citaat: z.string().default("Smaak, ambacht, en een glimlach in elke beet."),
+  /** Wie het zegt. Staat klein onder het citaat. */
+  citaatBron: z.string().default("Atelier Boterbloem"),
 });
 
 /**
@@ -717,6 +745,22 @@ export const BTW_LABEL: Record<BtwTarief, string> = {
   hoog: "21%",
 };
 
+/**
+ * De productcategorieën in gewone taal, om dezelfde reden als `BTW_LABEL` hierboven.
+ *
+ * In het beheerscherm stond de kale databasewaarde: `mini_desserts`, `taart_los`. Dat is
+ * dezelfde soort lek als het slug-veld -- de vorm van de database komt naar buiten op een
+ * scherm dat door iemand anders bediend wordt. De waarden in de kolom blijven wat ze zijn.
+ */
+export const PRODUCT_CATEGORIE_LABEL: Record<Product["category"], string> = {
+  bruidstaart: "Bruidstaart",
+  verjaardag: "Verjaardagstaart",
+  mini_desserts: "Mini desserts",
+  cupcakes: "Cupcakes",
+  taart_los: "Losse taart",
+  overig: "Overig",
+};
+
 export function isBtwTarief(v: unknown): v is BtwTarief {
   return typeof v === "string" && v in BTW_TARIEVEN;
 }
@@ -733,6 +777,229 @@ export const btwSettingsSchema = z.object({
 
 export type BtwSettings = z.infer<typeof btwSettingsSchema>;
 
+/* ---------- Teksten per pagina ----------
+ *
+ * **Waarom deze sleutels bestaan.** De site had acht beheerbare tekstvelden en ruim honderd
+ * regels die hardgecodeerd in de pagina's stonden. De vraag van de klant was letterlijk: *"Kan
+ * ik ook ergens gewoon tekst van de website aanpassen?"* -- en het antwoord was nee, op de zin
+ * onder haar naam en haar over-tekst na.
+ *
+ * **Elke standaardwaarde is de tekst die er vandaag staat.** Daardoor verandert er bij het in
+ * gebruik nemen niets aan wat een bezoeker leest; wat zij daarna anders zet, is haar keuze. De
+ * publieke route parst elke sleutel door zijn schema, dus een lege database levert deze teksten
+ * op en de pagina's hoeven geen eigen terugval meer mee te dragen.
+ *
+ * **Gegroepeerd per pagina, niet per sectie of in één grote sleutel.** Eén sleutel voor alles
+ * zou betekenen dat één tikfout de hele pagina blokkeert en elke opslag alles herschrijft; een
+ * sleutel per sectie geeft twintig verzoeken bij het bewaren. Per pagina is bovendien de vorm
+ * die het beheerscherm al heeft: één blok met een *Bekijk*-link naar precies die pagina.
+ *
+ * Bewust níét beheerbaar: navigatielabels, formulierlabels, foutmeldingen en
+ * toegankelijkheidsteksten. Dat is gereedschap, geen inhoud -- een kapotte foutmelding is erger
+ * dan een foutmelding in niet precies haar woorden.
+ */
+
+/** Kop plus tekst, de vorm die in bijna elk blok terugkomt. */
+const kopEnTekst = (titel: string, tekst: string) =>
+  z.object({ titel: z.string().default(titel), tekst: z.string().default(tekst) });
+
+export const paginaHomeSchema = z.object({
+  aanbodTag: z.string().default("Wat we maken"),
+  aanbodTitel: z.string().default("Sweet & grazing tables"),
+  werkTag: z.string().default("Onze creaties"),
+  werkTitel: z.string().default("Uitgelicht werk"),
+  werkLink: z.string().default("Alle creaties"),
+  procesTag: z.string().default("Het proces"),
+  procesTitel: z.string().default("Zo gaat het"),
+  procesLink: z.string().default("Lees hoe het werkt"),
+  reviewsTag: z.string().default("Klanten over ons"),
+  reviewsTitel: z.string().default("Wat klanten vertellen"),
+  slotAccent: z.string().default("Een idee?"),
+  slotTitel: z.string().default("Laten we het bespreken"),
+  slotTekst: z.string().default(
+    "Of het nu een bruiloft, verjaardag of een doopfeest is: vertel ons over jouw moment en we ontwerpen iets unieks.",
+  ),
+  slotKnop: z.string().default("Stuur een bericht"),
+});
+
+export const paginaAanbodSchema = z.object({
+  tag: z.string().default("Aanbod"),
+  titel: z.string().default("Sweet & grazing tables"),
+  intro: z.string().default(
+    "Een tafel vol zoets die het middelpunt van je feest wordt. We werken met pakketten als startpunt: een richtlijn met een vanaf-prijs, die we samen aanvullen tot het precies past bij jouw dag.",
+  ),
+  galerijLink: z.string().default("Bekijk de hele galerij"),
+  pakkettenSlotzin: z.string().default(
+    "Elk pakket is een startpunt. Meer gasten, een extra lekkernij of een eigen kleurenschema? Dat is allemaal mogelijk. We kijken samen wat bij je feest past.",
+  ),
+  weetjesTitel: z.string().default("Goed om te weten"),
+  /**
+   * De vier punten onder de prijzen. Een lijst en geen vaste velden: zij mag er een schrappen
+   * of toevoegen zonder dat er een leeg blok achterblijft.
+   */
+  weetjes: z
+    .array(z.object({ icoon: z.string().default("•"), titel: z.string(), tekst: z.string() }))
+    .max(8)
+    .default([
+      { icoon: "📅", titel: "Op tijd aanvragen", tekst: "" },
+      { icoon: "🍰", titel: "Taarten zijn flexibeler", tekst: "Een losse taart heeft minder voorbereiding nodig dan een hele tafel, dus vraag gerust wat er nog kan." },
+      { icoon: "🚚", titel: "Bezorgen of afhalen", tekst: "We bezorgen en bouwen ter plaatse op. Afhalen kan ook, dan leggen we uit hoe je het veilig vervoert." },
+      { icoon: "💬", titel: "Altijd op maat", tekst: "Allergieën, een kleurenschema of een eigen idee? Vertel het bij de aanvraag, dan kijken we samen wat past." },
+    ]),
+  taartenTag: z.string().default("Ook mogelijk"),
+  taartenTitel: z.string().default("Taarten"),
+  taartenIntro: z.string().default(
+    "Een taart zonder tafel eromheen kan natuurlijk ook: voor een verjaardag, een bruiloft of gewoon omdat het kan.",
+  ),
+  taartenBijschrift: z.string().default("De uiteindelijke prijs hangt af van het ontwerp."),
+  smakenTitel: z.string().default("Smaken"),
+  /**
+   * De vaste smaken. Stonden hardgecodeerd in `AanbodPage`, terwijl haar PDF en haar eigen
+   * artikel elkaar tegenspreken over welke vier het zijn (vraag 11 in het content-invulplan).
+   * Juist dat moet zij kunnen rechtzetten zonder ons.
+   */
+  smaken: z
+    .array(z.object({ naam: z.string(), omschrijving: z.string().default("") }))
+    .max(12)
+    .default([
+      { naam: "Lemon Bliss", omschrijving: "Citroen & vanille" },
+      { naam: "Strawberry Blush", omschrijving: "Witte chocolade & aardbei" },
+      { naam: "Caramel Cocoa", omschrijving: "Chocolade & karamel" },
+      { naam: "Coco Blanc", omschrijving: "Kokos, witte chocolade & hazelnoot" },
+    ]),
+  smakenSlot: z.string().default("Iets anders in gedachten? Vraag het gerust, er kan vaak meer."),
+  reviewsTag: z.string().default("Ervaringen"),
+  reviewsTitel: z.string().default("Wat klanten zeggen"),
+  slotAccent: z.string().default("Klaar om te plannen?"),
+  slotTekst: z.string().default(
+    "Vertel ons over je feest: de datum, het aantal gasten en wat je voor je ziet. We denken graag mee.",
+  ),
+  slotKnop: z.string().default("Vraag een offerte aan"),
+  leegTitel: z.string().default("Binnenkort"),
+  leegTekst: z.string().default(
+    "We zetten de pakketten en prijzen op dit moment op een rij. Wil je nu al weten wat er mogelijk is voor jouw feest? Stuur gerust een bericht.",
+  ),
+});
+
+export const paginaGalerijSchema = z.object({
+  tag: z.string().default("Galerij"),
+  titel: z.string().default("Ons werk"),
+  intro: z.string().default(
+    "Kies een gelegenheid en bekijk wat we eerder maakten. Zo krijg je een idee van wat er mogelijk is, en van de sfeer die erbij past.",
+  ),
+  slotVraag: z.string().default("Iets gezien dat past bij jouw feest?"),
+  slotKnop: z.string().default("Vraag een offerte aan"),
+});
+
+export const paginaWerkwijzeSchema = z.object({
+  tag: z.string().default("Werkwijze"),
+  titel: z.string().default("Zo werkt het"),
+  intro: z.string().default(
+    "Achter iedere tafel en iedere taart zit een heel proces: van het eerste berichtje tot het moment waarop alles klaarstaat. Dit is hoe dat gaat.",
+  ),
+  levertijdTag: z.string().default("Op tijd aanvragen"),
+  levertijdTitel: z.string().default("Wanneer moet je het vastleggen?"),
+  slotVraag: z.string().default("Weet je al wat je zoekt, of juist nog niet?"),
+  slotKnop: z.string().default("Offerte aanvragen"),
+});
+
+export const paginaContactSchema = z.object({
+  tag: z.string().default("Contact"),
+  titel: z.string().default("Vertel ons jouw idee"),
+  intro: z.string().default(
+    "Vul het formulier in met zoveel mogelijk details: datum, gelegenheid en aantal personen. Dan komen we zo snel mogelijk bij je terug met een voorstel.",
+  ),
+  bedanktTitel: z.string().default("Bedankt!"),
+  bedanktTekst: z.string().default(
+    "Je bericht is verstuurd. We nemen zo snel mogelijk contact met je op.",
+  ),
+  stappenTag: z.string().default("Hoe het werkt"),
+  stappenTitel: z.string().default("Van idee tot tafel"),
+});
+
+export const voettekstSchema = z.object({
+  payoff: z.string().default(
+    "Handgemaakte sweet tables, grazing tables en taarten voor jouw mooiste momenten.",
+  ),
+  contactKop: z.string().default("Contact"),
+  volgKop: z.string().default("Volg ons"),
+});
+
+/**
+ * Eén stap uit haar werkwijze.
+ *
+ * **Geen nummer in de opslag.** Dat stond er wel (`"01"` t/m `"07"`), maar zodra je stappen kunt
+ * herschikken staat "03" boven de eerste. Het nummer volgt nu uit de plek in de lijst.
+ *
+ * **Een foto-id en geen zoekterm.** De vorige vorm zocht een foto op een fragment van de
+ * alt-tekst, omdat id's per database verschillen bij een seed. Zodra zíj de foto kiest is het id
+ * juist de betere sleutel -- net als bij `packages.coverItemId` en `hero.fotoIds`. Geen foreign
+ * key mogelijk in jsonb, dus een verdwenen foto wordt stil overgeslagen en aangevuld.
+ */
+export const werkwijzeStapSchema = z.object({
+  titel: z.string().min(1),
+  tekst: z.string().default(""),
+  fotoItemId: z.number().int().positive().nullable().default(null),
+});
+
+export type WerkwijzeStapData = z.infer<typeof werkwijzeStapSchema>;
+
+/**
+ * Haar werkwijze-tekst, vrijwel woordelijk uit haar artikel "Van eerste idee tot taart op tafel".
+ * Waar ze "de taart" schreef terwijl de zin net zo goed over een sweet table gaat, staat er iets
+ * breders; elke aanpassing staat in docs/klant/content-invulplan.md.
+ *
+ * Dit is de enige plek waar deze tekst in de code staat. De seed leest hem hier uit en koppelt
+ * er alleen haar foto's aan.
+ */
+const WERKWIJZE_KORT_STANDAARD: WerkwijzeStapData[] = [
+  { titel: "Aanvraag", tekst: "Je stuurt een berichtje met de datum, het aantal gasten en waar je aan denkt. Een foto of een bord vol inspiratie mag ook.", fotoItemId: null },
+  { titel: "Kennismaking", tekst: "We bespreken de wensen: hoe groot het moet worden, voor hoeveel personen, welke stijl erbij past en welke smaak het wordt.", fotoItemId: null },
+  { titel: "Offerte", tekst: "Je krijgt een voorstel met wat erin zit en wat het kost. Pas als dat klopt, leggen we de datum vast.", fotoItemId: null },
+  { titel: "Ontwerp", tekst: "Kleuren, vormen, decoratie en details worden één geheel. Een schets laat vooraf zien waar we naartoe werken.", fotoItemId: null },
+  { titel: "Levering & opbouw", tekst: "Alles wordt vers gemaakt, zorgvuldig verpakt en op locatie opgebouwd. Jij hoeft er niets meer aan te doen.", fotoItemId: null },
+];
+
+const WERKWIJZE_LANG_STANDAARD: WerkwijzeStapData[] = [
+  { titel: "Alles begint met een idee", tekst: "Vaak kom je met een foto, een bord vol inspiratie of alleen een paar losse ideeën. Misschien een bepaalde kleur, bloemen, een thema of juist een bepaalde sfeer. Samen bespreken we wat de wensen zijn. Hoe groot moet het worden? Voor hoeveel personen? Welke stijl past erbij? En natuurlijk: welke smaak gaat het worden?", fotoItemId: null },
+  { titel: "Van inspiratie naar een concreet ontwerp", tekst: "Als alle wensen duidelijk zijn, begint voor mij het leukste gedeelte: het ontwerp. Ik kijk naar de kleuren, vormen, decoratie en details en maak daar een concreet ontwerp van. Zo ontstaat er van een verzameling ideeën uiteindelijk één geheel. Een schets helpt om vooraf precies voor ogen te hebben waar we naartoe werken. Soms verandert er nog iets, maar juist dat overleg maakt het persoonlijk.", fotoItemId: null },
+  { titel: "Tijd om in te kopen", tekst: "Wanneer het ontwerp en de smaken vaststaan, begint de voorbereiding. De ingrediënten worden ingekocht en alle decoratie wordt verzameld. Denk aan chocolade, boter, eieren en verse ingrediënten, maar ook aan kartons, dozen, linten en natuurlijk alle details die het uiteindelijk compleet maken.", fotoItemId: null },
+  { titel: "Bakken, vullen en opbouwen", tekst: "Dan is het eindelijk tijd om de keuken in te duiken. De lagen worden gebakken en zodra alles goed is afgekoeld, begint het opbouwen. De lagen worden gevuld, gestapeld en afgesmeerd, en vervolgens krijgt het zijn definitieve vorm. Dit is het moment waarop de schets langzaam werkelijkheid begint te worden.", fotoItemId: null },
+  { titel: "De details maken het af", tekst: "Daarna komt het decoreren. Bloemen, strikjes, chocolade, parels, tekst of andere persoonlijke details worden één voor één aangebracht. Juist de kleine details zorgen ervoor dat het echt van jou wordt. En natuurlijk wordt alles nog even gecontroleerd: klopt de kleur, staat alles recht, en ziet het eruit zoals we vooraf hadden bedacht?", fotoItemId: null },
+  { titel: "Klaarmaken voor afhalen", tekst: "Als alles helemaal klaar is, wordt het zorgvuldig verpakt. De taart gaat veilig in een passende doos en wordt gekoeld bewaard tot het moment van afhalen. Want na al die uren werk wil je natuurlijk maar één ding: dat alles heelhuids op de feestlocatie aankomt.", fotoItemId: null },
+  { titel: "En dan is het zover", tekst: "Wat begon als een berichtje, een paar inspiratiebeelden en een aantal wensen, staat klaar om onderdeel te worden van jouw bijzondere moment.", fotoItemId: null },
+];
+
+/**
+ * Haar werkwijze in twee dieptes: vijf korte stappen voor de strip op de homepage en de
+ * contactpagina, zeven uitgeschreven stappen voor `/werkwijze`.
+ *
+ * Twee lijsten en geen vlag per stap: de korte versie is geen selectie uit de lange, de titels
+ * verschillen ("Aanvraag" tegenover "Alles begint met een idee"). Het zijn twee teksten over
+ * dezelfde werkwijze.
+ *
+ * **De standaardwaarde is haar eigen tekst, geen lege lijst.** Een lege lijst liet bij een nog
+ * niet gevulde database de hele strip op de homepage verdwijnen -- en daarmee kwamen twee
+ * groene banden direct op elkaar te staan. Het uitgangspunt van deze sleutels is dat er niets
+ * zichtbaars verandert tot zij zelf iets wijzigt. De foto's staan op `null`; `stapFotos()` vult
+ * die aan met haar eigen werk.
+ *
+ * Een kopie per aanroep (de functie-vorm van `.default`), zodat een gewijzigde stap in het ene
+ * antwoord niet stilletjes in het volgende opduikt.
+ */
+export const werkwijzeSettingsSchema = z.object({
+  kort: z.array(werkwijzeStapSchema).max(8).default(() => WERKWIJZE_KORT_STANDAARD.map((s) => ({ ...s }))),
+  lang: z.array(werkwijzeStapSchema).max(12).default(() => WERKWIJZE_LANG_STANDAARD.map((s) => ({ ...s }))),
+});
+
+export type PaginaHomeSettings = z.infer<typeof paginaHomeSchema>;
+export type PaginaAanbodSettings = z.infer<typeof paginaAanbodSchema>;
+export type PaginaGalerijSettings = z.infer<typeof paginaGalerijSchema>;
+export type PaginaWerkwijzeSettings = z.infer<typeof paginaWerkwijzeSchema>;
+export type PaginaContactSettings = z.infer<typeof paginaContactSchema>;
+export type VoettekstSettings = z.infer<typeof voettekstSchema>;
+export type WerkwijzeSettings = z.infer<typeof werkwijzeSettingsSchema>;
+
 /**
  * Sleutel → schema. `site_settings` is jsonb, dus de database bewaakt de vorm niet; dit is
  * de enige plek waar dat gebeurt. Een sleutel die hier niet in staat wordt geweigerd — zo
@@ -746,6 +1013,13 @@ export const siteSettingSchemas = {
   about: aboutSettingsSchema,
   levertijden: levertijdenSettingsSchema,
   btw: btwSettingsSchema,
+  paginaHome: paginaHomeSchema,
+  paginaAanbod: paginaAanbodSchema,
+  paginaGalerij: paginaGalerijSchema,
+  paginaWerkwijze: paginaWerkwijzeSchema,
+  paginaContact: paginaContactSchema,
+  voettekst: voettekstSchema,
+  werkwijze: werkwijzeSettingsSchema,
 } as const;
 
 export type SiteSettingKey = keyof typeof siteSettingSchemas;
@@ -753,6 +1027,49 @@ export type SiteSettingKey = keyof typeof siteSettingSchemas;
 export function isSiteSettingKey(key: string): key is SiteSettingKey {
   return Object.prototype.hasOwnProperty.call(siteSettingSchemas, key);
 }
+
+/**
+ * Wat er van `site_settings` naar een **niet-ingelogde bezoeker** mag.
+ *
+ * 🔴 **Waarom dit register bestaat.** `GET /api/public/settings` stuurde alle rijen ongefilterd
+ * door, inclusief `levertijden.agendaFeedToken`. Wie de homepage opvroeg kon dat token uit het
+ * antwoord plukken en er `/api/agenda.ics?token=…` mee ophalen: álle boekingen met klantnaam,
+ * locatie, bedrag en notitie. Het instellingenscherm waarschuwt zelf dat die link met niemand
+ * gedeeld mag worden; de site deelde hem met iedereen.
+ *
+ * **`.pick()` en niet `.omit()`.** Met `.omit({ agendaFeedToken: true })` zou elk veld dat hier
+ * later bij komt automatisch naar buiten lekken — je moet dan onthouden om het uit te sluiten.
+ * Met `.pick()` is "gaat niet naar buiten" de standaard en kost publiceren één bewuste regel.
+ * Dat verschil is precies waar dit lek uit ontstond.
+ *
+ * `btw` staat er helemaal niet in: `standaardTarief` en `toelichting` worden alleen op de
+ * offerte gebruikt, en die maakt zij in het beheerpaneel.
+ */
+export const publiekeSiteSettingSchemas = {
+  contact: contactSettingsSchema,
+  hero: heroSettingsSchema,
+  about: aboutSettingsSchema,
+  levertijden: levertijdenSettingsSchema.pick({ standaardDagen: true, tekst: true }),
+  // De teksten zijn per definitie publiek: ze staan op de pagina's.
+  paginaHome: paginaHomeSchema,
+  paginaAanbod: paginaAanbodSchema,
+  paginaGalerij: paginaGalerijSchema,
+  paginaWerkwijze: paginaWerkwijzeSchema,
+  paginaContact: paginaContactSchema,
+  voettekst: voettekstSchema,
+  werkwijze: werkwijzeSettingsSchema,
+} as const;
+
+export type PubliekeSiteSettingKey = keyof typeof publiekeSiteSettingSchemas;
+
+/**
+ * De vorm die de publieke site binnenkrijgt. Volledig ingevuld: de route parst elke sleutel
+ * door zijn schema, dus een ontbrekende rij levert de standaardwaarden op in plaats van
+ * `undefined`. Daarom hoeven de pagina's geen eigen terugvalteksten meer te hebben.
+ */
+export type PubliekeSiteSettings = {
+  [K in PubliekeSiteSettingKey]: z.infer<(typeof publiekeSiteSettingSchemas)[K]>;
+};
 
 export type ContactSettings = z.infer<typeof contactSettingsSchema>;
 export type HeroSettings = z.infer<typeof heroSettingsSchema>;

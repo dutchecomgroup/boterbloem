@@ -108,10 +108,10 @@ Gedefinieerd in `@layer components` in `index.css`.
 | Klasse | Vlak | Charcoal erop |
 |---|---|---|
 | `.bg-section-linen` | `#F7F5F0` | 13,3:1 |
-| `.bg-section-sand` | `#EDE7DE` | 11,8:1 |
+| `.bg-section-sand` | `#E4DACA` | 10,5:1 |
 | `.bg-section-blush` | `#F7EAEC` | 10,6:1 |
 | `.bg-section-sage` | `#DDE4D6` | 11,2:1 |
-| `.bg-section-warm` | verloop `#F9EFEC → #EDE7DE` | — |
+| `.bg-section-warm` | verloop `#F9EFEC → #F2E8DE`, van boven naar beneden | — |
 | `.bg-section-diep` | `sage-deep` `#5F6E4E` | **linen erop: 5,04:1** |
 
 🔴 **Vlakken, geen verlopen die naar linen terugvallen.** Tot 27-08 was elke klasse een
@@ -120,9 +120,23 @@ iedere naad viel de kleur weg. Vier secties op elkaar gaven één doorlopend wit
 vage zweem in het midden — de verlopen hieven zichzelf op. In de woorden van de gebruiker:
 *"Bijna alles is WIT op de hele website."*
 
-**Twee aangrenzende secties krijgen nooit hetzelfde vlak.** Dat is wat een pagina ritme geeft.
-Het huidige ritme per pagina staat in de paginabestanden; home loopt bijvoorbeeld
-warm → `sage-deep` (de marquee) → zand → linen → salie → charcoal.
+**Twee aangrenzende secties krijgen nooit hetzelfde vlak, tenzij er een `SalieBand` tussen staat.**
+Die groene band ís de scheiding, en dan mag hetzelfde vlak terugkomen: secties die bij elkaar horen
+lopen door in plaats van te wisselen. Anders gezegd: **een vlak wisselt alleen waar de band staat.**
+
+Home loopt sinds 13-09: warm → marquee → zand (aanbod + werk) → band → linen (proces + reviews) →
+band → charcoal (slot) → band → zand (voettekst). Daarvóór waren het zeven vlakwissels, met vier
+lichte tinten binnen tien eenheden van elkaar. In de woorden van de klant: *"ik zie hier gewoon 5
+kleuren"* en *"het design moet overvloeien, niet hard afkappen."*
+
+🔴 **Lichte vlakken moeten ver genoeg uit elkaar liggen.** Zand stond op `#EDE7DE`, tien tot
+achttien punten van linen: dat leest op een scherm niet als ritme maar als vuil. Verdiept naar
+`#E4DACA`. Het warme verloop eindigde bovendien op exact die oude zandkleur, dus daar was de
+overgang letterlijk nul.
+
+**De kopbalk heeft boven aan de pagina geen eigen vlak.** Hij staat `fixed` en de eerste sectie
+loopt erachter door. Een vaste kleur kan niet: de eerste sectie is warm, blush of zand, afhankelijk
+van de pagina. Pas bij scrollen krijgt hij linen met blur, voor de leesbaarheid boven foto's.
 
 ### Het saliepaneel
 
