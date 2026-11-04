@@ -11,7 +11,7 @@
     "build:client": "vite build",
     "start": "NODE_ENV=production tsx server/index.ts",
     "db:migrate": "tsx scripts/run-sql-migration.ts",
-    "db:push": "drizzle-kit push",
+    "db:push": "node -e \"console.error('db:push is uit de werkwijze (2026-11-04): hij past het schema direct toe, ook op live. Schemawijziging = migratie met back-up en akkoord per keer. Gebruik npm run db:migrate met een .sql; zie docs/deployment/db-migraties.md.');process.exit(1)\"",
     "db:studio": "drizzle-kit studio",
     "seed:admin": "tsx scripts/seed-admin.ts",
     "seed:demo": "tsx scripts/seed-demo-content.ts",
